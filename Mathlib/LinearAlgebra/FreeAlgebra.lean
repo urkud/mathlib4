@@ -2,16 +2,13 @@
 Copyright (c) 2021 Eric Wieser. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Eric Wieser
-
-! This file was ported from Lean 3 source module linear_algebra.free_algebra
-! leanprover-community/mathlib commit 039a089d2a4b93c761b234f3e5f5aeb752bac60f
-! Please do not edit these lines, except to modify the commit id
-! if you have ported upstream changes.
 -/
 import Mathlib.LinearAlgebra.Basis
 import Mathlib.Algebra.FreeAlgebra
 import Mathlib.LinearAlgebra.Dimension
 import Mathlib.LinearAlgebra.FinsuppVectorSpace
+
+#align_import linear_algebra.free_algebra from "leanprover-community/mathlib"@"039a089d2a4b93c761b234f3e5f5aeb752bac60f"
 
 /-!
 # Linear algebra properties of `FreeAlgebra R X`
@@ -25,7 +22,6 @@ universe u v
 
 namespace FreeAlgebra
 
-set_option synthInstance.etaExperiment true in
 /-- The `FreeMonoid X` basis on the `FreeAlgebra R X`,
 mapping `[x₁, x₂, ..., xₙ]` to the "monomial" `1 • x₁ * x₂ * ⋯ * xₙ` -/
 -- @[simps]

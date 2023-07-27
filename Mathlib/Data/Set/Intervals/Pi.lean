@@ -2,16 +2,13 @@
 Copyright (c) 2020 Yury Kudryashov. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Yury Kudryashov
-
-! This file was ported from Lean 3 source module data.set.intervals.pi
-! leanprover-community/mathlib commit e4bc74cbaf429d706cb9140902f7ca6c431e75a4
-! Please do not edit these lines, except to modify the commit id
-! if you have ported upstream changes.
 -/
 import Mathlib.Data.Pi.Algebra
 import Mathlib.Data.Set.Intervals.Basic
 import Mathlib.Data.Set.Intervals.UnorderedInterval
 import Mathlib.Data.Set.Lattice
+
+#align_import data.set.intervals.pi from "leanprover-community/mathlib"@"e4bc74cbaf429d706cb9140902f7ca6c431e75a4"
 
 /-!
 # Intervals in `pi`-space
@@ -114,8 +111,7 @@ theorem pi_univ_Ioc_update_right {x y : ∀ i, α i} {i₀ : ι} {m : α i₀} (
 
 theorem disjoint_pi_univ_Ioc_update_left_right {x y : ∀ i, α i} {i₀ : ι} {m : α i₀} :
     Disjoint (pi univ fun i ↦ Ioc (x i) (update y i₀ m i))
-      (pi univ fun i ↦ Ioc (update x i₀ m i) (y i)) :=
-  by
+    (pi univ fun i ↦ Ioc (update x i₀ m i) (y i)) := by
   rw [disjoint_left]
   rintro z h₁ h₂
   refine' (h₁ i₀ (mem_univ _)).2.not_lt _
@@ -354,8 +350,7 @@ E.g., if `x' = x` and `y' = y`, then this lemma states that the difference betwe
 of the faces of `[x, y]`. -/
 theorem Icc_diff_pi_univ_Ioo_subset (x y x' y' : ∀ i, α i) :
     (Icc x y \ pi univ fun i ↦ Ioo (x' i) (y' i)) ⊆
-      (⋃ i : ι, Icc x (update y i (x' i))) ∪ ⋃ i : ι, Icc (update x i (y' i)) y :=
-  by
+    (⋃ i : ι, Icc x (update y i (x' i))) ∪ ⋃ i : ι, Icc (update x i (y' i)) y := by
   rintro a ⟨⟨hxa, hay⟩, ha'⟩
   simp at ha'
   simp [le_update_iff, update_le_iff, hxa, hay, hxa _, hay _, ← exists_or]

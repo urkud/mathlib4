@@ -2,14 +2,11 @@
 Copyright (c) 2020 Kevin Kappelmann. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Kevin Kappelmann
-
-! This file was ported from Lean 3 source module algebra.continued_fractions.computation.basic
-! leanprover-community/mathlib commit a7e36e48519ab281320c4d192da6a7b348ce40ad
-! Please do not edit these lines, except to modify the commit id
-! if you have ported upstream changes.
 -/
 import Mathlib.Algebra.Order.Floor
 import Mathlib.Algebra.ContinuedFractions.Basic
+
+#align_import algebra.continued_fractions.computation.basic from "leanprover-community/mathlib"@"a7e36e48519ab281320c4d192da6a7b348ce40ad"
 
 /-!
 # Computable Continued Fractions
@@ -126,7 +123,7 @@ theorem coe_to_intFractPair {b : ℤ} {fr : K} :
 
 end coe
 
--- Note: this could be relaxed to something like `linear_ordered_division_ring` in the future.
+-- Note: this could be relaxed to something like `LinearOrderedDivisionRing` in the future.
 -- Fix a discrete linear ordered field with `floor` function.
 variable [LinearOrderedField K] [FloorRing K]
 

@@ -2,14 +2,11 @@
 Copyright (c) 2021 Scott Morrison. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Morrison
-
-! This file was ported from Lean 3 source module algebra.homology.homotopy
-! leanprover-community/mathlib commit 618ea3d5c99240cd7000d8376924906a148bf9ff
-! Please do not edit these lines, except to modify the commit id
-! if you have ported upstream changes.
 -/
 import Mathlib.Algebra.Homology.Additive
 import Mathlib.Tactic.Abel
+
+#align_import algebra.homology.homotopy from "leanprover-community/mathlib"@"618ea3d5c99240cd7000d8376924906a148bf9ff"
 
 /-!
 # Chain homotopies
@@ -122,7 +119,7 @@ theorem prevD_nat (C D : CochainComplex V ℕ) (i : ℕ) (f : ∀ i j, C.X i ⟶
   cases i
   · simp only [shape, CochainComplex.prev_nat_zero, ComplexShape.up_Rel, Nat.one_ne_zero,
       not_false_iff, comp_zero]
-  . congr <;> simp
+  · congr <;> simp
 #align prev_d_nat prevD_nat
 
 -- porting note: removed @[has_nonempty_instance]
@@ -203,7 +200,7 @@ def add {f₁ g₁ f₂ g₂ : C ⟶ D} (h₁ : Homotopy f₁ g₁) (h₂ : Homo
 @[simps]
 def compRight {e f : C ⟶ D} (h : Homotopy e f) (g : D ⟶ E) : Homotopy (e ≫ g) (f ≫ g) where
   hom i j := h.hom i j ≫ g.f j
-  zero i j w := by dsimp ; rw [h.zero i j w, zero_comp]
+  zero i j w := by dsimp; rw [h.zero i j w, zero_comp]
   comm i := by rw [comp_f, h.comm i, dNext_comp_right, prevD_comp_right, Preadditive.add_comp,
     comp_f, Preadditive.add_comp]
 #align homotopy.comp_right Homotopy.compRight
@@ -212,7 +209,7 @@ def compRight {e f : C ⟶ D} (h : Homotopy e f) (g : D ⟶ E) : Homotopy (e ≫
 @[simps]
 def compLeft {f g : D ⟶ E} (h : Homotopy f g) (e : C ⟶ D) : Homotopy (e ≫ f) (e ≫ g) where
   hom i j := e.f i ≫ h.hom i j
-  zero i j w := by dsimp ; rw [h.zero i j w, comp_zero]
+  zero i j w := by dsimp; rw [h.zero i j w, comp_zero]
   comm i := by rw [comp_f, h.comm i, dNext_comp_left, prevD_comp_left, comp_f,
     Preadditive.comp_add, Preadditive.comp_add]
 #align homotopy.comp_left Homotopy.compLeft
@@ -282,7 +279,7 @@ theorem nullHomotopicMap'_comp (hom : ∀ i j, c.Rel j i → (C.X i ⟶ D.X j)) 
   ext n
   erw [nullHomotopicMap_comp]
   congr
-  ext (i j)
+  ext i j
   split_ifs
   · rfl
   · rw [zero_comp]
@@ -304,7 +301,7 @@ theorem comp_nullHomotopicMap' (f : C ⟶ D) (hom : ∀ i j, c.Rel j i → (D.X 
   ext n
   erw [comp_nullHomotopicMap]
   congr
-  ext (i j)
+  ext i j
   split_ifs
   · rfl
   · rw [comp_zero]
@@ -328,7 +325,7 @@ theorem map_nullHomotopicMap' {W : Type _} [Category W] [Preadditive W] (G : V �
   ext n
   erw [map_nullHomotopicMap]
   congr
-  ext (i j)
+  ext i j
   split_ifs
   · rfl
   · rw [G.map_zero]
@@ -349,8 +346,7 @@ def nullHomotopy (hom : ∀ i j, C.X i ⟶ D.X j) (zero : ∀ i j, ¬c.Rel j i �
 
 /-- Homotopy to zero for maps constructed with `nullHomotopicMap'` -/
 @[simps!]
-def nullHomotopy' (h : ∀ i j, c.Rel j i → (C.X i ⟶ D.X j)) : Homotopy (nullHomotopicMap' h) 0 :=
-  by
+def nullHomotopy' (h : ∀ i j, c.Rel j i → (C.X i ⟶ D.X j)) : Homotopy (nullHomotopicMap' h) 0 := by
   apply nullHomotopy fun i j => dite (c.Rel j i) (h i j) fun _ => 0
   intro i j hij
   dsimp
@@ -445,7 +441,7 @@ theorem nullHomotopicMap'_f_eq_zero {k₀ : ι} (hk₀ : ∀ l : ι, ¬c.Rel k�
 so that as we construct each component, we have available the previous two components,
 and the fact that they satisfy the homotopy condition.
 
-To simplify the situation, we only construct homotopies of the form `homotopy e 0`.
+To simplify the situation, we only construct homotopies of the form `Homotopy e 0`.
 `Homotopy.equivSubZero` can provide the general case.
 
 Notice however, that this construction does not have particularly good definitional properties:
@@ -487,9 +483,9 @@ variable (e : P ⟶ Q) (zero : P.X 0 ⟶ Q.X 1) (comm_zero : e.f 0 = zero ≫ Q.
   (succ :
     ∀ (n : ℕ)
       (p :
-        Σ'(f : P.X n ⟶ Q.X (n + 1))(f' : P.X (n + 1) ⟶ Q.X (n + 2)),
+        Σ' (f : P.X n ⟶ Q.X (n + 1)) (f' : P.X (n + 1) ⟶ Q.X (n + 2)),
           e.f (n + 1) = P.d (n + 1) n ≫ f + f' ≫ Q.d (n + 2) (n + 1)),
-      Σ'f'' : P.X (n + 2) ⟶ Q.X (n + 3),
+      Σ' f'' : P.X (n + 2) ⟶ Q.X (n + 3),
         e.f (n + 2) = P.d (n + 2) (n + 1) ≫ p.2.1 + f'' ≫ Q.d (n + 3) (n + 2))
 
 /-- An auxiliary construction for `mkInductive`.
@@ -506,7 +502,7 @@ which we do in `mkInductiveAux₂`.
 @[simp, nolint unusedArguments]
 def mkInductiveAux₁ :
     ∀ n,
-      Σ'(f : P.X n ⟶ Q.X (n + 1))(f' : P.X (n + 1) ⟶ Q.X (n + 2)),
+      Σ' (f : P.X n ⟶ Q.X (n + 1)) (f' : P.X (n + 1) ⟶ Q.X (n + 2)),
         e.f (n + 1) = P.d (n + 1) n ≫ f + f' ≫ Q.d (n + 2) (n + 1)
   | 0 => ⟨zero, one, comm_one⟩
   | 1 => ⟨one, (succ 0 ⟨zero, one, comm_one⟩).1, (succ 0 ⟨zero, one, comm_one⟩).2⟩
@@ -519,15 +515,29 @@ section
 
 /-- An auxiliary construction for `mkInductive`.
 -/
-@[simp]
 def mkInductiveAux₂ :
-    ∀ n, Σ'(f : P.xNext n ⟶ Q.X n)(f' : P.X n ⟶ Q.xPrev n), e.f n = P.dFrom n ≫ f + f' ≫ Q.dTo n
+    ∀ n, Σ' (f : P.xNext n ⟶ Q.X n) (f' : P.X n ⟶ Q.xPrev n), e.f n = P.dFrom n ≫ f + f' ≫ Q.dTo n
   | 0 => ⟨0, zero ≫ (Q.xPrevIso rfl).inv, by simpa using comm_zero⟩
   | n + 1 =>
     let I := mkInductiveAux₁ e zero --comm_zero
       one comm_one succ n
     ⟨(P.xNextIso rfl).hom ≫ I.1, I.2.1 ≫ (Q.xPrevIso rfl).inv, by simpa using I.2.2⟩
 #align homotopy.mk_inductive_aux₂ Homotopy.mkInductiveAux₂
+
+theorem mkInductiveAux₂_zero :
+    mkInductiveAux₂ e zero comm_zero one comm_one succ 0 =
+      ⟨0, zero ≫ (Q.xPrevIso rfl).inv, mkInductiveAux₂.proof_2 e zero comm_zero⟩ :=
+  rfl
+
+theorem mkInductiveAux₂_add_one (n) :
+    mkInductiveAux₂ e zero comm_zero one comm_one succ (n + 1) =
+      let I := mkInductiveAux₁ e zero one comm_one succ n
+      ⟨(P.xNextIso rfl).hom ≫ I.1, I.2.1 ≫ (Q.xPrevIso rfl).inv,
+        mkInductiveAux₂.proof_5 e zero one comm_one succ n⟩ :=
+  rfl
+
+attribute [eqns mkInductiveAux₂_zero mkInductiveAux₂_add_one] mkInductiveAux₂
+attribute [simp] mkInductiveAux₂
 
 theorem mkInductiveAux₃ (i j : ℕ) (h : i + 1 = j) :
     (mkInductiveAux₂ e zero comm_zero one comm_one succ i).2.1 ≫ (Q.xPrevIso h).hom =
@@ -550,22 +560,22 @@ def mkInductive : Homotopy e 0 where
     if h : i + 1 = j then
       (mkInductiveAux₂ e zero comm_zero one comm_one succ i).2.1 ≫ (Q.xPrevIso h).hom
     else 0
-  zero i j w := by dsimp ; rw [dif_neg] ; exact w
+  zero i j w := by dsimp; rw [dif_neg]; exact w
   comm i := by
     dsimp
     simp only [add_zero]
     refine' (mkInductiveAux₂ e zero comm_zero one comm_one succ i).2.2.trans _
     congr
-    . cases i
-      . dsimp [fromNext, mkInductiveAux₂]
+    · cases i
+      · dsimp [fromNext, mkInductiveAux₂]
         rw [dif_neg]
         simp only
-      . dsimp [fromNext]
+      · dsimp [fromNext]
         simp only [ChainComplex.next_nat_succ, dite_true]
         rw [mkInductiveAux₃ e zero comm_zero one comm_one succ]
         dsimp [xNextIso]
         rw [Category.id_comp]
-    . dsimp [toPrev]
+    · dsimp [toPrev]
       erw [dif_pos, Category.comp_id]
       simp only [ChainComplex.prev]
 #align homotopy.mk_inductive Homotopy.mkInductive
@@ -612,9 +622,9 @@ variable (e : P ⟶ Q) (zero : P.X 1 ⟶ Q.X 0) (comm_zero : e.f 0 = P.d 0 1 ≫
   (succ :
     ∀ (n : ℕ)
       (p :
-        Σ'(f : P.X (n + 1) ⟶ Q.X n)(f' : P.X (n + 2) ⟶ Q.X (n + 1)),
+        Σ' (f : P.X (n + 1) ⟶ Q.X n) (f' : P.X (n + 2) ⟶ Q.X (n + 1)),
           e.f (n + 1) = f ≫ Q.d n (n + 1) + P.d (n + 1) (n + 2) ≫ f'),
-      Σ'f'' : P.X (n + 3) ⟶ Q.X (n + 2),
+      Σ' f'' : P.X (n + 3) ⟶ Q.X (n + 2),
         e.f (n + 2) = p.2.1 ≫ Q.d (n + 1) (n + 2) + P.d (n + 2) (n + 3) ≫ f'')
 
 /-- An auxiliary construction for `mkCoinductive`.
@@ -631,7 +641,7 @@ which we do in `mkInductiveAux₂`.
 @[simp]
 def mkCoinductiveAux₁ :
     ∀ n,
-      Σ'(f : P.X (n + 1) ⟶ Q.X n)(f' : P.X (n + 2) ⟶ Q.X (n + 1)),
+      Σ' (f : P.X (n + 1) ⟶ Q.X n) (f' : P.X (n + 2) ⟶ Q.X (n + 1)),
         e.f (n + 1) = f ≫ Q.d n (n + 1) + P.d (n + 1) (n + 2) ≫ f'
   | 0 => ⟨zero, one, comm_one⟩
   | 1 => ⟨one, (succ 0 ⟨zero, one, comm_one⟩).1, (succ 0 ⟨zero, one, comm_one⟩).2⟩
@@ -644,14 +654,28 @@ section
 
 /-- An auxiliary construction for `mkInductive`.
 -/
-@[simp]
 def mkCoinductiveAux₂ :
-    ∀ n, Σ'(f : P.X n ⟶ Q.xPrev n)(f' : P.xNext n ⟶ Q.X n), e.f n = f ≫ Q.dTo n + P.dFrom n ≫ f'
+    ∀ n, Σ' (f : P.X n ⟶ Q.xPrev n) (f' : P.xNext n ⟶ Q.X n), e.f n = f ≫ Q.dTo n + P.dFrom n ≫ f'
   | 0 => ⟨0, (P.xNextIso rfl).hom ≫ zero, by simpa using comm_zero⟩
   | n + 1 =>
     let I := mkCoinductiveAux₁ e zero one comm_one succ n
     ⟨I.1 ≫ (Q.xPrevIso rfl).inv, (P.xNextIso rfl).hom ≫ I.2.1, by simpa using I.2.2⟩
 #align homotopy.mk_coinductive_aux₂ Homotopy.mkCoinductiveAux₂
+
+theorem mkCoinductiveAux₂_zero :
+    mkCoinductiveAux₂ e zero comm_zero one comm_one succ 0 =
+      ⟨0, (P.xNextIso rfl).hom ≫ zero, mkCoinductiveAux₂.proof_2 e zero comm_zero⟩ :=
+  rfl
+
+theorem mkCoinductiveAux₂_add_one (n) :
+    mkCoinductiveAux₂ e zero comm_zero one comm_one succ (n + 1) =
+      let I := mkCoinductiveAux₁ e zero one comm_one succ n
+      ⟨I.1 ≫ (Q.xPrevIso rfl).inv, (P.xNextIso rfl).hom ≫ I.2.1,
+        mkCoinductiveAux₂.proof_5 e zero one comm_one succ n⟩ :=
+  rfl
+
+attribute [eqns mkCoinductiveAux₂_zero mkCoinductiveAux₂_add_one] mkCoinductiveAux₂
+attribute [simp] mkCoinductiveAux₂
 
 theorem mkCoinductiveAux₃ (i j : ℕ) (h : i + 1 = j) :
     (P.xNextIso h).inv ≫ (mkCoinductiveAux₂ e zero comm_zero one comm_one succ i).2.1 =
@@ -674,23 +698,23 @@ def mkCoinductive : Homotopy e 0 where
     if h : j + 1 = i then
       (P.xNextIso h).inv ≫ (mkCoinductiveAux₂ e zero comm_zero one comm_one succ j).2.1
     else 0
-  zero i j w := by dsimp ; rw [dif_neg] ; exact w
+  zero i j w := by dsimp; rw [dif_neg]; exact w
   comm i := by
     dsimp
     simp only [add_zero]
     rw [add_comm]
     refine' (mkCoinductiveAux₂ e zero comm_zero one comm_one succ i).2.2.trans _
     congr
-    . cases i
-      . dsimp [toPrev, mkCoinductiveAux₂]
+    · cases i
+      · dsimp [toPrev, mkCoinductiveAux₂]
         rw [dif_neg]
         simp only
-      . dsimp [toPrev]
+      · dsimp [toPrev]
         simp only [CochainComplex.prev_nat_succ, dite_true]
         rw [mkCoinductiveAux₃ e zero comm_zero one comm_one succ]
         dsimp [xPrevIso]
         rw [Category.comp_id]
-    . dsimp [fromNext]
+    · dsimp [fromNext]
       erw [dif_pos, Category.id_comp]
       simp only [CochainComplex.next]
 #align homotopy.mk_coinductive Homotopy.mkCoinductive
@@ -773,7 +797,7 @@ theorem homology_map_eq_of_homotopy (h : Homotopy f g) (i : ι) :
     Preadditive.comp_add]
   rw [← Preadditive.sub_comp]
   simp only [CategoryTheory.Subobject.factorThru_add_sub_factorThru_right]
-  erw [Subobject.factorThru_ofLe (D.boundaries_le_cycles i)]
+  erw [Subobject.factorThru_ofLE (D.boundaries_le_cycles i)]
   · simp
   · rw [prevD_eq_toPrev_dTo, ← Category.assoc]
     apply imageSubobject_factors_comp_self
@@ -803,7 +827,7 @@ variable {W : Type _} [Category W] [Preadditive W]
 def Functor.mapHomotopy (F : V ⥤ W) [F.Additive] {f g : C ⟶ D} (h : Homotopy f g) :
     Homotopy ((F.mapHomologicalComplex c).map f) ((F.mapHomologicalComplex c).map g) where
   hom i j := F.map (h.hom i j)
-  zero i j w := by dsimp ; rw [h.zero i j w, F.map_zero]
+  zero i j w := by dsimp; rw [h.zero i j w, F.map_zero]
   comm i := by
     have H := h.comm i
     dsimp [dNext, prevD] at H ⊢

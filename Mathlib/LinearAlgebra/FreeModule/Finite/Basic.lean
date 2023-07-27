@@ -2,15 +2,12 @@
 Copyright (c) 2021 Riccardo Brasca. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Riccardo Brasca
-
-! This file was ported from Lean 3 source module linear_algebra.free_module.finite.basic
-! leanprover-community/mathlib commit 59628387770d82eb6f6dd7b7107308aa2509ec95
-! Please do not edit these lines, except to modify the commit id
-! if you have ported upstream changes.
 -/
 import Mathlib.LinearAlgebra.Dimension
 import Mathlib.LinearAlgebra.FreeModule.Basic
 import Mathlib.RingTheory.Finiteness
+
+#align_import linear_algebra.free_module.finite.basic from "leanprover-community/mathlib"@"59628387770d82eb6f6dd7b7107308aa2509ec95"
 
 /-!
 # Finite and free modules
@@ -61,7 +58,6 @@ theorem _root_.Module.Finite.of_basis {R M ι : Type _} [CommRing R] [AddCommGro
     simp only [Set.image_univ, Finset.coe_univ, Finset.coe_image, Basis.span_eq]
 #align module.finite.of_basis Module.Finite.of_basis
 
-set_option synthInstance.etaExperiment true in
 instance _root_.Module.Finite.matrix {ι₁ ι₂ : Type _} [_root_.Finite ι₁] [_root_.Finite ι₂] :
     Module.Finite R (Matrix ι₁ ι₂ R) := by
   cases nonempty_fintype ι₁

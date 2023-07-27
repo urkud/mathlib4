@@ -2,15 +2,12 @@
 Copyright (c) 2020 David Wärn. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: David Wärn
-
-! This file was ported from Lean 3 source module order.ideal
-! leanprover-community/mathlib commit 59694bd07f0a39c5beccba34bd9f413a160782bf
-! Please do not edit these lines, except to modify the commit id
-! if you have ported upstream changes.
 -/
 import Mathlib.Logic.Encodable.Basic
 import Mathlib.Order.Atoms
 import Mathlib.Order.UpperLower.Basic
+
+#align_import order.ideal from "leanprover-community/mathlib"@"59694bd07f0a39c5beccba34bd9f413a160782bf"
 
 /-!
 # Order ideals, cofinal sets, and the Rasiowa–Sikorski lemma
@@ -375,7 +372,7 @@ instance : Sup (Ideal P) :=
         cases' inter_nonempty I J with w h
         exact ⟨w, w, h.1, w, h.2, le_sup_left⟩
       directed' := fun x ⟨xi, _, xj, _, _⟩ y ⟨yi, _, yj, _, _⟩ ↦
-        ⟨x ⊔ y,  ⟨xi ⊔ yi, sup_mem ‹_› ‹_›, xj ⊔ yj, sup_mem ‹_› ‹_›,
+        ⟨x ⊔ y, ⟨xi ⊔ yi, sup_mem ‹_› ‹_›, xj ⊔ yj, sup_mem ‹_› ‹_›,
             sup_le
               (calc
                 x ≤ xi ⊔ xj := ‹_›
@@ -438,32 +435,32 @@ instance : InfSet (Ideal P) :=
     { toLowerSet := ⨅ s ∈ S, toLowerSet s
       nonempty' :=
         ⟨⊥, by
-          rw [LowerSet.carrier_eq_coe, LowerSet.coe_infᵢ₂, Set.mem_interᵢ₂]
+          rw [LowerSet.carrier_eq_coe, LowerSet.coe_iInf₂, Set.mem_iInter₂]
           exact fun s _ ↦ s.bot_mem⟩
       directed' := fun a ha b hb ↦
         ⟨a ⊔ b,
           ⟨by
-            rw [LowerSet.carrier_eq_coe, LowerSet.coe_infᵢ₂, Set.mem_interᵢ₂] at ha hb⊢
+            rw [LowerSet.carrier_eq_coe, LowerSet.coe_iInf₂, Set.mem_iInter₂] at ha hb ⊢
             exact fun s hs ↦ sup_mem (ha _ hs) (hb _ hs), le_sup_left, le_sup_right⟩⟩ }⟩
 
 variable {S : Set (Ideal P)}
 
 @[simp]
-theorem coe_infₛ : (↑(infₛ S) : Set P) = ⋂ s ∈ S, ↑s :=
-  LowerSet.coe_infᵢ₂ _
-#align order.ideal.coe_Inf Order.Ideal.coe_infₛ
+theorem coe_sInf : (↑(sInf S) : Set P) = ⋂ s ∈ S, ↑s :=
+  LowerSet.coe_iInf₂ _
+#align order.ideal.coe_Inf Order.Ideal.coe_sInf
 
 @[simp]
-theorem mem_infₛ : x ∈ infₛ S ↔ ∀ s ∈ S, x ∈ s := by
-  simp_rw [← SetLike.mem_coe, coe_infₛ, mem_interᵢ₂]
-#align order.ideal.mem_Inf Order.Ideal.mem_infₛ
+theorem mem_sInf : x ∈ sInf S ↔ ∀ s ∈ S, x ∈ s := by
+  simp_rw [← SetLike.mem_coe, coe_sInf, mem_iInter₂]
+#align order.ideal.mem_Inf Order.Ideal.mem_sInf
 
 instance : CompleteLattice (Ideal P) :=
   { (inferInstance : Lattice (Ideal P)),
     completeLatticeOfInf (Ideal P) fun S ↦ by
-      refine' ⟨fun s hs ↦ _, fun s hs ↦ by rwa [← coe_subset_coe, coe_infₛ, subset_interᵢ₂_iff]⟩
-      rw [← coe_subset_coe, coe_infₛ]
-      exact binterᵢ_subset_of_mem hs with }
+      refine' ⟨fun s hs ↦ _, fun s hs ↦ by rwa [← coe_subset_coe, coe_sInf, subset_iInter₂_iff]⟩
+      rw [← coe_subset_coe, coe_sInf]
+      exact biInter_subset_of_mem hs with }
 
 end SemilatticeSupOrderBot
 

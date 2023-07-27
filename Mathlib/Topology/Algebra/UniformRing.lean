@@ -2,15 +2,12 @@
 Copyright (c) 2018 Patrick Massot. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Patrick Massot, Johannes Hölzl
-
-! This file was ported from Lean 3 source module topology.algebra.uniform_ring
-! leanprover-community/mathlib commit 9a59dcb7a2d06bf55da57b9030169219980660cd
-! Please do not edit these lines, except to modify the commit id
-! if you have ported upstream changes.
 -/
 import Mathlib.Algebra.Algebra.Basic
 import Mathlib.Topology.Algebra.GroupCompletion
 import Mathlib.Topology.Algebra.Ring.Ideal
+
+#align_import topology.algebra.uniform_ring from "leanprover-community/mathlib"@"9a59dcb7a2d06bf55da57b9030169219980660cd"
 
 /-!
 # Completion of topological rings:
@@ -239,7 +236,6 @@ namespace UniformSpace
 
 variable {α : Type _}
 
-set_option synthInstance.etaExperiment true in
 theorem ring_sep_rel (α) [CommRing α] [UniformSpace α] [UniformAddGroup α] [TopologicalRing α] :
     separationSetoid α = Submodule.quotientRel (Ideal.closure ⊥) :=
   Setoid.ext fun x y =>
@@ -252,7 +248,6 @@ theorem ring_sep_quot (α : Type u) [r : CommRing α] [UniformSpace α] [Uniform
   rfl
 #align uniform_space.ring_sep_quot UniformSpace.ring_sep_quot
 
-set_option synthInstance.etaExperiment true in
 /-- Given a topological ring `α` equipped with a uniform structure that makes subtraction uniformly
 continuous, get an equivalence between the separated quotient of `α` and the quotient ring
 corresponding to the closure of zero. -/
@@ -293,7 +288,7 @@ noncomputable def DenseInducing.extendRingHom {i : α →+* β} {f : α →+* γ
   toFun := (ue.denseInducing dr).extend f
   map_one' := by
     convert DenseInducing.extend_eq (ue.denseInducing dr) hf.continuous 1
-    exacts[i.map_one.symm, f.map_one.symm]
+    exacts [i.map_one.symm, f.map_one.symm]
   map_zero' := by
     convert DenseInducing.extend_eq (ue.denseInducing dr) hf.continuous 0 <;>
     simp only [map_zero]

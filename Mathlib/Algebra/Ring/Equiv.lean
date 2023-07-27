@@ -2,16 +2,14 @@
 Copyright (c) 2018 Johannes Hölzl. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Johannes Hölzl, Callum Sutton, Yury Kudryashov
-Ported by: Anatole Dedecker
-
-! This file was ported from Lean 3 source module algebra.ring.equiv
-! leanprover-community/mathlib commit a59dad53320b73ef180174aae867addd707ef00e
-! Please do not edit these lines, except to modify the commit id
-! if you have ported upstream changes.
 -/
 import Mathlib.Algebra.Group.Opposite
 import Mathlib.Algebra.Hom.Ring
 import Mathlib.Logic.Equiv.Set
+import Mathlib.Util.AssertExists
+import Mathlib.Algebra.Hom.Equiv.Basic
+
+#align_import algebra.ring.equiv from "leanprover-community/mathlib"@"00f91228655eecdcd3ac97a7fd8dbcb139fe990a"
 
 /-!
 # (Semi)ring equivs
@@ -42,6 +40,22 @@ Equiv, MulEquiv, AddEquiv, RingEquiv, MulAut, AddAut, RingAut
 
 
 variable {F α β R S S' : Type _}
+
+
+/-- makes a `NonUnitalRingHom` from the bijective inverse of a `NonUnitalRingHom` -/  
+@[simps] def NonUnitalRingHom.inverse
+    [NonUnitalNonAssocSemiring R] [NonUnitalNonAssocSemiring S]
+    (f : R →ₙ+* S) (g : S → R)
+    (h₁ : Function.LeftInverse g f) (h₂ : Function.RightInverse g f) : S →ₙ+* R :=
+  { (f : R →+ S).inverse g h₁ h₂, (f : R →ₙ* S).inverse g h₁ h₂ with toFun := g }
+
+/-- makes a `RingHom` from the bijective inverse of a `RingHom` -/  
+@[simps] def RingHom.inverse [NonAssocSemiring R] [NonAssocSemiring S]
+    (f : RingHom R S) (g : S → R)
+    (h₁ : Function.LeftInverse g f) (h₂ : Function.RightInverse g f) : S →+* R :=
+  { (f : OneHom R S).inverse g h₁, 
+    (f : MulHom R S).inverse g h₁ h₂,
+    (f : R →+ S).inverse g h₁ h₂ with toFun := g }
 
 /-- An equivalence between two (non-unital non-associative semi)rings that preserves the
 algebraic structure. -/
@@ -367,7 +381,7 @@ section Opposite
 open MulOpposite
 
 /-- A ring iso `α ≃+* β` can equivalently be viewed as a ring iso `αᵐᵒᵖ ≃+* βᵐᵒᵖ`. -/
-@[simps!]
+@[simps! symm_apply_apply symm_apply_symm_apply apply_apply apply_symm_apply]
 protected def op {α β} [Add α] [Mul α] [Add β] [Mul β] :
     α ≃+* β ≃ (αᵐᵒᵖ ≃+* βᵐᵒᵖ) where
   toFun f := { AddEquiv.mulOp f.toAddEquiv, MulEquiv.op f.toMulEquiv with }
@@ -583,6 +597,10 @@ theorem map_neg_one : f (-1) = -1 :=
   f.map_one ▸ f.map_neg 1
 #align ring_equiv.map_neg_one RingEquiv.map_neg_one
 
+theorem map_eq_neg_one_iff {x : R} : f x = -1 ↔ x = -1 := by
+  rw [← neg_eq_iff_eq_neg, ← neg_eq_iff_eq_neg, ← map_neg, RingEquiv.map_eq_one_iff]
+#align ring_equiv.map_eq_neg_one_iff RingEquiv.map_eq_neg_one_iff
+
 end Ring
 
 section NonUnitalSemiringHom
@@ -598,12 +616,6 @@ theorem toNonUnitalRingHom_injective :
     Function.Injective (toNonUnitalRingHom : R ≃+* S → R →ₙ+* S) := fun _ _ h =>
   RingEquiv.ext (NonUnitalRingHom.ext_iff.1 h)
 #align ring_equiv.to_non_unital_ring_hom_injective RingEquiv.toNonUnitalRingHom_injective
-
-/- The instance priority is lowered here so that in the case when `R` and `S` are both unital, Lean
-will first find and use `RingEquiv.instCoeToRingHom`. -/
-instance (priority := 900) instCoeToNonUnitalRingHom : Coe (R ≃+* S) (R →ₙ+* S) :=
-  ⟨RingEquiv.toNonUnitalRingHom⟩
-#align ring_equiv.has_coe_to_non_unital_ring_hom RingEquiv.instCoeToNonUnitalRingHom
 
 theorem toNonUnitalRingHom_eq_coe (f : R ≃+* S) : f.toNonUnitalRingHom = ↑f :=
   rfl
@@ -672,11 +684,7 @@ theorem toRingHom_injective : Function.Injective (toRingHom : R ≃+* S → R �
   RingEquiv.ext (RingHom.ext_iff.1 h)
 #align ring_equiv.to_ring_hom_injective RingEquiv.toRingHom_injective
 
-instance instCoeToRingHom : Coe (R ≃+* S) (R →+* S) :=
-  ⟨RingEquiv.toRingHom⟩
-#align ring_equiv.has_coe_to_ring_hom RingEquiv.instCoeToRingHom
-
-theorem toRingHom_eq_coe (f : R ≃+* S) : f.toRingHom = ↑f :=
+@[simp] theorem toRingHom_eq_coe (f : R ≃+* S) : f.toRingHom = ↑f :=
   rfl
 #align ring_equiv.to_ring_hom_eq_coe RingEquiv.toRingHom_eq_coe
 
@@ -713,7 +721,7 @@ theorem toAddMonoidMom_commutes (f : R ≃+* S) :
   rfl
 #align ring_equiv.to_add_monoid_hom_commutes RingEquiv.toAddMonoidMom_commutes
 
-/-- The two paths coercion can take to an `MonoidHom` are equivalent -/
+/-- The two paths coercion can take to a `MonoidHom` are equivalent -/
 theorem toMonoidHom_commutes (f : R ≃+* S) :
     (f : R →+* S).toMonoidHom = (f : R ≃* S).toMonoidHom :=
   rfl
@@ -739,13 +747,13 @@ theorem toAddMonoidHom_refl : (RingEquiv.refl R).toAddMonoidHom = AddMonoidHom.i
   rfl
 #align ring_equiv.to_add_monoid_hom_refl RingEquiv.toAddMonoidHom_refl
 
-@[simp]
+-- Porting note : Now other `simp` can do this, so removed `simp` attribute
 theorem toRingHom_apply_symm_toRingHom_apply (e : R ≃+* S) :
     ∀ y : S, e.toRingHom (e.symm.toRingHom y) = y :=
   e.toEquiv.apply_symm_apply
 #align ring_equiv.to_ring_hom_apply_symm_to_ring_hom_apply RingEquiv.toRingHom_apply_symm_toRingHom_apply
 
-@[simp]
+-- Porting note : Now other `simp` can do this, so removed `simp` attribute
 theorem symm_toRingHom_apply_toRingHom_apply (e : R ≃+* S) :
     ∀ x : R, e.symm.toRingHom (e.toRingHom x) = x :=
   Equiv.symm_apply_apply e.toEquiv
@@ -757,14 +765,14 @@ theorem toRingHom_trans (e₁ : R ≃+* S) (e₂ : S ≃+* S') :
   rfl
 #align ring_equiv.to_ring_hom_trans RingEquiv.toRingHom_trans
 
-@[simp]
+-- Porting note : Now other `simp` can do this, so removed `simp` attribute
 theorem toRingHom_comp_symm_toRingHom (e : R ≃+* S) :
     e.toRingHom.comp e.symm.toRingHom = RingHom.id _ := by
   ext
   simp
 #align ring_equiv.to_ring_hom_comp_symm_to_ring_hom RingEquiv.toRingHom_comp_symm_toRingHom
 
-@[simp]
+-- Porting note : Now other `simp` can do this, so removed `simp` attribute
 theorem symm_toRingHom_comp_toRingHom (e : R ≃+* S) :
     e.symm.toRingHom.comp e.toRingHom = RingHom.id _ := by
   ext
@@ -876,5 +884,4 @@ protected theorem isDomain {A : Type _} (B : Type _) [Ring A] [Ring B] [IsDomain
 end RingEquiv
 
 -- guard against import creep
--- Porting note: not implemented yet
--- assert_not_exists fintype
+assert_not_exists Fintype

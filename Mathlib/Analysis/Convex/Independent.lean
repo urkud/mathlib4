@@ -2,14 +2,11 @@
 Copyright (c) 2021 Yaël Dillies, Bhavik Mehta. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Yaël Dillies, Bhavik Mehta
-
-! This file was ported from Lean 3 source module analysis.convex.independent
-! leanprover-community/mathlib commit fefd8a38be7811574cd2ec2f77d3a393a407f112
-! Please do not edit these lines, except to modify the commit id
-! if you have ported upstream changes.
 -/
 import Mathlib.Analysis.Convex.Combination
 import Mathlib.Analysis.Convex.Extreme
+
+#align_import analysis.convex.independent from "leanprover-community/mathlib"@"fefd8a38be7811574cd2ec2f77d3a393a407f112"
 
 /-!
 # Convex independence
@@ -187,7 +184,7 @@ theorem convexIndependent_iff_finset {p : ι → E} :
     rw [hab, image_singleton, coe_singleton, convexHull_singleton]
     exact Set.mem_singleton _
   rw [convexHull_eq_union_convexHull_finite_subsets] at hx
-  simp_rw [Set.mem_unionᵢ] at hx
+  simp_rw [Set.mem_iUnion] at hx
   obtain ⟨t, ht, hx⟩ := hx
   rw [← hp.mem_set_image]
   refine' ht _

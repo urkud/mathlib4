@@ -2,15 +2,12 @@
 Copyright (c) 2021 Yury Kudryashov. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Yury Kudryashov, Frédéric Dupuis, Heather Macbeth
-
-! This file was ported from Lean 3 source module analysis.normed_space.linear_isometry
-! leanprover-community/mathlib commit 4601791ea62fea875b488dafc4e6dede19e8363f
-! Please do not edit these lines, except to modify the commit id
-! if you have ported upstream changes.
 -/
 import Mathlib.Analysis.Normed.Group.Basic
 import Mathlib.Topology.Algebra.Module.Basic
 import Mathlib.LinearAlgebra.Basis
+
+#align_import analysis.normed_space.linear_isometry from "leanprover-community/mathlib"@"4601791ea62fea875b488dafc4e6dede19e8363f"
 
 /-!
 # (Semi-)linear isometries
@@ -442,6 +439,9 @@ theorem mul_def (f g : E →ₗᵢ[R] E) : (f * g : E →ₗᵢ[R] E) = f.comp g
   rfl
 #align linear_isometry.mul_def LinearIsometry.mul_def
 
+theorem coe_pow (f : E →ₗᵢ[R] E) (n : ℕ) : ⇑(f ^ n) = f^[n] :=
+  hom_coe_pow _ rfl (fun _ _ ↦ rfl) _ _
+
 end LinearIsometry
 
 /-- Construct a `LinearIsometry` from a `LinearMap` satisfying `Isometry`. -/
@@ -461,7 +461,6 @@ def subtypeₗᵢ : p →ₗᵢ[R'] E :=
   ⟨p.subtype, fun _ => rfl⟩
 #align submodule.subtypeₗᵢ Submodule.subtypeₗᵢ
 
-set_option synthInstance.etaExperiment true in
 @[simp]
 theorem coe_subtypeₗᵢ : ⇑p.subtypeₗᵢ = p.subtype :=
   rfl
@@ -563,8 +562,8 @@ instance : SemilinearIsometryEquivClass (E ≃ₛₗᵢ[σ₁₂] E₂) σ₁₂
 /-- Helper instance for when there's too many metavariables to apply `FunLike.hasCoeToFun`
 directly.
 -/
--- instance : CoeFun (E ≃ₛₗᵢ[σ₁₂] E₂) fun _ => E → E₂ :=
---   ⟨fun f => f.toFun⟩
+instance : CoeFun (E ≃ₛₗᵢ[σ₁₂] E₂) fun _ => E → E₂ :=
+  ⟨FunLike.coe⟩
 
 theorem coe_injective : @Function.Injective (E ≃ₛₗᵢ[σ₁₂] E₂) (E → E₂) (↑) :=
   FunLike.coe_injective
@@ -655,7 +654,7 @@ theorem range_eq_univ (e : E ≃ₛₗᵢ[σ₁₂] E₂) : Set.range e = Set.un
   exact IsometryEquiv.range_eq_univ _
 #align linear_isometry_equiv.range_eq_univ LinearIsometryEquiv.range_eq_univ
 
-/-- Reinterpret a `LinearIsometryEquiv` as an `Homeomorph`. -/
+/-- Reinterpret a `LinearIsometryEquiv` as a `Homeomorph`. -/
 def toHomeomorph : E ≃ₜ E₂ :=
   e.toIsometryEquiv.toHomeomorph
 #align linear_isometry_equiv.to_homeomorph LinearIsometryEquiv.toHomeomorph
@@ -1157,7 +1156,6 @@ theorem coe_prodAssoc_symm [Module R E₂] [Module R E₃] :
   rfl
 #align linear_isometry_equiv.coe_prod_assoc_symm LinearIsometryEquiv.coe_prodAssoc_symm
 
-set_option synthInstance.etaExperiment true in -- Porting note: gets around lean4#2074
 /-- If `p` is a submodule that is equal to `⊤`, then `LinearIsometryEquiv.ofTop p hp` is the
 "identity" equivalence between `p` and `E`. -/
 @[simps! toLinearEquiv apply symm_apply_coe]
@@ -1169,7 +1167,6 @@ variable {R E E₂ E₃} {R' : Type _} [Ring R']
 
 variable [Module R' E] (p q : Submodule R' E)
 
-set_option synthInstance.etaExperiment true in -- Porting note: gets around lean4#2074
 /-- `LinearEquiv.ofEq` as a `LinearIsometryEquiv`. -/
 def ofEq (hpq : p = q) : p ≃ₗᵢ[R'] q :=
   { LinearEquiv.ofEq p q hpq with norm_map' := fun _ => rfl }
@@ -1177,13 +1174,11 @@ def ofEq (hpq : p = q) : p ≃ₗᵢ[R'] q :=
 
 variable {p q}
 
-set_option synthInstance.etaExperiment true in -- Porting note: gets around lean4#2074
 @[simp]
 theorem coe_ofEq_apply (h : p = q) (x : p) : (ofEq p q h x : E) = x :=
   rfl
 #align linear_isometry_equiv.coe_of_eq_apply LinearIsometryEquiv.coe_ofEq_apply
 
-set_option synthInstance.etaExperiment true in -- Porting note: gets around lean4#2074
 @[simp]
 theorem ofEq_symm (h : p = q) : (ofEq p q h).symm = ofEq q p h.symm :=
   rfl
@@ -1207,7 +1202,6 @@ theorem Basis.ext_linearIsometryEquiv {ι : Type _} (b : Basis ι R E) {f₁ f�
   LinearIsometryEquiv.toLinearEquiv_injective <| b.ext' h
 #align basis.ext_linear_isometry_equiv Basis.ext_linearIsometryEquiv
 
-set_option synthInstance.etaExperiment true in -- Porting note: gets around lean4#2074
 /-- Reinterpret a `LinearIsometry` as a `LinearIsometryEquiv` to the range. -/
 @[simps! apply_coe] -- Porting note: `toLinearEquiv` projection does not simplify using itself
 noncomputable def LinearIsometry.equivRange {R S : Type _} [Semiring R] [Ring S] [Module S E]

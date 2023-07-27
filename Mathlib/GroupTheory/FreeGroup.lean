@@ -2,16 +2,13 @@
 Copyright (c) 2018 Kenny Lau. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Kenny Lau
-
-! This file was ported from Lean 3 source module group_theory.free_group
-! leanprover-community/mathlib commit f93c11933efbc3c2f0299e47b8ff83e9b539cbf6
-! Please do not edit these lines, except to modify the commit id
-! if you have ported upstream changes.
 -/
 import Mathlib.Data.Fintype.Basic
 import Mathlib.Data.List.Sublists
 import Mathlib.Data.List.Basic
 import Mathlib.GroupTheory.Subgroup.Basic
+
+#align_import group_theory.free_group from "leanprover-community/mathlib"@"f93c11933efbc3c2f0299e47b8ff83e9b539cbf6"
 
 /-!
 # Free groups
@@ -62,7 +59,7 @@ variable {α : Type u}
 attribute [local simp] List.append_eq_has_append
 
 -- porting notes: to_additive.map_namespace is not supported yet
--- worked aruond it by putting a few extra manual mappings (but not too many all in all)
+-- worked around it by putting a few extra manual mappings (but not too many all in all)
 -- run_cmd to_additive.map_namespace `FreeGroup `FreeAddGroup
 
 /-- Reduction step for the additive free group relation: `w + x + (-x) + v ~> w + v` -/
@@ -91,13 +88,13 @@ def Red : List (α × Bool) → List (α × Bool) → Prop :=
 #align free_group.red FreeGroup.Red
 #align free_add_group.red FreeAddGroup.Red
 
-@[to_additive (attr:=refl)]
+@[to_additive (attr := refl)]
 theorem Red.refl : Red L L :=
   ReflTransGen.refl
 #align free_group.red.refl FreeGroup.Red.refl
 #align free_add_group.red.refl FreeAddGroup.Red.refl
 
-@[to_additive (attr:=trans)]
+@[to_additive (attr := trans)]
 theorem Red.trans : Red L₁ L₂ → Red L₂ L₃ → Red L₁ L₃ :=
   ReflTransGen.trans
 #align free_group.red.trans FreeGroup.Red.trans
@@ -114,19 +111,19 @@ theorem Step.length : ∀ {L₁ L₂ : List (α × Bool)}, Step L₁ L₂ → L�
 #align free_group.red.step.length FreeGroup.Red.Step.length
 #align free_add_group.red.step.length FreeAddGroup.Red.Step.length
 
-@[to_additive (attr:=simp)]
+@[to_additive (attr := simp)]
 theorem Step.not_rev {x b} : Step (L₁ ++ (x, !b) :: (x, b) :: L₂) (L₁ ++ L₂) := by
   cases b <;> exact Step.not
 #align free_group.red.step.bnot_rev FreeGroup.Red.Step.not_rev
 #align free_add_group.red.step.bnot_rev FreeAddGroup.Red.Step.not_rev
 
-@[to_additive (attr:=simp)]
+@[to_additive (attr := simp)]
 theorem Step.cons_not {x b} : Red.Step ((x, b) :: (x, !b) :: L) L :=
   @Step.not _ [] _ _ _
 #align free_group.red.step.cons_bnot FreeGroup.Red.Step.cons_not
 #align free_add_group.red.step.cons_bnot FreeAddGroup.Red.Step.cons_not
 
-@[to_additive (attr:=simp)]
+@[to_additive (attr := simp)]
 theorem Step.cons_not_rev {x b} : Red.Step ((x, !b) :: (x, b) :: L) L :=
   @Red.Step.not_rev _ [] _ _ _
 #align free_group.red.step.cons_bnot_rev FreeGroup.Red.Step.cons_not_rev
@@ -201,13 +198,13 @@ theorem Step.diamond_aux :
     ∀ {L₁ L₂ L₃ L₄ : List (α × Bool)} {x1 b1 x2 b2},
       L₁ ++ (x1, b1) :: (x1, !b1) :: L₂ = L₃ ++ (x2, b2) :: (x2, !b2) :: L₄ →
         L₁ ++ L₂ = L₃ ++ L₄ ∨ ∃ L₅, Red.Step (L₁ ++ L₂) L₅ ∧ Red.Step (L₃ ++ L₄) L₅
-  | [], _, [], _, _, _, _, _, H => by injections ; subst_vars ; simp
-  | [], _, [(x3, b3)], _, _, _, _, _, H => by injections ; subst_vars ; simp
-  | [(x3, b3)], _, [], _, _, _, _, _, H => by injections ; subst_vars ; simp
+  | [], _, [], _, _, _, _, _, H => by injections; subst_vars; simp
+  | [], _, [(x3, b3)], _, _, _, _, _, H => by injections; subst_vars; simp
+  | [(x3, b3)], _, [], _, _, _, _, _, H => by injections; subst_vars; simp
   | [], _, (x3, b3) :: (x4, b4) :: tl, _, _, _, _, _, H => by
-    injections ; subst_vars ; simp ; right ; exact ⟨_, Red.Step.not, Red.Step.cons_not⟩
+    injections; subst_vars; simp; right; exact ⟨_, Red.Step.not, Red.Step.cons_not⟩
   | (x3, b3) :: (x4, b4) :: tl, _, [], _, _, _, _, _, H => by
-    injections ; subst_vars ; simp ; right ; exact ⟨_, Red.Step.cons_not, Red.Step.not⟩
+    injections; subst_vars; simp; right; exact ⟨_, Red.Step.cons_not, Red.Step.not⟩
   | (x3, b3) :: tl, _, (x4, b4) :: tl2, _, _, _, _, _, H =>
     let ⟨H1, H2⟩ := List.cons.inj H
     match Step.diamond_aux H2 with
@@ -486,34 +483,34 @@ namespace FreeGroup
 
 variable {L L₁ L₂ L₃ L₄ : List (α × Bool)}
 
-/-- The canonical map from `list (α × bool)` to the free group on `α`. -/
+/-- The canonical map from `List (α × Bool)` to the free group on `α`. -/
 @[to_additive "The canonical map from `list (α × bool)` to the free additive group on `α`."]
 def mk (L : List (α × Bool)) : FreeGroup α :=
   Quot.mk Red.Step L
 #align free_group.mk FreeGroup.mk
 #align free_add_group.mk FreeAddGroup.mk
 
-@[to_additive (attr:=simp)]
+@[to_additive (attr := simp)]
 theorem quot_mk_eq_mk : Quot.mk Red.Step L = mk L :=
   rfl
 #align free_group.quot_mk_eq_mk FreeGroup.quot_mk_eq_mk
 #align free_add_group.quot_mk_eq_mk FreeAddGroup.quot_mk_eq_mk
 
-@[to_additive (attr:=simp)]
+@[to_additive (attr := simp)]
 theorem quot_lift_mk (β : Type v) (f : List (α × Bool) → β)
     (H : ∀ L₁ L₂, Red.Step L₁ L₂ → f L₁ = f L₂) : Quot.lift f H (mk L) = f L :=
   rfl
 #align free_group.quot_lift_mk FreeGroup.quot_lift_mk
 #align free_add_group.quot_lift_mk FreeAddGroup.quot_lift_mk
 
-@[to_additive (attr:=simp)]
+@[to_additive (attr := simp)]
 theorem quot_liftOn_mk (β : Type v) (f : List (α × Bool) → β)
     (H : ∀ L₁ L₂, Red.Step L₁ L₂ → f L₁ = f L₂) : Quot.liftOn (mk L) f H = f L :=
   rfl
 #align free_group.quot_lift_on_mk FreeGroup.quot_liftOn_mk
 #align free_add_group.quot_lift_on_mk FreeAddGroup.quot_liftOn_mk
 
-@[to_additive (attr:=simp)]
+@[to_additive (attr := simp)]
 theorem quot_map_mk (β : Type v) (f : List (α × Bool) → List (β × Bool))
     (H : (Red.Step ⇒ Red.Step) f f) : Quot.map f H (mk L) = mk (f L) :=
   rfl
@@ -543,7 +540,7 @@ instance : Mul (FreeGroup α) :=
           Quot.sound <| Red.Step.append_left H)
       fun _L₁ _L₂ H => Quot.inductionOn y fun _L₃ => Quot.sound <| Red.Step.append_right H⟩
 
-@[to_additive (attr:=simp)]
+@[to_additive (attr := simp)]
 theorem mul_mk : mk L₁ * mk L₂ = mk (L₁ ++ L₂) :=
   rfl
 #align free_group.mul_mk FreeGroup.mul_mk
@@ -557,18 +554,18 @@ def invRev (w : List (α × Bool)) : List (α × Bool) :=
 #align free_group.inv_rev FreeGroup.invRev
 #align free_add_group.neg_rev FreeAddGroup.negRev
 
-@[to_additive (attr:=simp)]
+@[to_additive (attr := simp)]
 theorem invRev_length : (invRev L₁).length = L₁.length := by simp [invRev]
 #align free_group.inv_rev_length FreeGroup.invRev_length
 #align free_add_group.neg_rev_length FreeAddGroup.negRev_length
 
-@[to_additive (attr:=simp)]
+@[to_additive (attr := simp)]
 theorem invRev_invRev : invRev (invRev L₁) = L₁ :=
   by simp [invRev, List.map_reverse, (· ∘ ·)]
 #align free_group.inv_rev_inv_rev FreeGroup.invRev_invRev
 #align free_add_group.neg_rev_neg_rev FreeAddGroup.negRev_negRev
 
-@[to_additive (attr:=simp)]
+@[to_additive (attr := simp)]
 theorem invRev_empty : invRev ([] : List (α × Bool)) = [] :=
   rfl
 #align free_group.inv_rev_empty FreeGroup.invRev_empty
@@ -605,7 +602,7 @@ instance : Inv (FreeGroup α) :=
         cases h
         simp [invRev])⟩
 
-@[to_additive (attr:=simp)]
+@[to_additive (attr := simp)]
 theorem inv_mk : (mk L)⁻¹ = mk (invRev L) :=
   rfl
 #align free_group.inv_mk FreeGroup.inv_mk
@@ -625,14 +622,14 @@ theorem Red.invRev {L₁ L₂ : List (α × Bool)} (h : Red L₁ L₂) : Red (in
 #align free_group.red.inv_rev FreeGroup.Red.invRev
 #align free_add_group.red.neg_rev FreeAddGroup.Red.negRev
 
-@[to_additive (attr:=simp)]
+@[to_additive (attr := simp)]
 theorem Red.step_invRev_iff :
   Red.Step (FreeGroup.invRev L₁) (FreeGroup.invRev L₂) ↔ Red.Step L₁ L₂ :=
   ⟨fun h => by simpa only [invRev_invRev] using h.invRev, fun h => h.invRev⟩
 #align free_group.red.step_inv_rev_iff FreeGroup.Red.step_invRev_iff
 #align free_add_group.red.step_neg_rev_iff FreeAddGroup.Red.step_negRev_iff
 
-@[to_additive (attr:=simp)]
+@[to_additive (attr := simp)]
 theorem red_invRev_iff : Red (invRev L₁) (invRev L₂) ↔ Red L₁ L₂ :=
   ⟨fun h => by simpa only [invRev_invRev] using h.invRev, fun h => h.invRev⟩
 #align free_group.red_inv_rev_iff FreeGroup.red_invRev_iff
@@ -673,7 +670,7 @@ theorem Red.exact : mk L₁ = mk L₂ ↔ Join Red L₁ L₂ :=
 @[to_additive "The canonical map from the type to the additive free group is an injection."]
 theorem of_injective : Function.Injective (@of α) := fun _ _ H => by
   let ⟨L₁, hx, hy⟩ := Red.exact.1 H
-  simp [Red.singleton_iff] at hx hy ; aesop
+  simp [Red.singleton_iff] at hx hy; aesop
 #align free_group.of_injective FreeGroup.of_injective
 #align free_add_group.of_injective FreeAddGroup.of_injective
 
@@ -681,7 +678,7 @@ section lift
 
 variable {β : Type v} [Group β] (f : α → β) {x y : FreeGroup α}
 
-/-- Given `f : α → β` with `β` a group, the canonical map `list (α × bool) → β` -/
+/-- Given `f : α → β` with `β` a group, the canonical map `List (α × Bool) → β` -/
 @[to_additive "Given `f : α → β` with `β` an additive group, the canonical map
   `list (α × bool) → β`"]
 def Lift.aux : List (α × Bool) → β := fun L =>
@@ -724,13 +721,13 @@ def lift : (α → β) ≃ (FreeGroup α →* β) where
 
 variable {f}
 
-@[to_additive (attr:=simp)]
+@[to_additive (attr := simp)]
 theorem lift.mk : lift f (mk L) = List.prod (L.map fun x => cond x.2 (f x.1) (f x.1)⁻¹) :=
   rfl
 #align free_group.lift.mk FreeGroup.lift.mk
 #align free_add_group.lift.mk FreeAddGroup.lift.mk
 
-@[to_additive (attr:=simp)]
+@[to_additive (attr := simp)]
 theorem lift.of {x} : lift f (of x) = f x :=
   one_mul _
 #align free_group.lift.of FreeGroup.lift.of
@@ -746,7 +743,7 @@ theorem lift.unique (g : FreeGroup α →* β) (hg : ∀ x, g (FreeGroup.of x) =
 /-- Two homomorphisms out of a free group are equal if they are equal on generators.
 
 See note [partially-applied ext lemmas]. -/
-@[ to_additive (attr:=ext) "Two homomorphisms out of a free additive group are equal if they are
+@[to_additive (attr := ext) "Two homomorphisms out of a free additive group are equal if they are
   equal on generators. See note [partially-applied ext lemmas]."]
 theorem ext_hom {G : Type _} [Group G] (f g : FreeGroup α →* G) (h : ∀ a, f (of a) = g (of a)) :
     f = g :=
@@ -765,8 +762,8 @@ theorem lift.range_le {s : Subgroup β} (H : Set.range f ⊆ s) : (lift f).range
   rintro _ ⟨⟨L⟩, rfl⟩;
     exact
       List.recOn L s.one_mem fun ⟨x, b⟩ tl ih =>
-        Bool.recOn b (by simp at ih⊢; exact s.mul_mem (s.inv_mem <| H ⟨x, rfl⟩) ih)
-          (by simp at ih⊢; exact s.mul_mem (H ⟨x, rfl⟩) ih)
+        Bool.recOn b (by simp at ih ⊢; exact s.mul_mem (s.inv_mem <| H ⟨x, rfl⟩) ih)
+          (by simp at ih ⊢; exact s.mul_mem (H ⟨x, rfl⟩) ih)
 #align free_group.lift.range_le FreeGroup.lift.range_le
 #align free_add_group.lift.range_le FreeAddGroup.lift.range_le
 
@@ -791,25 +788,25 @@ variable {β : Type v} (f : α → β) {x y : FreeGroup α}
   the additive free group over `α` to the additive free group over `β`."]
 def map : FreeGroup α →* FreeGroup β :=
   MonoidHom.mk'
-    (Quot.map (List.map fun x => (f x.1, x.2)) fun L₁ L₂ H => by cases H ; simp)
+    (Quot.map (List.map fun x => (f x.1, x.2)) fun L₁ L₂ H => by cases H; simp)
     (by rintro ⟨L₁⟩ ⟨L₂⟩; simp)
 #align free_group.map FreeGroup.map
 #align free_add_group.map FreeAddGroup.map
 
 variable {f}
 
-@[to_additive (attr:=simp)]
+@[to_additive (attr := simp)]
 theorem map.mk : map f (mk L) = mk (L.map fun x => (f x.1, x.2)) :=
   rfl
 #align free_group.map.mk FreeGroup.map.mk
 #align free_add_group.map.mk FreeAddGroup.map.mk
 
-@[to_additive (attr:=simp)]
+@[to_additive (attr := simp)]
 theorem map.id (x : FreeGroup α) : map id x = x := by rcases x with ⟨L⟩; simp [List.map_id']
 #align free_group.map.id FreeGroup.map.id
 #align free_add_group.map.id FreeAddGroup.map.id
 
-@[to_additive (attr:=simp)]
+@[to_additive (attr := simp)]
 theorem map.id' (x : FreeGroup α) : map (fun z => z) x = x :=
   map.id x
 #align free_group.map.id' FreeGroup.map.id'
@@ -822,7 +819,7 @@ theorem map.comp {γ : Type w} (f : α → β) (g : β → γ) (x) :
 #align free_group.map.comp FreeGroup.map.comp
 #align free_add_group.map.comp FreeAddGroup.map.comp
 
-@[to_additive (attr:=simp)]
+@[to_additive (attr := simp)]
 theorem map.of {x} : map f (of x) = of (f x) :=
   rfl
 #align free_group.map.of FreeGroup.map.of
@@ -867,13 +864,13 @@ def freeGroupCongr {α β} (e : α ≃ β) : FreeGroup α ≃* FreeGroup β wher
 #align free_group.free_group_congr_apply FreeGroup.freeGroupCongr_apply
 #align free_add_group.free_add_group_congr_apply FreeAddGroup.freeAddGroupCongr_apply
 
-@[to_additive (attr:=simp)]
+@[to_additive (attr := simp)]
 theorem freeGroupCongr_refl : freeGroupCongr (Equiv.refl α) = MulEquiv.refl _ :=
   MulEquiv.ext map.id
 #align free_group.free_group_congr_refl FreeGroup.freeGroupCongr_refl
 #align free_add_group.free_add_group_congr_refl FreeAddGroup.freeAddGroupCongr_refl
 
-@[to_additive (attr:=simp)]
+@[to_additive (attr := simp)]
 theorem freeGroupCongr_symm {α β} (e : α ≃ β) : (freeGroupCongr e).symm = freeGroupCongr e.symm :=
   rfl
 #align free_group.free_group_congr_symm FreeGroup.freeGroupCongr_symm
@@ -903,13 +900,13 @@ def prod : FreeGroup α →* α :=
 
 variable {x y}
 
-@[to_additive (attr:=simp)]
+@[to_additive (attr := simp)]
 theorem prod_mk : prod (mk L) = List.prod (L.map fun x => cond x.2 x.1 x.1⁻¹) :=
   rfl
 #align free_group.prod_mk FreeGroup.prod_mk
 #align free_add_group.sum_mk FreeAddGroup.sum_mk
 
-@[to_additive (attr:=simp)]
+@[to_additive (attr := simp)]
 theorem prod.of {x : α} : prod (of x) = x :=
   lift.of
 #align free_group.prod.of FreeGroup.prod.of
@@ -998,7 +995,7 @@ def freeGroupUnitEquivInt : FreeGroup Unit ≃ ℤ
     exact List.recOn L
      (by rfl)
      (fun ⟨⟨⟩, b⟩ tl ih => by
-        cases b <;> simp [zpow_add] at ih⊢ <;> rw [ih] <;> rfl)
+        cases b <;> simp [zpow_add] at ih ⊢ <;> rw [ih] <;> rfl)
   right_inv x :=
     Int.induction_on x (by simp)
       (fun i ih => by
@@ -1035,19 +1032,19 @@ theorem map_pure (f : α → β) (x : α) : f <$> (pure x : FreeGroup α) = pure
 #align free_group.map_pure FreeGroup.map_pure
 #align free_add_group.map_pure FreeAddGroup.map_pure
 
-@[to_additive (attr:=simp)]
+@[to_additive (attr := simp)]
 theorem map_one (f : α → β) : f <$> (1 : FreeGroup α) = 1 :=
   (map f).map_one
 #align free_group.map_one FreeGroup.map_one
 #align free_add_group.map_zero FreeAddGroup.map_zero
 
-@[to_additive (attr:=simp)]
+@[to_additive (attr := simp)]
 theorem map_mul (f : α → β) (x y : FreeGroup α) : f <$> (x * y) = f <$> x * f <$> y :=
   (map f).map_mul x y
 #align free_group.map_mul FreeGroup.map_mul
 #align free_add_group.map_add FreeAddGroup.map_add
 
-@[to_additive (attr:=simp)]
+@[to_additive (attr := simp)]
 theorem map_inv (f : α → β) (x : FreeGroup α) : f <$> x⁻¹ = (f <$> x)⁻¹ :=
   (map f).map_inv x
 #align free_group.map_inv FreeGroup.map_inv
@@ -1060,19 +1057,19 @@ theorem pure_bind (f : α → FreeGroup β) (x) : pure x >>= f = f x :=
 #align free_group.pure_bind FreeGroup.pure_bind
 #align free_add_group.pure_bind FreeAddGroup.pure_bind
 
-@[to_additive (attr:=simp)]
+@[to_additive (attr := simp)]
 theorem one_bind (f : α → FreeGroup β) : 1 >>= f = 1 :=
   (lift f).map_one
 #align free_group.one_bind FreeGroup.one_bind
 #align free_add_group.zero_bind FreeAddGroup.zero_bind
 
-@[to_additive (attr:=simp)]
+@[to_additive (attr := simp)]
 theorem mul_bind (f : α → FreeGroup β) (x y : FreeGroup α) : x * y >>= f = (x >>= f) * (y >>= f) :=
   (lift f).map_mul _ _
 #align free_group.mul_bind FreeGroup.mul_bind
 #align free_add_group.add_bind FreeAddGroup.add_bind
 
-@[to_additive (attr:=simp)]
+@[to_additive (attr := simp)]
 theorem inv_bind (f : α → FreeGroup β) (x : FreeGroup α) : x⁻¹ >>= f = (x >>= f)⁻¹ :=
   (lift f).map_inv _
 #align free_group.inv_bind FreeGroup.inv_bind
@@ -1111,7 +1108,7 @@ def reduce : (L : List (α × Bool)) -> List (α × Bool) :=
 #align free_group.reduce FreeGroup.reduce
 #align free_add_group.reduce FreeAddGroup.reduce
 
-@[to_additive (attr:=simp)]
+@[to_additive (attr := simp)]
 theorem reduce.cons (x) :
     reduce (x :: L) =
       List.casesOn (reduce L) [x] fun hd tl =>
@@ -1151,7 +1148,7 @@ theorem reduce.red : Red L (reduce L) := by
 
 -- porting notes: deleted mathport junk and manually formatted below.
 @[to_additive]
-theorem reduce.not {p : Prop}: ∀ {L₁ L₂ L₃: List (α × Bool)} {x : α} {b},
+theorem reduce.not {p : Prop} : ∀ {L₁ L₂ L₃ : List (α × Bool)} {x : α} {b},
   ((reduce L₁) = L₂ ++ ((x,b)::(x ,!b)::L₃)) → p
   | [], L2 ,L3, _, _ => fun h => by cases L2 <;> injections
   | (x, b)::L1, L2, L3, x', b' => by
@@ -1165,6 +1162,10 @@ theorem reduce.not {p : Prop}: ∀ {L₁ L₂ L₃: List (α × Bool)} {x : α} 
         simp [List.length] at this
         rw [add_comm, add_assoc, add_assoc, add_comm, <-add_assoc] at this
         simp [Nat.one_eq_succ_zero, Nat.succ_add] at this
+        -- Porting note: needed to add this step in #3414.
+        -- This is caused by https://github.com/leanprover/lean4/pull/2146.
+        -- Nevertheless the proof could be cleaned up.
+        cases this
       | cons hd tail =>
         cases' hd with y c
         dsimp only
@@ -1185,7 +1186,7 @@ theorem reduce.not {p : Prop}: ∀ {L₁ L₂ L₃: List (α × Bool)} {x : α} 
 /-- The second theorem that characterises the function `reduce`: the maximal reduction of a word
 only reduces to itself. -/
 @[to_additive "The second theorem that characterises the function `reduce`: the maximal reduction of
-  a word  only reduces to itself."]
+  a word only reduces to itself."]
 theorem reduce.min (H : Red (reduce L₁) L₂) : reduce L₁ = L₂ := by
   induction' H with L1 L' L2 H1 H2 ih
   · rfl
@@ -1196,7 +1197,7 @@ theorem reduce.min (H : Red (reduce L₁) L₂) : reduce L₁ = L₂ := by
 
 /-- `reduce` is idempotent, i.e. the maximal reduction of the maximal reduction of a word is the
   maximal reduction of the word. -/
-@[to_additive (attr:=simp) "`reduce` is idempotent, i.e. the maximal reduction of the maximal
+@[to_additive (attr := simp) "`reduce` is idempotent, i.e. the maximal reduction of the maximal
   reduction of a word is the maximal reduction of the word."]
 theorem reduce.idem : reduce (reduce L) = reduce L :=
   Eq.symm <| reduce.min reduce.red
@@ -1293,32 +1294,32 @@ theorem toWord_injective : Function.Injective (toWord : FreeGroup α → List (�
 #align free_group.to_word_injective FreeGroup.toWord_injective
 #align free_add_group.to_word_injective FreeAddGroup.toWord_injective
 
-@[to_additive (attr:=simp)]
+@[to_additive (attr := simp)]
 theorem toWord_inj {x y : FreeGroup α} : toWord x = toWord y ↔ x = y :=
   toWord_injective.eq_iff
 #align free_group.to_word_inj FreeGroup.toWord_inj
 #align free_add_group.to_word_inj FreeAddGroup.toWord_inj
 
-@[to_additive (attr:=simp)]
+@[to_additive (attr := simp)]
 theorem toWord_mk : (mk L₁).toWord = reduce L₁ :=
   rfl
 #align free_group.to_word_mk FreeGroup.toWord_mk
 #align free_add_group.to_word_mk FreeAddGroup.toWord_mk
 
-@[to_additive (attr:=simp)]
+@[to_additive (attr := simp)]
 theorem reduce_toWord : ∀ x : FreeGroup α, reduce (toWord x) = toWord x := by
   rintro ⟨L⟩
   exact reduce.idem
 #align free_group.reduce_to_word FreeGroup.reduce_toWord
 #align free_add_group.reduce_to_word FreeAddGroup.reduce_toWord
 
-@[to_additive (attr:=simp)]
+@[to_additive (attr := simp)]
 theorem toWord_one : (1 : FreeGroup α).toWord = [] :=
   rfl
 #align free_group.to_word_one FreeGroup.toWord_one
 #align free_add_group.to_word_zero FreeAddGroup.toWord_zero
 
-@[to_additive (attr:=simp)]
+@[to_additive (attr := simp)]
 theorem toWord_eq_nil_iff {x : FreeGroup α} : x.toWord = [] ↔ x = 1 :=
   toWord_injective.eq_iff' toWord_one
 #align free_group.to_word_eq_nil_iff FreeGroup.toWord_eq_nil_iff
@@ -1402,19 +1403,19 @@ def norm (x : FreeGroup α) : ℕ :=
 #align free_group.norm FreeGroup.norm
 #align free_add_group.norm FreeAddGroup.norm
 
-@[to_additive (attr:=simp)]
+@[to_additive (attr := simp)]
 theorem norm_inv_eq {x : FreeGroup α} : norm x⁻¹ = norm x := by
   simp only [norm, toWord_inv, invRev_length]
 #align free_group.norm_inv_eq FreeGroup.norm_inv_eq
 #align free_add_group.norm_neg_eq FreeAddGroup.norm_neg_eq
 
-@[to_additive (attr:=simp)]
+@[to_additive (attr := simp)]
 theorem norm_eq_zero {x : FreeGroup α} : norm x = 0 ↔ x = 1 := by
   simp only [norm, List.length_eq_zero, toWord_eq_nil_iff]
 #align free_group.norm_eq_zero FreeGroup.norm_eq_zero
 #align free_add_group.norm_eq_zero FreeAddGroup.norm_eq_zero
 
-@[to_additive (attr:=simp)]
+@[to_additive (attr := simp)]
 theorem norm_one : norm (1 : FreeGroup α) = 0 :=
   rfl
 #align free_group.norm_one FreeGroup.norm_one

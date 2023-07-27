@@ -2,14 +2,11 @@
 Copyright (c) 2021 Yourong Zang. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Yourong Zang
-
-! This file was ported from Lean 3 source module analysis.normed_space.conformal_linear_map
-! leanprover-community/mathlib commit d1bd9c5df2867c1cb463bc6364446d57bdd9f7f1
-! Please do not edit these lines, except to modify the commit id
-! if you have ported upstream changes.
 -/
 import Mathlib.Analysis.NormedSpace.Basic
 import Mathlib.Analysis.NormedSpace.LinearIsometry
+
+#align_import analysis.normed_space.conformal_linear_map from "leanprover-community/mathlib"@"d1bd9c5df2867c1cb463bc6364446d57bdd9f7f1"
 
 /-!
 # Conformal Linear Maps
@@ -46,7 +43,6 @@ noncomputable section
 
 open Function LinearIsometry ContinuousLinearMap
 
-set_option synthInstance.etaExperiment true -- Porting note: gets around lean4#2074
 
 /-- A continuous linear map `f'` is said to be conformal if it's
     a nonzero multiple of a linear isometry. -/
@@ -63,8 +59,8 @@ theorem isConformalMap_id : IsConformalMap (id R M) :=
   ⟨1, one_ne_zero, id, by simp⟩
 #align is_conformal_map_id isConformalMap_id
 
-theorem IsConformalMap.smul (hf : IsConformalMap f) {c : R} (hc : c ≠ 0) : IsConformalMap (c • f) :=
-  by
+theorem IsConformalMap.smul (hf : IsConformalMap f) {c : R} (hc : c ≠ 0) :
+    IsConformalMap (c • f) := by
   rcases hf with ⟨c', hc', li, rfl⟩
   exact ⟨c * c', mul_ne_zero hc hc', li, smul_smul _ _ _⟩
 #align is_conformal_map.smul IsConformalMap.smul

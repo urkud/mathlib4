@@ -2,13 +2,10 @@
 Copyright (c) 2021 Yuma Mizuno. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Yuma Mizuno
-
-! This file was ported from Lean 3 source module category_theory.bicategory.basic
-! leanprover-community/mathlib commit 4c19a16e4b705bf135cf9a80ac18fcc99c438514
-! Please do not edit these lines, except to modify the commit id
-! if you have ported upstream changes.
 -/
 import Mathlib.CategoryTheory.Iso
+
+#align_import category_theory.bicategory.basic from "leanprover-community/mathlib"@"4c19a16e4b705bf135cf9a80ac18fcc99c438514"
 
 /-!
 # Bicategories
@@ -18,7 +15,7 @@ In this file we define typeclass for bicategories.
 A bicategory `B` consists of
 * objects `a : B`,
 * 1-morphisms `f : a ⟶ b` between objects `a b : B`, and
-* 2-morphisms `η : f ⟶ g` beween 1-morphisms `f g : a ⟶ b` between objects `a b : B`.
+* 2-morphisms `η : f ⟶ g` between 1-morphisms `f g : a ⟶ b` between objects `a b : B`.
 
 We use `u`, `v`, and `w` as the universe variables for objects, 1-morphisms, and 2-morphisms,
 respectively.
@@ -26,19 +23,19 @@ respectively.
 A typeclass for bicategories extends `CategoryTheory.CategoryStruct` typeclass. This means that
 we have
 * a composition `f ≫ g : a ⟶ c` for each 1-morphisms `f : a ⟶ b` and `g : b ⟶ c`, and
-* a identity `𝟙 a : a ⟶ a` for each object `a : B`.
+* an identity `𝟙 a : a ⟶ a` for each object `a : B`.
 
 For each object `a b : B`, the collection of 1-morphisms `a ⟶ b` has a category structure. The
 2-morphisms in the bicategory are implemented as the morphisms in this family of categories.
 
-The composition of 1-morphisms is in fact a object part of a functor
+The composition of 1-morphisms is in fact an object part of a functor
 `(a ⟶ b) ⥤ (b ⟶ c) ⥤ (a ⟶ c)`. The definition of bicategories in this file does not
 require this functor directly. Instead, it requires the whiskering functions. For a 1-morphism
 `f : a ⟶ b` and a 2-morphism `η : g ⟶ h` between 1-morphisms `g h : b ⟶ c`, there is a
 2-morphism `whiskerLeft f η : f ≫ g ⟶ f ≫ h`. Similarly, for a 2-morphism `η : f ⟶ g`
 between 1-morphisms `f g : a ⟶ b` and a 1-morphism `f : b ⟶ c`, there is a 2-morphism
 `whiskerRight η h : f ≫ h ⟶ g ≫ h`. These satisfy the exchange law
-`whiskerLeft f θ ≫ whiskerRight η i = whiskerRight η h ≫ whiskerReft g θ`,
+`whiskerLeft f θ ≫ whiskerRight η i = whiskerRight η h ≫ whiskerLeft g θ`,
 which is required as an axiom in the definition here.
 -/
 
@@ -89,7 +86,7 @@ class Bicategory (B : Type u) extends CategoryStruct.{v} B where
         (associator f g h).hom ≫ whiskerLeft f (whiskerLeft g η) ≫ (associator f g h').inv := by
     aesop_cat
   -- axioms for right whiskering:
-  id_whiskerRight : ∀ {a b c} (f : a ⟶ b) (g : b ⟶ c),  whiskerRight (𝟙 f) g = 𝟙 (f ≫ g) := by
+  id_whiskerRight : ∀ {a b c} (f : a ⟶ b) (g : b ⟶ c), whiskerRight (𝟙 f) g = 𝟙 (f ≫ g) := by
     aesop_cat
   comp_whiskerRight :
     ∀ {a b c} {f g h : a ⟶ b} (η : f ⟶ g) (θ : g ⟶ h) (i : b ⟶ c),
@@ -263,8 +260,7 @@ theorem pentagon_inv (f : a ⟶ b) (g : b ⟶ c) (h : c ⟶ d) (i : d ⟶ e) :
 @[reassoc (attr := simp)]
 theorem pentagon_inv_inv_hom_hom_inv (f : a ⟶ b) (g : b ⟶ c) (h : c ⟶ d) (i : d ⟶ e) :
     (α_ f (g ≫ h) i).inv ≫ (α_ f g h).inv ▷ i ≫ (α_ (f ≫ g) h i).hom =
-      f ◁ (α_ g h i).hom ≫ (α_ f g (h ≫ i)).inv :=
-  by
+    f ◁ (α_ g h i).hom ≫ (α_ f g (h ≫ i)).inv := by
   rw [← cancel_epi (f ◁ (α_ g h i).inv), ← cancel_mono (α_ (f ≫ g) h i).inv]
   simp
 #align category_theory.bicategory.pentagon_inv_inv_hom_hom_inv CategoryTheory.Bicategory.pentagon_inv_inv_hom_hom_inv
@@ -293,8 +289,7 @@ theorem pentagon_hom_hom_inv_hom_hom (f : a ⟶ b) (g : b ⟶ c) (h : c ⟶ d) (
 @[reassoc (attr := simp)]
 theorem pentagon_hom_inv_inv_inv_hom (f : a ⟶ b) (g : b ⟶ c) (h : c ⟶ d) (i : d ⟶ e) :
     (α_ f g (h ≫ i)).hom ≫ f ◁ (α_ g h i).inv ≫ (α_ f (g ≫ h) i).inv =
-      (α_ (f ≫ g) h i).inv ≫ (α_ f g h).hom ▷ i :=
-  by
+    (α_ (f ≫ g) h i).inv ≫ (α_ f g h).hom ▷ i := by
   rw [← cancel_epi (α_ f g (h ≫ i)).inv, ← cancel_mono ((α_ f g h).inv ▷ i)]
   simp
 #align category_theory.bicategory.pentagon_hom_inv_inv_inv_hom CategoryTheory.Bicategory.pentagon_hom_inv_inv_inv_hom

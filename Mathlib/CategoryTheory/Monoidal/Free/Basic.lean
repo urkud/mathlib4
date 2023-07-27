@@ -2,13 +2,10 @@
 Copyright (c) 2021 Markus Himmel. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Markus Himmel
-
-! This file was ported from Lean 3 source module category_theory.monoidal.free.basic
-! leanprover-community/mathlib commit 14b69e9f3c16630440a2cbd46f1ddad0d561dee7
-! Please do not edit these lines, except to modify the commit id
-! if you have ported upstream changes.
 -/
 import Mathlib.CategoryTheory.Monoidal.Functor
+
+#align_import category_theory.monoidal.free.basic from "leanprover-community/mathlib"@"14b69e9f3c16630440a2cbd46f1ddad0d561dee7"
 
 /-!
 # The free monoidal category over a type
@@ -169,8 +166,7 @@ instance : MonoidalCategory (F C) where
   tensorUnit' := FreeMonoidalCategory.Unit
   associator X Y Z :=
     ⟨⟦Hom.α_hom X Y Z⟧, ⟦Hom.α_inv X Y Z⟧, Quotient.sound α_hom_inv, Quotient.sound α_inv_hom⟩
-  associator_naturality := @fun X₁ X₂ X₃ Y₁ Y₂ Y₃ =>
-    by
+  associator_naturality := @fun X₁ X₂ X₃ Y₁ Y₂ Y₃ => by
     rintro ⟨f₁⟩ ⟨f₂⟩ ⟨f₃⟩
     exact Quotient.sound (associator_naturality _ _ _)
   leftUnitor X := ⟨⟦Hom.l_hom X⟧, ⟦Hom.l_inv X⟧, Quotient.sound l_hom_inv, Quotient.sound l_inv_hom⟩
@@ -281,24 +277,24 @@ def projectMap (X Y : F C) : (X ⟶ Y) → (projectObj f X ⟶ projectObj f Y) :
     induction h with
     | refl => rfl
     | symm _ _ _ hfg' => exact hfg'.symm
-    | trans _ _  hfg hgh => exact hfg.trans hgh
-    | comp _ _  hf hg => dsimp only [projectMapAux] ; rw [hf, hg]
-    | tensor _ _ hfg hfg' => dsimp only [projectMapAux] ; rw [hfg, hfg']
-    | comp_id => dsimp only [projectMapAux] ; rw [Category.comp_id]
-    | id_comp => dsimp only [projectMapAux] ; rw [Category.id_comp]
-    | assoc => dsimp only [projectMapAux] ; rw [Category.assoc]
-    | tensor_id => dsimp only [projectMapAux] ; rw [MonoidalCategory.tensor_id] ; rfl
-    | tensor_comp => dsimp only [projectMapAux] ; rw [MonoidalCategory.tensor_comp]
-    | α_hom_inv => dsimp only [projectMapAux] ; rw [Iso.hom_inv_id]
-    | α_inv_hom => dsimp only [projectMapAux] ; rw [Iso.inv_hom_id]
+    | trans _ _ hfg hgh => exact hfg.trans hgh
+    | comp _ _ hf hg => dsimp only [projectMapAux]; rw [hf, hg]
+    | tensor _ _ hfg hfg' => dsimp only [projectMapAux]; rw [hfg, hfg']
+    | comp_id => dsimp only [projectMapAux]; rw [Category.comp_id]
+    | id_comp => dsimp only [projectMapAux]; rw [Category.id_comp]
+    | assoc => dsimp only [projectMapAux]; rw [Category.assoc]
+    | tensor_id => dsimp only [projectMapAux]; rw [MonoidalCategory.tensor_id]; rfl
+    | tensor_comp => dsimp only [projectMapAux]; rw [MonoidalCategory.tensor_comp]
+    | α_hom_inv => dsimp only [projectMapAux]; rw [Iso.hom_inv_id]
+    | α_inv_hom => dsimp only [projectMapAux]; rw [Iso.inv_hom_id]
     | associator_naturality =>
-        dsimp only [projectMapAux] ; rw [MonoidalCategory.associator_naturality]
-    | ρ_hom_inv => dsimp only [projectMapAux] ; rw [Iso.hom_inv_id]
-    | ρ_inv_hom => dsimp only [projectMapAux] ; rw [Iso.inv_hom_id]
+        dsimp only [projectMapAux]; rw [MonoidalCategory.associator_naturality]
+    | ρ_hom_inv => dsimp only [projectMapAux]; rw [Iso.hom_inv_id]
+    | ρ_inv_hom => dsimp only [projectMapAux]; rw [Iso.inv_hom_id]
     | ρ_naturality =>
-        dsimp only [projectMapAux, projectObj] ; rw [MonoidalCategory.rightUnitor_naturality]
-    | l_hom_inv => dsimp only [projectMapAux] ; rw [Iso.hom_inv_id]
-    | l_inv_hom => dsimp only [projectMapAux] ; rw [Iso.inv_hom_id]
+        dsimp only [projectMapAux, projectObj]; rw [MonoidalCategory.rightUnitor_naturality]
+    | l_hom_inv => dsimp only [projectMapAux]; rw [Iso.hom_inv_id]
+    | l_inv_hom => dsimp only [projectMapAux]; rw [Iso.inv_hom_id]
     | l_naturality =>
         dsimp only [projectMapAux, projectObj]
         exact MonoidalCategory.leftUnitor_naturality _
@@ -320,17 +316,17 @@ def project : MonoidalFunctor (F C) D where
   -- Porting note: `map_comp` and `μ_natural` were proved in mathlib3 by tidy, using induction.
   -- We probably don't expect `aesop_cat` to handle this yet, see https://leanprover.zulipchat.com/#narrow/stream/287929-mathlib4/topic/Aesop.20and.20cases
   -- In any case I don't understand why we need to specify `using Quotient.recOn`.
-  map_comp := by rintro _ _ _ ⟨_⟩ ⟨_⟩ ; rfl
+  map_comp := by rintro _ _ _ ⟨_⟩ ⟨_⟩; rfl
   ε := 𝟙 _
   μ X Y := 𝟙 _
   μ_natural := @fun _ _ _ _ f g => by
     induction' f using Quotient.recOn
-    . induction' g using Quotient.recOn
-      . dsimp
+    · induction' g using Quotient.recOn
+      · dsimp
         simp
         rfl
-      . rfl
-    . rfl
+      · rfl
+    · rfl
 #align category_theory.free_monoidal_category.project CategoryTheory.FreeMonoidalCategory.project
 
 end Functor

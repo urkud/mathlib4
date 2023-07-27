@@ -2,16 +2,13 @@
 Copyright (c) 2019 Scott Morrison. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Morrison, Bhavik Mehta
-
-! This file was ported from Lean 3 source module category_theory.limits.shapes.binary_products
-! leanprover-community/mathlib commit fec1d95fc61c750c1ddbb5b1f7f48b8e811a80d7
-! Please do not edit these lines, except to modify the commit id
-! if you have ported upstream changes.
 -/
 import Mathlib.CategoryTheory.Limits.Shapes.Terminal
 import Mathlib.CategoryTheory.DiscreteCategory
 import Mathlib.CategoryTheory.EpiMono
 import Mathlib.CategoryTheory.Over
+
+#align_import category_theory.limits.shapes.binary_products from "leanprover-community/mathlib"@"fec1d95fc61c750c1ddbb5b1f7f48b8e811a80d7"
 
 /-!
 # Binary (co)products
@@ -81,7 +78,7 @@ theorem WalkingPair.swap_symm_apply_ff : WalkingPair.swap.symm right = left :=
   rfl
 #align category_theory.limits.walking_pair.swap_symm_apply_ff CategoryTheory.Limits.WalkingPair.swap_symm_apply_ff
 
-/-- An equivalence from `WalkingPair` to `bool`, sometimes useful when reindexing limits.
+/-- An equivalence from `WalkingPair` to `Bool`, sometimes useful when reindexing limits.
 -/
 def WalkingPair.equivBool : WalkingPair ≃ Bool
     where
@@ -150,13 +147,14 @@ section
 variable {F G : Discrete WalkingPair ⥤ C} (f : F.obj ⟨left⟩ ⟶ G.obj ⟨left⟩)
   (g : F.obj ⟨right⟩ ⟶ G.obj ⟨right⟩)
 
--- attribute [local tidy] tactic.discrete_cases Porting note: no more local, no more tidy
+attribute [local aesop safe tactic (rule_sets [CategoryTheory])]
+  CategoryTheory.Discrete.discreteCases
 
 /-- The natural transformation between two functors out of the
  walking pair, specified by its components. -/
 def mapPair : F ⟶ G where
   app j := Discrete.recOn j fun j => WalkingPair.casesOn j f g
-  naturality := fun ⟨X⟩ ⟨Y⟩ ⟨⟨u⟩⟩ => by dsimp at u; cases u; simp
+  naturality := fun ⟨X⟩ ⟨Y⟩ ⟨⟨u⟩⟩ => by aesop_cat
 #align category_theory.limits.map_pair CategoryTheory.Limits.mapPair
 
 @[simp]
@@ -174,7 +172,7 @@ components. -/
 @[simps!]
 def mapPairIso (f : F.obj ⟨left⟩ ≅ G.obj ⟨left⟩) (g : F.obj ⟨right⟩ ≅ G.obj ⟨right⟩) : F ≅ G :=
   NatIso.ofComponents (fun j => Discrete.recOn j fun j => WalkingPair.casesOn j f g)
-    (fun {X} {Y} ⟨⟨u⟩⟩ => by dsimp; cases X; cases Y; cases u; simp)
+    (fun ⟨⟨u⟩⟩ => by aesop_cat)
 #align category_theory.limits.map_pair_iso CategoryTheory.Limits.mapPairIso
 
 end
@@ -292,16 +290,17 @@ variable {X Y : C}
 
 section
 
--- attribute [local tidy] tactic.discrete_cases Porting note: no local, no tidy
+attribute [local aesop safe tactic (rule_sets [CategoryTheory])]
+  CategoryTheory.Discrete.discreteCases
+-- Porting note: would it be okay to use this more generally?
+attribute [local aesop safe cases (rule_sets [CategoryTheory])] Eq
 
 /-- A binary fan with vertex `P` consists of the two projections `π₁ : P ⟶ X` and `π₂ : P ⟶ Y`. -/
 @[simps pt]
 def BinaryFan.mk {P : C} (π₁ : P ⟶ X) (π₂ : P ⟶ Y) : BinaryFan X Y where
   pt := P
   π :=
-    -- Porting removed use of casesOn to preserve computability
-    { app := fun ⟨j⟩ => by cases j <;> simpa
-      naturality := fun ⟨X⟩ ⟨Y⟩ ⟨⟨u⟩⟩ => by cases u; simp }
+    { app := fun ⟨j⟩ => by cases j <;> simpa }
 #align category_theory.limits.binary_fan.mk CategoryTheory.Limits.BinaryFan.mk
 
 /-- A binary cofan with vertex `P` consists of the two inclusions `ι₁ : X ⟶ P` and `ι₂ : Y ⟶ P`. -/
@@ -309,9 +308,7 @@ def BinaryFan.mk {P : C} (π₁ : P ⟶ X) (π₂ : P ⟶ Y) : BinaryFan X Y whe
 def BinaryCofan.mk {P : C} (ι₁ : X ⟶ P) (ι₂ : Y ⟶ P) : BinaryCofan X Y where
   pt := P
   ι :=
-    -- Porting removed use of casesOn to preserve computability
-    { app := fun ⟨j⟩ => by cases j <;> simpa
-      naturality := fun ⟨X⟩ ⟨Y⟩ ⟨⟨u⟩⟩ => by cases u; simp }
+    { app := fun ⟨j⟩ => by cases j <;> simpa }
 #align category_theory.limits.binary_cofan.mk CategoryTheory.Limits.BinaryCofan.mk
 
 end
@@ -359,7 +356,7 @@ def BinaryFan.isLimitMk {W : C} {fst : W ⟶ X} {snd : W ⟶ Y} (lift : ∀ s : 
   { lift := lift
     fac := fun s j => by
       rcases j with ⟨⟨⟩⟩
-      exacts[fac_left s, fac_right s]
+      exacts [fac_left s, fac_right s]
     uniq := fun s m w => uniq s m (w ⟨WalkingPair.left⟩) (w ⟨WalkingPair.right⟩) }
 #align category_theory.limits.binary_fan.is_limit_mk CategoryTheory.Limits.BinaryFan.isLimitMk
 
@@ -377,7 +374,7 @@ def BinaryCofan.isColimitMk {W : C} {inl : X ⟶ W} {inr : Y ⟶ W}
   { desc := desc
     fac := fun s j => by
       rcases j with ⟨⟨⟩⟩
-      exacts[fac_left s, fac_right s]
+      exacts [fac_left s, fac_right s]
     uniq := fun s m w => uniq s m (w ⟨WalkingPair.left⟩) (w ⟨WalkingPair.right⟩) }
 #align category_theory.limits.binary_cofan.is_colimit_mk CategoryTheory.Limits.BinaryCofan.isColimitMk
 
@@ -552,7 +549,7 @@ abbrev prod.fst {X Y : C} [HasBinaryProduct X Y] : X ⨯ Y ⟶ X :=
   limit.π (pair X Y) ⟨WalkingPair.left⟩
 #align category_theory.limits.prod.fst CategoryTheory.Limits.prod.fst
 
-/-- The projecton map to the second component of the product. -/
+/-- The projection map to the second component of the product. -/
 abbrev prod.snd {X Y : C} [HasBinaryProduct X Y] : X ⨯ Y ⟶ Y :=
   limit.π (pair X Y) ⟨WalkingPair.right⟩
 #align category_theory.limits.prod.snd CategoryTheory.Limits.prod.snd
@@ -617,7 +614,7 @@ abbrev coprod.desc {W X Y : C} [HasBinaryCoproduct X Y] (f : X ⟶ W) (g : Y ⟶
 #align category_theory.limits.coprod.desc CategoryTheory.Limits.coprod.desc
 
 /-- codiagonal arrow of the binary coproduct -/
-abbrev codiag (X : C) [HasBinaryCoproduct X X] : X ⨿ X ⟶  X :=
+abbrev codiag (X : C) [HasBinaryCoproduct X X] : X ⨿ X ⟶ X :=
   coprod.desc (𝟙 _) (𝟙 _)
 #align category_theory.limits.codiag CategoryTheory.Limits.codiag
 
@@ -627,6 +624,7 @@ theorem prod.lift_fst {W X Y : C} [HasBinaryProduct X Y] (f : W ⟶ X) (g : W �
     prod.lift f g ≫ prod.fst = f :=
   limit.lift_π _ _
 #align category_theory.limits.prod.lift_fst CategoryTheory.Limits.prod.lift_fst
+#align category_theory.limits.prod.lift_fst_assoc CategoryTheory.Limits.prod.lift_fst_assoc
 
 -- Porting note: simp removes as simp can prove this
 @[reassoc]
@@ -634,6 +632,7 @@ theorem prod.lift_snd {W X Y : C} [HasBinaryProduct X Y] (f : W ⟶ X) (g : W �
     prod.lift f g ≫ prod.snd = g :=
   limit.lift_π _ _
 #align category_theory.limits.prod.lift_snd CategoryTheory.Limits.prod.lift_snd
+#align category_theory.limits.prod.lift_snd_assoc CategoryTheory.Limits.prod.lift_snd_assoc
 
 -- The simp linter says simp can prove the reassoc version of this lemma.
 -- Porting note: it can also prove the og version
@@ -642,6 +641,7 @@ theorem coprod.inl_desc {W X Y : C} [HasBinaryCoproduct X Y] (f : X ⟶ W) (g : 
     coprod.inl ≫ coprod.desc f g = f :=
   colimit.ι_desc _ _
 #align category_theory.limits.coprod.inl_desc CategoryTheory.Limits.coprod.inl_desc
+#align category_theory.limits.coprod.inl_desc_assoc CategoryTheory.Limits.coprod.inl_desc_assoc
 
 -- The simp linter says simp can prove the reassoc version of this lemma.
 -- Porting note: it can also prove the og version
@@ -650,6 +650,7 @@ theorem coprod.inr_desc {W X Y : C} [HasBinaryCoproduct X Y] (f : X ⟶ W) (g : 
     coprod.inr ≫ coprod.desc f g = g :=
   colimit.ι_desc _ _
 #align category_theory.limits.coprod.inr_desc CategoryTheory.Limits.coprod.inr_desc
+#align category_theory.limits.coprod.inr_desc_assoc CategoryTheory.Limits.coprod.inr_desc_assoc
 
 instance prod.mono_lift_of_mono_left {W X Y : C} [HasBinaryProduct X Y] (f : W ⟶ X) (g : W ⟶ Y)
     [Mono f] : Mono (prod.lift f g) :=
@@ -672,7 +673,7 @@ instance coprod.epi_desc_of_epi_right {W X Y : C} [HasBinaryCoproduct X Y] (f : 
 #align category_theory.limits.coprod.epi_desc_of_epi_right CategoryTheory.Limits.coprod.epi_desc_of_epi_right
 
 /-- If the product of `X` and `Y` exists, then every pair of morphisms `f : W ⟶ X` and `g : W ⟶ Y`
-    induces a morphism `l : W ⟶ X ⨯ Y` satisfying `l ≫ prod.fst = f` and `l ≫ prod.snd = g`. -/
+    induces a morphism `l : W ⟶ X ⨯ Y` satisfying `l ≫ Prod.fst = f` and `l ≫ Prod.snd = g`. -/
 def prod.lift' {W X Y : C} [HasBinaryProduct X Y] (f : W ⟶ X) (g : W ⟶ Y) :
     { l : W ⟶ X ⨯ Y // l ≫ prod.fst = f ∧ l ≫ prod.snd = g } :=
   ⟨prod.lift f g, prod.lift_fst _ _, prod.lift_snd _ _⟩
@@ -705,8 +706,9 @@ section ProdLemmas
 -- Making the reassoc version of this a simp lemma seems to be more harmful than helpful.
 @[reassoc, simp]
 theorem prod.comp_lift {V W X Y : C} [HasBinaryProduct X Y] (f : V ⟶ W) (g : W ⟶ X) (h : W ⟶ Y) :
-    f ≫ prod.lift g h = prod.lift (f ≫ g) (f ≫ h) := by apply prod.hom_ext; simp; simp
+    f ≫ prod.lift g h = prod.lift (f ≫ g) (f ≫ h) := by ext <;> simp
 #align category_theory.limits.prod.comp_lift CategoryTheory.Limits.prod.comp_lift
+#align category_theory.limits.prod.comp_lift_assoc CategoryTheory.Limits.prod.comp_lift_assoc
 
 theorem prod.comp_diag {X Y : C} [HasBinaryProduct Y Y] (f : X ⟶ Y) : f ≫ diag Y = prod.lift f f :=
   by simp
@@ -717,28 +719,31 @@ theorem prod.map_fst {W X Y Z : C} [HasBinaryProduct W X] [HasBinaryProduct Y Z]
     (g : X ⟶ Z) : prod.map f g ≫ prod.fst = prod.fst ≫ f :=
   limMap_π _ _
 #align category_theory.limits.prod.map_fst CategoryTheory.Limits.prod.map_fst
+#align category_theory.limits.prod.map_fst_assoc CategoryTheory.Limits.prod.map_fst_assoc
 
 @[reassoc (attr := simp)]
 theorem prod.map_snd {W X Y Z : C} [HasBinaryProduct W X] [HasBinaryProduct Y Z] (f : W ⟶ Y)
     (g : X ⟶ Z) : prod.map f g ≫ prod.snd = prod.snd ≫ g :=
   limMap_π _ _
 #align category_theory.limits.prod.map_snd CategoryTheory.Limits.prod.map_snd
+#align category_theory.limits.prod.map_snd_assoc CategoryTheory.Limits.prod.map_snd_assoc
 
 @[simp]
 theorem prod.map_id_id {X Y : C} [HasBinaryProduct X Y] : prod.map (𝟙 X) (𝟙 Y) = 𝟙 _ := by
-  apply prod.hom_ext; simp; simp
+  ext <;> simp
 #align category_theory.limits.prod.map_id_id CategoryTheory.Limits.prod.map_id_id
 
 @[simp]
 theorem prod.lift_fst_snd {X Y : C} [HasBinaryProduct X Y] :
-    prod.lift prod.fst prod.snd = 𝟙 (X ⨯ Y) := by apply prod.hom_ext; simp; simp
+    prod.lift prod.fst prod.snd = 𝟙 (X ⨯ Y) := by ext <;> simp
 #align category_theory.limits.prod.lift_fst_snd CategoryTheory.Limits.prod.lift_fst_snd
 
 @[reassoc (attr := simp)]
 theorem prod.lift_map {V W X Y Z : C} [HasBinaryProduct W X] [HasBinaryProduct Y Z] (f : V ⟶ W)
     (g : V ⟶ X) (h : W ⟶ Y) (k : X ⟶ Z) :
-    prod.lift f g ≫ prod.map h k = prod.lift (f ≫ h) (g ≫ k) := by apply prod.hom_ext; simp; simp
+    prod.lift f g ≫ prod.map h k = prod.lift (f ≫ h) (g ≫ k) := by ext <;> simp
 #align category_theory.limits.prod.lift_map CategoryTheory.Limits.prod.lift_map
+#align category_theory.limits.prod.lift_map_assoc CategoryTheory.Limits.prod.lift_map_assoc
 
 @[simp]
 theorem prod.lift_fst_comp_snd_comp {W X Y Z : C} [HasBinaryProduct W Y] [HasBinaryProduct X Z]
@@ -753,8 +758,9 @@ theorem prod.lift_fst_comp_snd_comp {W X Y Z : C} [HasBinaryProduct W Y] [HasBin
 @[reassoc (attr := simp)]
 theorem prod.map_map {A₁ A₂ A₃ B₁ B₂ B₃ : C} [HasBinaryProduct A₁ B₁] [HasBinaryProduct A₂ B₂]
     [HasBinaryProduct A₃ B₃] (f : A₁ ⟶ A₂) (g : B₁ ⟶ B₂) (h : A₂ ⟶ A₃) (k : B₂ ⟶ B₃) :
-    prod.map f g ≫ prod.map h k = prod.map (f ≫ h) (g ≫ k) := by apply prod.hom_ext; simp; simp
+    prod.map f g ≫ prod.map h k = prod.map (f ≫ h) (g ≫ k) := by ext <;> simp
 #align category_theory.limits.prod.map_map CategoryTheory.Limits.prod.map_map
+#align category_theory.limits.prod.map_map_assoc CategoryTheory.Limits.prod.map_map_assoc
 
 -- TODO: is it necessary to weaken the assumption here?
 @[reassoc]
@@ -762,18 +768,21 @@ theorem prod.map_swap {A B X Y : C} (f : A ⟶ B) (g : X ⟶ Y)
     [HasLimitsOfShape (Discrete WalkingPair) C] :
     prod.map (𝟙 X) f ≫ prod.map g (𝟙 B) = prod.map g (𝟙 A) ≫ prod.map (𝟙 Y) f := by simp
 #align category_theory.limits.prod.map_swap CategoryTheory.Limits.prod.map_swap
+#align category_theory.limits.prod.map_swap_assoc CategoryTheory.Limits.prod.map_swap_assoc
 
 @[reassoc]
 theorem prod.map_comp_id {X Y Z W : C} (f : X ⟶ Y) (g : Y ⟶ Z) [HasBinaryProduct X W]
     [HasBinaryProduct Z W] [HasBinaryProduct Y W] :
     prod.map (f ≫ g) (𝟙 W) = prod.map f (𝟙 W) ≫ prod.map g (𝟙 W) := by simp
 #align category_theory.limits.prod.map_comp_id CategoryTheory.Limits.prod.map_comp_id
+#align category_theory.limits.prod.map_comp_id_assoc CategoryTheory.Limits.prod.map_comp_id_assoc
 
 @[reassoc]
 theorem prod.map_id_comp {X Y Z W : C} (f : X ⟶ Y) (g : Y ⟶ Z) [HasBinaryProduct W X]
     [HasBinaryProduct W Y] [HasBinaryProduct W Z] :
     prod.map (𝟙 W) (f ≫ g) = prod.map (𝟙 W) f ≫ prod.map (𝟙 W) g := by simp
 #align category_theory.limits.prod.map_id_comp CategoryTheory.Limits.prod.map_id_comp
+#align category_theory.limits.prod.map_id_comp_assoc CategoryTheory.Limits.prod.map_id_comp_assoc
 
 /-- If the products `W ⨯ X` and `Y ⨯ Z` exist, then every pair of isomorphisms `f : W ≅ Y` and
     `g : X ≅ Z` induces an isomorphism `prod.mapIso f g : W ⨯ X ≅ Y ⨯ Z`. -/
@@ -792,7 +801,7 @@ instance isIso_prod {W X Y Z : C} [HasBinaryProduct W X] [HasBinaryProduct Y Z] 
 instance prod.map_mono {C : Type _} [Category C] {W X Y Z : C} (f : W ⟶ Y) (g : X ⟶ Z) [Mono f]
     [Mono g] [HasBinaryProduct W X] [HasBinaryProduct Y Z] : Mono (prod.map f g) :=
   ⟨fun i₁ i₂ h => by
-    apply prod.hom_ext
+    ext
     · rw [← cancel_mono f]
       simpa using congr_arg (fun f => f ≫ prod.fst) h
     · rw [← cancel_mono g]
@@ -803,17 +812,20 @@ instance prod.map_mono {C : Type _} [Category C] {W X Y Z : C} (f : W ⟶ Y) (g 
 theorem prod.diag_map {X Y : C} (f : X ⟶ Y) [HasBinaryProduct X X] [HasBinaryProduct Y Y] :
     diag X ≫ prod.map f f = f ≫ diag Y := by simp
 #align category_theory.limits.prod.diag_map CategoryTheory.Limits.prod.diag_map
+#align category_theory.limits.prod.diag_map_assoc CategoryTheory.Limits.prod.diag_map_assoc
 
 @[reassoc] -- Porting note: simp can prove these
 theorem prod.diag_map_fst_snd {X Y : C} [HasBinaryProduct X Y] [HasBinaryProduct (X ⨯ Y) (X ⨯ Y)] :
     diag (X ⨯ Y) ≫ prod.map prod.fst prod.snd = 𝟙 (X ⨯ Y) := by simp
 #align category_theory.limits.prod.diag_map_fst_snd CategoryTheory.Limits.prod.diag_map_fst_snd
+#align category_theory.limits.prod.diag_map_fst_snd_assoc CategoryTheory.Limits.prod.diag_map_fst_snd_assoc
 
 @[reassoc] -- Porting note: simp can prove these
 theorem prod.diag_map_fst_snd_comp [HasLimitsOfShape (Discrete WalkingPair) C] {X X' Y Y' : C}
     (g : X ⟶ Y) (g' : X' ⟶ Y') :
     diag (X ⨯ X') ≫ prod.map (prod.fst ≫ g) (prod.snd ≫ g') = prod.map g g' := by simp
 #align category_theory.limits.prod.diag_map_fst_snd_comp CategoryTheory.Limits.prod.diag_map_fst_snd_comp
+#align category_theory.limits.prod.diag_map_fst_snd_comp_assoc CategoryTheory.Limits.prod.diag_map_fst_snd_comp_assoc
 
 instance {X : C} [HasBinaryProduct X X] : IsSplitMono (diag X) :=
   IsSplitMono.mk' { retraction := prod.fst }
@@ -823,16 +835,17 @@ end ProdLemmas
 section CoprodLemmas
 
 -- @[reassoc (attr := simp)]
-@[simp] -- Porting note: removing reassoc tag since result is not hygenic (two h's)
+@[simp] -- Porting note: removing reassoc tag since result is not hygienic (two h's)
 theorem coprod.desc_comp {V W X Y : C} [HasBinaryCoproduct X Y] (f : V ⟶ W) (g : X ⟶ V)
     (h : Y ⟶ V) : coprod.desc g h ≫ f = coprod.desc (g ≫ f) (h ≫ f) := by
-  apply coprod.hom_ext; simp; simp
+  ext <;> simp
 #align category_theory.limits.coprod.desc_comp CategoryTheory.Limits.coprod.desc_comp
 
 -- Porting note: hand generated reassoc here. Simp can prove it
 theorem coprod.desc_comp_assoc {C : Type u} [Category C] {V W X Y : C}
     [HasBinaryCoproduct X Y] (f : V ⟶ W) (g : X ⟶ V) (h : Y ⟶ V) {Z : C} (l : W ⟶ Z) :
     coprod.desc g h ≫ f ≫ l = coprod.desc (g ≫ f) (h ≫ f) ≫ l := by simp
+#align category_theory.limits.coprod.desc_comp_assoc CategoryTheory.Limits.coprod.desc_comp
 
 theorem coprod.diag_comp {X Y : C} [HasBinaryCoproduct X X] (f : X ⟶ Y) :
     codiag X ≫ f = coprod.desc f f := by simp
@@ -843,21 +856,23 @@ theorem coprod.inl_map {W X Y Z : C} [HasBinaryCoproduct W X] [HasBinaryCoproduc
     (g : X ⟶ Z) : coprod.inl ≫ coprod.map f g = f ≫ coprod.inl :=
   ι_colimMap _ _
 #align category_theory.limits.coprod.inl_map CategoryTheory.Limits.coprod.inl_map
+#align category_theory.limits.coprod.inl_map_assoc CategoryTheory.Limits.coprod.inl_map_assoc
 
 @[reassoc (attr := simp)]
 theorem coprod.inr_map {W X Y Z : C} [HasBinaryCoproduct W X] [HasBinaryCoproduct Y Z] (f : W ⟶ Y)
     (g : X ⟶ Z) : coprod.inr ≫ coprod.map f g = g ≫ coprod.inr :=
   ι_colimMap _ _
 #align category_theory.limits.coprod.inr_map CategoryTheory.Limits.coprod.inr_map
+#align category_theory.limits.coprod.inr_map_assoc CategoryTheory.Limits.coprod.inr_map_assoc
 
 @[simp]
 theorem coprod.map_id_id {X Y : C} [HasBinaryCoproduct X Y] : coprod.map (𝟙 X) (𝟙 Y) = 𝟙 _ := by
-  apply coprod.hom_ext; simp; simp
+  ext <;> simp
 #align category_theory.limits.coprod.map_id_id CategoryTheory.Limits.coprod.map_id_id
 
 @[simp]
 theorem coprod.desc_inl_inr {X Y : C} [HasBinaryCoproduct X Y] :
-    coprod.desc coprod.inl coprod.inr = 𝟙 (X ⨿ Y) := by apply coprod.hom_ext; simp; simp
+    coprod.desc coprod.inl coprod.inr = 𝟙 (X ⨿ Y) := by ext <;> simp
 #align category_theory.limits.coprod.desc_inl_inr CategoryTheory.Limits.coprod.desc_inl_inr
 
 -- The simp linter says simp can prove the reassoc version of this lemma.
@@ -865,8 +880,9 @@ theorem coprod.desc_inl_inr {X Y : C} [HasBinaryCoproduct X Y] :
 theorem coprod.map_desc {S T U V W : C} [HasBinaryCoproduct U W] [HasBinaryCoproduct T V]
     (f : U ⟶ S) (g : W ⟶ S) (h : T ⟶ U) (k : V ⟶ W) :
     coprod.map h k ≫ coprod.desc f g = coprod.desc (h ≫ f) (k ≫ g) := by
-  apply coprod.hom_ext; simp; simp
+  ext <;> simp
 #align category_theory.limits.coprod.map_desc CategoryTheory.Limits.coprod.map_desc
+#align category_theory.limits.coprod.map_desc_assoc CategoryTheory.Limits.coprod.map_desc_assoc
 
 @[simp]
 theorem coprod.desc_comp_inl_comp_inr {W X Y Z : C} [HasBinaryCoproduct W Y]
@@ -882,8 +898,9 @@ theorem coprod.desc_comp_inl_comp_inr {W X Y Z : C} [HasBinaryCoproduct W Y]
 theorem coprod.map_map {A₁ A₂ A₃ B₁ B₂ B₃ : C} [HasBinaryCoproduct A₁ B₁] [HasBinaryCoproduct A₂ B₂]
     [HasBinaryCoproduct A₃ B₃] (f : A₁ ⟶ A₂) (g : B₁ ⟶ B₂) (h : A₂ ⟶ A₃) (k : B₂ ⟶ B₃) :
     coprod.map f g ≫ coprod.map h k = coprod.map (f ≫ h) (g ≫ k) := by
-  apply coprod.hom_ext; simp; simp
+  ext <;> simp
 #align category_theory.limits.coprod.map_map CategoryTheory.Limits.coprod.map_map
+#align category_theory.limits.coprod.map_map_assoc CategoryTheory.Limits.coprod.map_map_assoc
 
 -- I don't think it's a good idea to make any of the following three simp lemmas.
 @[reassoc]
@@ -891,21 +908,24 @@ theorem coprod.map_swap {A B X Y : C} (f : A ⟶ B) (g : X ⟶ Y)
     [HasColimitsOfShape (Discrete WalkingPair) C] :
     coprod.map (𝟙 X) f ≫ coprod.map g (𝟙 B) = coprod.map g (𝟙 A) ≫ coprod.map (𝟙 Y) f := by simp
 #align category_theory.limits.coprod.map_swap CategoryTheory.Limits.coprod.map_swap
+#align category_theory.limits.coprod.map_swap_assoc CategoryTheory.Limits.coprod.map_swap_assoc
 
 @[reassoc]
 theorem coprod.map_comp_id {X Y Z W : C} (f : X ⟶ Y) (g : Y ⟶ Z) [HasBinaryCoproduct Z W]
     [HasBinaryCoproduct Y W] [HasBinaryCoproduct X W] :
     coprod.map (f ≫ g) (𝟙 W) = coprod.map f (𝟙 W) ≫ coprod.map g (𝟙 W) := by simp
 #align category_theory.limits.coprod.map_comp_id CategoryTheory.Limits.coprod.map_comp_id
+#align category_theory.limits.coprod.map_comp_id_assoc CategoryTheory.Limits.coprod.map_comp_id_assoc
 
 @[reassoc]
 theorem coprod.map_id_comp {X Y Z W : C} (f : X ⟶ Y) (g : Y ⟶ Z) [HasBinaryCoproduct W X]
     [HasBinaryCoproduct W Y] [HasBinaryCoproduct W Z] :
     coprod.map (𝟙 W) (f ≫ g) = coprod.map (𝟙 W) f ≫ coprod.map (𝟙 W) g := by simp
 #align category_theory.limits.coprod.map_id_comp CategoryTheory.Limits.coprod.map_id_comp
+#align category_theory.limits.coprod.map_id_comp_assoc CategoryTheory.Limits.coprod.map_id_comp_assoc
 
 /-- If the coproducts `W ⨿ X` and `Y ⨿ Z` exist, then every pair of isomorphisms `f : W ≅ Y` and
-   `g : W ≅ Z` induces a isomorphism `coprod.mapIso f g : W ⨿ X ≅ Y ⨿ Z`. -/
+   `g : W ≅ Z` induces an isomorphism `coprod.mapIso f g : W ⨿ X ≅ Y ⨿ Z`. -/
 @[simps]
 def coprod.mapIso {W X Y Z : C} [HasBinaryCoproduct W X] [HasBinaryCoproduct Y Z] (f : W ≅ Y)
     (g : X ≅ Z) : W ⨿ X ≅ Y ⨿ Z where
@@ -921,7 +941,7 @@ instance isIso_coprod {W X Y Z : C} [HasBinaryCoproduct W X] [HasBinaryCoproduct
 instance coprod.map_epi {C : Type _} [Category C] {W X Y Z : C} (f : W ⟶ Y) (g : X ⟶ Z) [Epi f]
     [Epi g] [HasBinaryCoproduct W X] [HasBinaryCoproduct Y Z] : Epi (coprod.map f g) :=
   ⟨fun i₁ i₂ h => by
-    apply coprod.hom_ext
+    ext
     · rw [← cancel_epi f]
       simpa using congr_arg (fun f => coprod.inl ≫ f) h
     · rw [← cancel_epi g]
@@ -934,6 +954,7 @@ instance coprod.map_epi {C : Type _} [Category C] {W X Y Z : C} (f : W ⟶ Y) (g
 theorem coprod.map_codiag {X Y : C} (f : X ⟶ Y) [HasBinaryCoproduct X X] [HasBinaryCoproduct Y Y] :
     coprod.map f f ≫ codiag Y = codiag X ≫ f := by simp
 #align category_theory.limits.coprod.map_codiag CategoryTheory.Limits.coprod.map_codiag
+#align category_theory.limits.coprod.map_codiag_assoc CategoryTheory.Limits.coprod.map_codiag_assoc
 
 -- The simp linter says simp can prove the reassoc version of this lemma.
 -- Porting note: and the og version too
@@ -942,6 +963,7 @@ theorem coprod.map_inl_inr_codiag {X Y : C} [HasBinaryCoproduct X Y]
     [HasBinaryCoproduct (X ⨿ Y) (X ⨿ Y)] :
     coprod.map coprod.inl coprod.inr ≫ codiag (X ⨿ Y) = 𝟙 (X ⨿ Y) := by simp
 #align category_theory.limits.coprod.map_inl_inr_codiag CategoryTheory.Limits.coprod.map_inl_inr_codiag
+#align category_theory.limits.coprod.map_inl_inr_codiag_assoc CategoryTheory.Limits.coprod.map_inl_inr_codiag_assoc
 
 -- The simp linter says simp can prove the reassoc version of this lemma.
 -- Porting note: and the og version too
@@ -950,6 +972,7 @@ theorem coprod.map_comp_inl_inr_codiag [HasColimitsOfShape (Discrete WalkingPair
     (g : X ⟶ Y) (g' : X' ⟶ Y') :
     coprod.map (g ≫ coprod.inl) (g' ≫ coprod.inr) ≫ codiag (Y ⨿ Y') = coprod.map g g' := by simp
 #align category_theory.limits.coprod.map_comp_inl_inr_codiag CategoryTheory.Limits.coprod.map_comp_inl_inr_codiag
+#align category_theory.limits.coprod.map_comp_inl_inr_codiag_assoc CategoryTheory.Limits.coprod.map_comp_inl_inr_codiag_assoc
 
 end CoprodLemmas
 
@@ -1000,12 +1023,14 @@ def prod.braiding (P Q : C) [HasBinaryProduct P Q] [HasBinaryProduct Q P] : P �
 theorem braid_natural [HasBinaryProducts C] {W X Y Z : C} (f : X ⟶ Y) (g : Z ⟶ W) :
     prod.map f g ≫ (prod.braiding _ _).hom = (prod.braiding _ _).hom ≫ prod.map g f := by simp
 #align category_theory.limits.braid_natural CategoryTheory.Limits.braid_natural
+#align category_theory.limits.braid_natural_assoc CategoryTheory.Limits.braid_natural_assoc
 
 @[reassoc]
 theorem prod.symmetry' (P Q : C) [HasBinaryProduct P Q] [HasBinaryProduct Q P] :
     prod.lift prod.snd prod.fst ≫ prod.lift prod.snd prod.fst = 𝟙 (P ⨯ Q) :=
   (prod.braiding _ _).hom_inv_id
 #align category_theory.limits.prod.symmetry' CategoryTheory.Limits.prod.symmetry'
+#align category_theory.limits.prod.symmetry'_assoc CategoryTheory.Limits.prod.symmetry'_assoc
 
 /-- The braiding isomorphism is symmetric. -/
 @[reassoc]
@@ -1013,20 +1038,13 @@ theorem prod.symmetry (P Q : C) [HasBinaryProduct P Q] [HasBinaryProduct Q P] :
     (prod.braiding P Q).hom ≫ (prod.braiding Q P).hom = 𝟙 _ :=
   (prod.braiding _ _).hom_inv_id
 #align category_theory.limits.prod.symmetry CategoryTheory.Limits.prod.symmetry
+#align category_theory.limits.prod.symmetry_assoc CategoryTheory.Limits.prod.symmetry_assoc
 
 /-- The associator isomorphism for binary products. -/
 @[simps]
 def prod.associator [HasBinaryProducts C] (P Q R : C) : (P ⨯ Q) ⨯ R ≅ P ⨯ Q ⨯ R where
   hom := prod.lift (prod.fst ≫ prod.fst) (prod.lift (prod.fst ≫ prod.snd) prod.snd)
   inv := prod.lift (prod.lift prod.fst (prod.snd ≫ prod.fst)) (prod.snd ≫ prod.snd)
-  hom_inv_id := by
-    apply prod.hom_ext
-    · apply prod.hom_ext; simp; simp
-    · simp
-  inv_hom_id := by
-    apply prod.hom_ext
-    · simp
-    · apply prod.hom_ext; simp; simp
 #align category_theory.limits.prod.associator CategoryTheory.Limits.prod.associator
 
 @[reassoc]
@@ -1036,6 +1054,7 @@ theorem prod.pentagon [HasBinaryProducts C] (W X Y Z : C) :
       (prod.associator (W ⨯ X) Y Z).hom ≫ (prod.associator W X (Y ⨯ Z)).hom :=
   by simp
 #align category_theory.limits.prod.pentagon CategoryTheory.Limits.prod.pentagon
+#align category_theory.limits.prod.pentagon_assoc CategoryTheory.Limits.prod.pentagon_assoc
 
 @[reassoc]
 theorem prod.associator_naturality [HasBinaryProducts C] {X₁ X₂ X₃ Y₁ Y₂ Y₃ : C} (f₁ : X₁ ⟶ Y₁)
@@ -1044,6 +1063,7 @@ theorem prod.associator_naturality [HasBinaryProducts C] {X₁ X₂ X₃ Y₁ Y�
       (prod.associator X₁ X₂ X₃).hom ≫ prod.map f₁ (prod.map f₂ f₃) :=
   by simp
 #align category_theory.limits.prod.associator_naturality CategoryTheory.Limits.prod.associator_naturality
+#align category_theory.limits.prod.associator_naturality_assoc CategoryTheory.Limits.prod.associator_naturality_assoc
 
 variable [HasTerminal C]
 
@@ -1052,10 +1072,7 @@ variable [HasTerminal C]
 def prod.leftUnitor (P : C) [HasBinaryProduct (⊤_ C) P] : (⊤_ C) ⨯ P ≅ P where
   hom := prod.snd
   inv := prod.lift (terminal.from P) (𝟙 _)
-  hom_inv_id := by
-    apply prod.hom_ext
-    · simp
-    · simp
+  hom_inv_id := by apply prod.hom_ext <;> simp
   inv_hom_id := by simp
 #align category_theory.limits.prod.left_unitor CategoryTheory.Limits.prod.leftUnitor
 
@@ -1064,10 +1081,7 @@ def prod.leftUnitor (P : C) [HasBinaryProduct (⊤_ C) P] : (⊤_ C) ⨯ P ≅ P
 def prod.rightUnitor (P : C) [HasBinaryProduct P (⊤_ C)] : P ⨯ ⊤_ C ≅ P where
   hom := prod.fst
   inv := prod.lift (𝟙 _) (terminal.from P)
-  hom_inv_id := by
-    apply prod.hom_ext
-    · simp
-    · simp
+  hom_inv_id := by apply prod.hom_ext <;> simp
   inv_hom_id := by simp
 #align category_theory.limits.prod.right_unitor CategoryTheory.Limits.prod.rightUnitor
 
@@ -1076,36 +1090,40 @@ theorem prod.leftUnitor_hom_naturality [HasBinaryProducts C] (f : X ⟶ Y) :
     prod.map (𝟙 _) f ≫ (prod.leftUnitor Y).hom = (prod.leftUnitor X).hom ≫ f :=
   prod.map_snd _ _
 #align category_theory.limits.prod.left_unitor_hom_naturality CategoryTheory.Limits.prod.leftUnitor_hom_naturality
+#align category_theory.limits.prod.left_unitor_hom_naturality_assoc CategoryTheory.Limits.prod.leftUnitor_hom_naturality_assoc
 
 @[reassoc]
 theorem prod.leftUnitor_inv_naturality [HasBinaryProducts C] (f : X ⟶ Y) :
     (prod.leftUnitor X).inv ≫ prod.map (𝟙 _) f = f ≫ (prod.leftUnitor Y).inv := by
   rw [Iso.inv_comp_eq, ← Category.assoc, Iso.eq_comp_inv, prod.leftUnitor_hom_naturality]
 #align category_theory.limits.prod.left_unitor_inv_naturality CategoryTheory.Limits.prod.leftUnitor_inv_naturality
+#align category_theory.limits.prod.left_unitor_inv_naturality_assoc CategoryTheory.Limits.prod.leftUnitor_inv_naturality_assoc
 
 @[reassoc]
 theorem prod.rightUnitor_hom_naturality [HasBinaryProducts C] (f : X ⟶ Y) :
     prod.map f (𝟙 _) ≫ (prod.rightUnitor Y).hom = (prod.rightUnitor X).hom ≫ f :=
   prod.map_fst _ _
 #align category_theory.limits.prod.right_unitor_hom_naturality CategoryTheory.Limits.prod.rightUnitor_hom_naturality
+#align category_theory.limits.prod.right_unitor_hom_naturality_assoc CategoryTheory.Limits.prod.rightUnitor_hom_naturality_assoc
 
 @[reassoc]
 theorem prod_rightUnitor_inv_naturality [HasBinaryProducts C] (f : X ⟶ Y) :
     (prod.rightUnitor X).inv ≫ prod.map f (𝟙 _) = f ≫ (prod.rightUnitor Y).inv := by
   rw [Iso.inv_comp_eq, ← Category.assoc, Iso.eq_comp_inv, prod.rightUnitor_hom_naturality]
 #align category_theory.limits.prod_right_unitor_inv_naturality CategoryTheory.Limits.prod_rightUnitor_inv_naturality
+#align category_theory.limits.prod_right_unitor_inv_naturality_assoc CategoryTheory.Limits.prod_rightUnitor_inv_naturality_assoc
 
 theorem prod.triangle [HasBinaryProducts C] (X Y : C) :
     (prod.associator X (⊤_ C) Y).hom ≫ prod.map (𝟙 X) (prod.leftUnitor Y).hom =
       prod.map (prod.rightUnitor X).hom (𝟙 Y) :=
-  by dsimp; apply prod.hom_ext; simp; simp;
+  by ext <;> simp
 #align category_theory.limits.prod.triangle CategoryTheory.Limits.prod.triangle
 
 end
 
 section
 
--- Porting note: added category instance as it did not propogate
+-- Porting note: added category instance as it did not propagate
 variable {C} [Category.{v} C] [HasBinaryCoproducts C]
 
 /-- The braiding isomorphism which swaps a binary coproduct. -/
@@ -1120,6 +1138,7 @@ theorem coprod.symmetry' (P Q : C) :
     coprod.desc coprod.inr coprod.inl ≫ coprod.desc coprod.inr coprod.inl = 𝟙 (P ⨿ Q) :=
   (coprod.braiding _ _).hom_inv_id
 #align category_theory.limits.coprod.symmetry' CategoryTheory.Limits.coprod.symmetry'
+#align category_theory.limits.coprod.symmetry'_assoc CategoryTheory.Limits.coprod.symmetry'_assoc
 
 /-- The braiding isomorphism is symmetric. -/
 theorem coprod.symmetry (P Q : C) : (coprod.braiding P Q).hom ≫ (coprod.braiding Q P).hom = 𝟙 _ :=
@@ -1131,14 +1150,6 @@ theorem coprod.symmetry (P Q : C) : (coprod.braiding P Q).hom ≫ (coprod.braidi
 def coprod.associator (P Q R : C) : (P ⨿ Q) ⨿ R ≅ P ⨿ Q ⨿ R where
   hom := coprod.desc (coprod.desc coprod.inl (coprod.inl ≫ coprod.inr)) (coprod.inr ≫ coprod.inr)
   inv := coprod.desc (coprod.inl ≫ coprod.inl) (coprod.desc (coprod.inr ≫ coprod.inl) coprod.inr)
-  hom_inv_id := by
-    apply coprod.hom_ext
-    · apply coprod.hom_ext; simp; simp
-    · simp
-  inv_hom_id := by
-    apply coprod.hom_ext
-    · simp
-    · apply coprod.hom_ext; simp; simp
 #align category_theory.limits.coprod.associator CategoryTheory.Limits.coprod.associator
 
 theorem coprod.pentagon (W X Y Z : C) :
@@ -1162,10 +1173,7 @@ variable [HasInitial C]
 def coprod.leftUnitor (P : C) : (⊥_ C) ⨿ P ≅ P where
   hom := coprod.desc (initial.to P) (𝟙 _)
   inv := coprod.inr
-  hom_inv_id := by
-    apply coprod.hom_ext
-    · simp
-    · simp
+  hom_inv_id := by apply coprod.hom_ext <;> simp
   inv_hom_id := by simp
 #align category_theory.limits.coprod.left_unitor CategoryTheory.Limits.coprod.leftUnitor
 
@@ -1174,24 +1182,21 @@ def coprod.leftUnitor (P : C) : (⊥_ C) ⨿ P ≅ P where
 def coprod.rightUnitor (P : C) : P ⨿ ⊥_ C ≅ P where
   hom := coprod.desc (𝟙 _) (initial.to P)
   inv := coprod.inl
-  hom_inv_id := by
-    apply coprod.hom_ext
-    · simp
-    · simp
+  hom_inv_id := by apply coprod.hom_ext <;> simp
   inv_hom_id := by simp
 #align category_theory.limits.coprod.right_unitor CategoryTheory.Limits.coprod.rightUnitor
 
 theorem coprod.triangle (X Y : C) :
     (coprod.associator X (⊥_ C) Y).hom ≫ coprod.map (𝟙 X) (coprod.leftUnitor Y).hom =
       coprod.map (coprod.rightUnitor X).hom (𝟙 Y) :=
-  by dsimp; apply coprod.hom_ext; simp; simp
+  by ext <;> simp
 #align category_theory.limits.coprod.triangle CategoryTheory.Limits.coprod.triangle
 
 end
 
 section ProdFunctor
 
--- Porting note: added category instance as it did not propogate
+-- Porting note: added category instance as it did not propagate
 variable {C} [Category.{v} C] [HasBinaryProducts C]
 
 /-- The binary product functor. -/
@@ -1207,14 +1212,14 @@ def prod.functor : C ⥤ C ⥤ C where
 /-- The product functor can be decomposed. -/
 def prod.functorLeftComp (X Y : C) :
     prod.functor.obj (X ⨯ Y) ≅ prod.functor.obj Y ⋙ prod.functor.obj X :=
-  NatIso.ofComponents (prod.associator _ _) (by aesop_cat)
+  NatIso.ofComponents (prod.associator _ _)
 #align category_theory.limits.prod.functor_left_comp CategoryTheory.Limits.prod.functorLeftComp
 
 end ProdFunctor
 
 section CoprodFunctor
 
--- Porting note: added category instance as it did not propogate
+-- Porting note: added category instance as it did not propagate
 variable {C} [Category.{v} C] [HasBinaryCoproducts C]
 
 /-- The binary coproduct functor. -/
@@ -1229,7 +1234,7 @@ def coprod.functor : C ⥤ C ⥤ C where
 /-- The coproduct functor can be decomposed. -/
 def coprod.functorLeftComp (X Y : C) :
     coprod.functor.obj (X ⨿ Y) ≅ coprod.functor.obj Y ⋙ coprod.functor.obj X :=
-  NatIso.ofComponents (coprod.associator _ _) (by aesop_cat)
+  NatIso.ofComponents (coprod.associator _ _)
 #align category_theory.limits.coprod.functor_left_comp CategoryTheory.Limits.coprod.functorLeftComp
 
 end CoprodFunctor
@@ -1259,11 +1264,13 @@ def prodComparison (F : C ⥤ D) (A B : C) [HasBinaryProduct A B]
 theorem prodComparison_fst : prodComparison F A B ≫ prod.fst = F.map prod.fst :=
   prod.lift_fst _ _
 #align category_theory.limits.prod_comparison_fst CategoryTheory.Limits.prodComparison_fst
+#align category_theory.limits.prod_comparison_fst_assoc CategoryTheory.Limits.prodComparison_fst_assoc
 
 @[reassoc (attr := simp)]
 theorem prodComparison_snd : prodComparison F A B ≫ prod.snd = F.map prod.snd :=
   prod.lift_snd _ _
 #align category_theory.limits.prod_comparison_snd CategoryTheory.Limits.prodComparison_snd
+#align category_theory.limits.prod_comparison_snd_assoc CategoryTheory.Limits.prodComparison_snd_assoc
 
 /-- Naturality of the `prodComparison` morphism in both arguments. -/
 @[reassoc]
@@ -1273,6 +1280,7 @@ theorem prodComparison_natural (f : A ⟶ A') (g : B ⟶ B') :
   rw [prodComparison, prodComparison, prod.lift_map, ← F.map_comp, ← F.map_comp, prod.comp_lift, ←
     F.map_comp, prod.map_fst, ← F.map_comp, prod.map_snd]
 #align category_theory.limits.prod_comparison_natural CategoryTheory.Limits.prodComparison_natural
+#align category_theory.limits.prod_comparison_natural_assoc CategoryTheory.Limits.prodComparison_natural_assoc
 
 /-- The product comparison morphism from `F(A ⨯ -)` to `FA ⨯ F-`, whose components are given by
 `prodComparison`.
@@ -1289,11 +1297,13 @@ def prodComparisonNatTrans [HasBinaryProducts C] [HasBinaryProducts D] (F : C �
 theorem inv_prodComparison_map_fst [IsIso (prodComparison F A B)] :
     inv (prodComparison F A B) ≫ F.map prod.fst = prod.fst := by simp [IsIso.inv_comp_eq]
 #align category_theory.limits.inv_prod_comparison_map_fst CategoryTheory.Limits.inv_prodComparison_map_fst
+#align category_theory.limits.inv_prod_comparison_map_fst_assoc CategoryTheory.Limits.inv_prodComparison_map_fst_assoc
 
 @[reassoc]
 theorem inv_prodComparison_map_snd [IsIso (prodComparison F A B)] :
     inv (prodComparison F A B) ≫ F.map prod.snd = prod.snd := by simp [IsIso.inv_comp_eq]
 #align category_theory.limits.inv_prod_comparison_map_snd CategoryTheory.Limits.inv_prodComparison_map_snd
+#align category_theory.limits.inv_prod_comparison_map_snd_assoc CategoryTheory.Limits.inv_prodComparison_map_snd_assoc
 
 /-- If the product comparison morphism is an iso, its inverse is natural. -/
 @[reassoc]
@@ -1303,6 +1313,7 @@ theorem prodComparison_inv_natural (f : A ⟶ A') (g : B ⟶ B') [IsIso (prodCom
       prod.map (F.map f) (F.map g) ≫ inv (prodComparison F A' B') :=
   by rw [IsIso.eq_comp_inv, Category.assoc, IsIso.inv_comp_eq, prodComparison_natural]
 #align category_theory.limits.prod_comparison_inv_natural CategoryTheory.Limits.prodComparison_inv_natural
+#align category_theory.limits.prod_comparison_inv_natural_assoc CategoryTheory.Limits.prodComparison_inv_natural_assoc
 
 /-- The natural isomorphism `F(A ⨯ -) ≅ FA ⨯ F-`, provided each `prodComparison F A B` is an
 isomorphism (as `B` changes).
@@ -1344,11 +1355,13 @@ def coprodComparison (F : C ⥤ D) (A B : C) [HasBinaryCoproduct A B]
 theorem coprodComparison_inl : coprod.inl ≫ coprodComparison F A B = F.map coprod.inl :=
   coprod.inl_desc _ _
 #align category_theory.limits.coprod_comparison_inl CategoryTheory.Limits.coprodComparison_inl
+#align category_theory.limits.coprod_comparison_inl_assoc CategoryTheory.Limits.coprodComparison_inl_assoc
 
 @[reassoc (attr := simp)]
 theorem coprodComparison_inr : coprod.inr ≫ coprodComparison F A B = F.map coprod.inr :=
   coprod.inr_desc _ _
 #align category_theory.limits.coprod_comparison_inr CategoryTheory.Limits.coprodComparison_inr
+#align category_theory.limits.coprod_comparison_inr_assoc CategoryTheory.Limits.coprodComparison_inr_assoc
 
 /-- Naturality of the coprod_comparison morphism in both arguments. -/
 @[reassoc]
@@ -1358,6 +1371,7 @@ theorem coprodComparison_natural (f : A ⟶ A') (g : B ⟶ B') :
   rw [coprodComparison, coprodComparison, coprod.map_desc, ← F.map_comp, ← F.map_comp,
     coprod.desc_comp, ← F.map_comp, coprod.inl_map, ← F.map_comp, coprod.inr_map]
 #align category_theory.limits.coprod_comparison_natural CategoryTheory.Limits.coprodComparison_natural
+#align category_theory.limits.coprod_comparison_natural_assoc CategoryTheory.Limits.coprodComparison_natural_assoc
 
 /-- The coproduct comparison morphism from `FA ⨿ F-` to `F(A ⨿ -)`, whose components are given by
 `coprodComparison`.
@@ -1373,11 +1387,13 @@ def coprodComparisonNatTrans [HasBinaryCoproducts C] [HasBinaryCoproducts D] (F 
 theorem map_inl_inv_coprodComparison [IsIso (coprodComparison F A B)] :
     F.map coprod.inl ≫ inv (coprodComparison F A B) = coprod.inl := by simp [IsIso.inv_comp_eq]
 #align category_theory.limits.map_inl_inv_coprod_comparison CategoryTheory.Limits.map_inl_inv_coprodComparison
+#align category_theory.limits.map_inl_inv_coprod_comparison_assoc CategoryTheory.Limits.map_inl_inv_coprodComparison_assoc
 
 @[reassoc]
 theorem map_inr_inv_coprodComparison [IsIso (coprodComparison F A B)] :
     F.map coprod.inr ≫ inv (coprodComparison F A B) = coprod.inr := by simp [IsIso.inv_comp_eq]
 #align category_theory.limits.map_inr_inv_coprod_comparison CategoryTheory.Limits.map_inr_inv_coprodComparison
+#align category_theory.limits.map_inr_inv_coprod_comparison_assoc CategoryTheory.Limits.map_inr_inv_coprodComparison_assoc
 
 /-- If the coproduct comparison morphism is an iso, its inverse is natural. -/
 @[reassoc]
@@ -1387,6 +1403,7 @@ theorem coprodComparison_inv_natural (f : A ⟶ A') (g : B ⟶ B') [IsIso (copro
       F.map (coprod.map f g) ≫ inv (coprodComparison F A' B') :=
   by rw [IsIso.eq_comp_inv, Category.assoc, IsIso.inv_comp_eq, coprodComparison_natural]
 #align category_theory.limits.coprod_comparison_inv_natural CategoryTheory.Limits.coprodComparison_inv_natural
+#align category_theory.limits.coprod_comparison_inv_natural_assoc CategoryTheory.Limits.coprodComparison_inv_natural_assoc
 
 /-- The natural isomorphism `FA ⨿ F- ≅ F(A ⨿ -)`, provided each `coprodComparison F A B` is an
 isomorphism (as `B` changes).

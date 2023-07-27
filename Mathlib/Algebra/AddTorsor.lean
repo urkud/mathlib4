@@ -2,13 +2,10 @@
 Copyright (c) 2020 Joseph Myers. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Joseph Myers, Yury Kudryashov
-
-! This file was ported from Lean 3 source module algebra.add_torsor
-! leanprover-community/mathlib commit 9003f28797c0664a49e4179487267c494477d853
-! Please do not edit these lines, except to modify the commit id
-! if you have ported upstream changes.
 -/
 import Mathlib.Data.Set.Pointwise.SMul
+
+#align_import algebra.add_torsor from "leanprover-community/mathlib"@"9003f28797c0664a49e4179487267c494477d853"
 
 /-!
 # Torsors of additive group actions
@@ -117,8 +114,7 @@ theorem vadd_right_injective (p : P) : Function.Injective ((· +ᵥ p) : G → P
 /-- Adding a group element to a point, then subtracting another point,
 produces the same result as subtracting the points then adding the
 group element. -/
-theorem vadd_vsub_assoc (g : G) (p1 p2 : P) : g +ᵥ p1 -ᵥ p2 = g + (p1 -ᵥ p2) :=
-  by
+theorem vadd_vsub_assoc (g : G) (p1 p2 : P) : g +ᵥ p1 -ᵥ p2 = g + (p1 -ᵥ p2) := by
   apply vadd_right_cancel p2
   rw [vsub_vadd, add_vadd, vsub_vadd]
 #align vadd_vsub_assoc vadd_vsub_assoc
@@ -147,8 +143,7 @@ theorem vsub_ne_zero {p q : P} : p -ᵥ q ≠ (0 : G) ↔ p ≠ q :=
 
 /-- Cancellation adding the results of two subtractions. -/
 @[simp]
-theorem vsub_add_vsub_cancel (p1 p2 p3 : P) : p1 -ᵥ p2 + (p2 -ᵥ p3) = p1 -ᵥ p3 :=
-  by
+theorem vsub_add_vsub_cancel (p1 p2 p3 : P) : p1 -ᵥ p2 + (p2 -ᵥ p3) = p1 -ᵥ p3 := by
   apply vadd_right_cancel p3
   rw [add_vadd, vsub_vadd, vsub_vadd, vsub_vadd]
 #align vsub_add_vsub_cancel vsub_add_vsub_cancel
@@ -156,8 +151,7 @@ theorem vsub_add_vsub_cancel (p1 p2 p3 : P) : p1 -ᵥ p2 + (p2 -ᵥ p3) = p1 -�
 /-- Subtracting two points in the reverse order produces the negation
 of subtracting them. -/
 @[simp]
-theorem neg_vsub_eq_vsub_rev (p1 p2 : P) : -(p1 -ᵥ p2) = p2 -ᵥ p1 :=
-  by
+theorem neg_vsub_eq_vsub_rev (p1 p2 : P) : -(p1 -ᵥ p2) = p2 -ᵥ p1 := by
   refine' neg_eq_of_add_eq_zero_right (vadd_right_cancel p1 _)
   rw [vsub_add_vsub_cancel, vsub_self]
 #align neg_vsub_eq_vsub_rev neg_vsub_eq_vsub_rev
@@ -228,8 +222,7 @@ theorem vsub_left_injective (p : P) : Function.Injective ((· -ᵥ p) : P → G)
 
 /-- If subtracting two points from the same point produces equal
 results, those points are equal. -/
-theorem vsub_right_cancel {p1 p2 p : P} (h : p -ᵥ p1 = p -ᵥ p2) : p1 = p2 :=
-  by
+theorem vsub_right_cancel {p1 p2 p : P} (h : p -ᵥ p1 = p -ᵥ p2) : p1 = p2 := by
   refine' vadd_left_cancel (p -ᵥ p2) _
   rw [vsub_vadd, ← h, vsub_vadd]
 #align vsub_right_cancel vsub_right_cancel
@@ -451,6 +444,22 @@ def pointReflection (x : P) : Perm P :=
 theorem pointReflection_apply (x y : P) : pointReflection x y = x -ᵥ y +ᵥ x :=
   rfl
 #align equiv.point_reflection_apply Equiv.pointReflection_apply
+
+@[simp]
+theorem pointReflection_vsub_left (x y : P) : pointReflection x y -ᵥ x = x -ᵥ y :=
+  vadd_vsub ..
+
+@[simp]
+theorem left_vsub_pointReflection (x y : P) : x -ᵥ pointReflection x y = y -ᵥ x :=
+  neg_injective <| by simp
+
+@[simp]
+theorem pointReflection_vsub_right (x y : P) : pointReflection x y -ᵥ y = 2 • (x -ᵥ y) := by
+  simp [pointReflection, two_nsmul, vadd_vsub_assoc]
+
+@[simp]
+theorem right_vsub_pointReflection (x y : P) : y -ᵥ pointReflection x y = 2 • (y -ᵥ x) :=
+  neg_injective <| by simp [← neg_nsmul]
 
 @[simp]
 theorem pointReflection_symm (x : P) : (pointReflection x).symm = pointReflection x :=

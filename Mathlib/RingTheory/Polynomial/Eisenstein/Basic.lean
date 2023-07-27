@@ -2,14 +2,11 @@
 Copyright (c) 2022 Riccardo Brasca. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Riccardo Brasca
-
-! This file was ported from Lean 3 source module ring_theory.polynomial.eisenstein.basic
-! leanprover-community/mathlib commit 2032a878972d5672e7c27c957e7a6e297b044973
-! Please do not edit these lines, except to modify the commit id
-! if you have ported upstream changes.
 -/
 import Mathlib.RingTheory.EisensteinCriterion
 import Mathlib.RingTheory.Polynomial.ScaleRoots
+
+#align_import ring_theory.polynomial.eisenstein.basic from "leanprover-community/mathlib"@"2032a878972d5672e7c27c957e7a6e297b044973"
 
 /-!
 # Eisenstein polynomials
@@ -65,10 +62,8 @@ section CommSemiring
 
 variable [CommSemiring R] {𝓟 : Ideal R} {f : R[X]} (hf : f.IsWeaklyEisensteinAt 𝓟)
 
-set_option synthInstance.etaExperiment true
 
-theorem map {A : Type v} [CommRing A] (φ : R →+* A) : (f.map φ).IsWeaklyEisensteinAt (𝓟.map φ) :=
-  by
+theorem map {A : Type v} [CommRing A] (φ : R →+* A) : (f.map φ).IsWeaklyEisensteinAt (𝓟.map φ) := by
   refine' (IsWeaklyEisensteinAt_iff _ _).2 fun hn => _
   rw [coeff_map]
   exact mem_map_of_mem _ (hf.mem (lt_of_lt_of_le hn (natDegree_map_le _ _)))
@@ -87,9 +82,8 @@ section Principal
 variable {p : R}
 
 theorem exists_mem_adjoin_mul_eq_pow_natDegree {x : S} (hx : aeval x f = 0) (hmo : f.Monic)
-    (hf : f.IsWeaklyEisensteinAt (Submodule.span R {p})) :
-    ∃ y ∈ adjoin R ({x} : Set S), (algebraMap R S) p * y = x ^ (f.map (algebraMap R S)).natDegree :=
-  by
+    (hf : f.IsWeaklyEisensteinAt (Submodule.span R {p})) : ∃ y ∈ adjoin R ({x} : Set S),
+    (algebraMap R S) p * y = x ^ (f.map (algebraMap R S)).natDegree := by
   rw [aeval_def, Polynomial.eval₂_eq_eval_map, eval_eq_sum_range, range_add_one,
     sum_insert not_mem_range_self, sum_range, (hmo.map (algebraMap R S)).coeff_natDegree,
     one_mul] at hx
@@ -201,17 +195,17 @@ section CommSemiring
 
 variable [CommSemiring R] {𝓟 : Ideal R} {f : R[X]} (hf : f.IsEisensteinAt 𝓟)
 
-theorem Polynomial.Monic.leadingCoeff_not_mem (hf : f.Monic) (h : 𝓟 ≠ ⊤) : ¬f.leadingCoeff ∈ 𝓟 :=
-  hf.leadingCoeff.symm ▸ (Ideal.ne_top_iff_one _).1 h
-#align polynomial.monic.leading_coeff_not_mem Polynomial.IsEisensteinAt.Polynomial.Monic.leadingCoeff_not_mem
+theorem _root_.Polynomial.Monic.leadingCoeff_not_mem (hf : f.Monic) (h : 𝓟 ≠ ⊤) :
+    ¬f.leadingCoeff ∈ 𝓟 := hf.leadingCoeff.symm ▸ (Ideal.ne_top_iff_one _).1 h
+#align polynomial.monic.leading_coeff_not_mem Polynomial.Monic.leadingCoeff_not_mem
 
-theorem Polynomial.Monic.isEisensteinAt_of_mem_of_not_mem (hf : f.Monic) (h : 𝓟 ≠ ⊤)
+theorem _root_.Polynomial.Monic.isEisensteinAt_of_mem_of_not_mem (hf : f.Monic) (h : 𝓟 ≠ ⊤)
     (hmem : ∀ {n}, n < f.natDegree → f.coeff n ∈ 𝓟) (hnot_mem : f.coeff 0 ∉ 𝓟 ^ 2) :
     f.IsEisensteinAt 𝓟 :=
-  { leading := leadingCoeff_not_mem hf h
+  { leading := Polynomial.Monic.leadingCoeff_not_mem hf h
     mem := fun hn => hmem hn
     not_mem := hnot_mem }
-#align polynomial.monic.is_eisenstein_at_of_mem_of_not_mem Polynomial.IsEisensteinAt.Polynomial.Monic.isEisensteinAt_of_mem_of_not_mem
+#align polynomial.monic.is_eisenstein_at_of_mem_of_not_mem Polynomial.Monic.isEisensteinAt_of_mem_of_not_mem
 
 theorem isWeaklyEisensteinAt : IsWeaklyEisensteinAt f 𝓟 :=
   ⟨fun h => hf.mem h⟩

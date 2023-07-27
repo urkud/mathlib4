@@ -2,13 +2,10 @@
 Copyright (c) 2022 Yaël Dillies. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Yaël Dillies
-
-! This file was ported from Lean 3 source module analysis.convex.join
-! leanprover-community/mathlib commit 951bf1d9e98a2042979ced62c0620bcfb3587cf8
-! Please do not edit these lines, except to modify the commit id
-! if you have ported upstream changes.
 -/
 import Mathlib.Analysis.Convex.Combination
+
+#align_import analysis.convex.join from "leanprover-community/mathlib"@"951bf1d9e98a2042979ced62c0620bcfb3587cf8"
 
 /-!
 # Convex join
@@ -43,11 +40,11 @@ theorem mem_convexJoin : x ∈ convexJoin 𝕜 s t ↔ ∃ a ∈ s, ∃ b ∈ t,
 #align mem_convex_join mem_convexJoin
 
 theorem convexJoin_comm (s t : Set E) : convexJoin 𝕜 s t = convexJoin 𝕜 t s :=
-  (unionᵢ₂_comm _).trans <| by simp_rw [convexJoin, segment_symm]
+  (iUnion₂_comm _).trans <| by simp_rw [convexJoin, segment_symm]
 #align convex_join_comm convexJoin_comm
 
 theorem convexJoin_mono (hs : s₁ ⊆ s₂) (ht : t₁ ⊆ t₂) : convexJoin 𝕜 s₁ t₁ ⊆ convexJoin 𝕜 s₂ t₂ :=
-  bunionᵢ_mono hs fun _ _ => bunionᵢ_subset_bunionᵢ_left ht
+  biUnion_mono hs fun _ _ => biUnion_subset_biUnion_left ht
 #align convex_join_mono convexJoin_mono
 
 theorem convexJoin_mono_left (hs : s₁ ⊆ s₂) : convexJoin 𝕜 s₁ t ⊆ convexJoin 𝕜 s₂ t :=
@@ -83,7 +80,7 @@ theorem convexJoin_singletons (x : E) : convexJoin 𝕜 {x} {y} = segment 𝕜 x
 @[simp]
 theorem convexJoin_union_left (s₁ s₂ t : Set E) :
     convexJoin 𝕜 (s₁ ∪ s₂) t = convexJoin 𝕜 s₁ t ∪ convexJoin 𝕜 s₂ t := by
-  simp_rw [convexJoin, mem_union, unionᵢ_or, unionᵢ_union_distrib]
+  simp_rw [convexJoin, mem_union, iUnion_or, iUnion_union_distrib]
 #align convex_join_union_left convexJoin_union_left
 
 @[simp]
@@ -93,20 +90,20 @@ theorem convexJoin_union_right (s t₁ t₂ : Set E) :
 #align convex_join_union_right convexJoin_union_right
 
 @[simp]
-theorem convexJoin_unionᵢ_left (s : ι → Set E) (t : Set E) :
+theorem convexJoin_iUnion_left (s : ι → Set E) (t : Set E) :
     convexJoin 𝕜 (⋃ i, s i) t = ⋃ i, convexJoin 𝕜 (s i) t := by
-  simp_rw [convexJoin, mem_unionᵢ, unionᵢ_exists]
-  exact unionᵢ_comm _
-#align convex_join_Union_left convexJoin_unionᵢ_left
+  simp_rw [convexJoin, mem_iUnion, iUnion_exists]
+  exact iUnion_comm _
+#align convex_join_Union_left convexJoin_iUnion_left
 
 @[simp]
-theorem convexJoin_unionᵢ_right (s : Set E) (t : ι → Set E) :
+theorem convexJoin_iUnion_right (s : Set E) (t : ι → Set E) :
     convexJoin 𝕜 s (⋃ i, t i) = ⋃ i, convexJoin 𝕜 s (t i) := by
-  simp_rw [convexJoin_comm s, convexJoin_unionᵢ_left]
-#align convex_join_Union_right convexJoin_unionᵢ_right
+  simp_rw [convexJoin_comm s, convexJoin_iUnion_left]
+#align convex_join_Union_right convexJoin_iUnion_right
 
 theorem segment_subset_convexJoin (hx : x ∈ s) (hy : y ∈ t) : segment 𝕜 x y ⊆ convexJoin 𝕜 s t :=
-  subset_unionᵢ₂_of_subset x hx <| subset_unionᵢ₂ (s := fun y _ ↦ segment 𝕜 x y) y hy
+  subset_iUnion₂_of_subset x hx <| subset_iUnion₂ (s := fun y _ ↦ segment 𝕜 x y) y hy
 #align segment_subset_convex_join segment_subset_convexJoin
 
 theorem subset_convexJoin_left (h : t.Nonempty) : s ⊆ convexJoin 𝕜 s t := fun _x hx =>
@@ -119,7 +116,7 @@ theorem subset_convexJoin_right (h : s.Nonempty) : t ⊆ convexJoin 𝕜 s t :=
 #align subset_convex_join_right subset_convexJoin_right
 
 theorem convexJoin_subset (hs : s ⊆ u) (ht : t ⊆ u) (hu : Convex 𝕜 u) : convexJoin 𝕜 s t ⊆ u :=
-  unionᵢ₂_subset fun _x hx => unionᵢ₂_subset fun _y hy => hu.segment_subset (hs hx) (ht hy)
+  iUnion₂_subset fun _x hx => iUnion₂_subset fun _y hy => hu.segment_subset (hs hx) (ht hy)
 #align convex_join_subset convexJoin_subset
 
 theorem convexJoin_subset_convexHull (s t : Set E) : convexJoin 𝕜 s t ⊆ convexHull 𝕜 (s ∪ t) :=
@@ -180,7 +177,7 @@ theorem convexJoin_convexJoin_convexJoin_comm (s t u v : Set E) :
 -- porting note: moved 3 lemmas from below to golf
 protected theorem Convex.convexJoin (hs : Convex 𝕜 s) (ht : Convex 𝕜 t) :
     Convex 𝕜 (convexJoin 𝕜 s t) := by
-  simp only [Convex, StarConvex, convexJoin, mem_unionᵢ]
+  simp only [Convex, StarConvex, convexJoin, mem_iUnion]
   rintro _ ⟨x₁, hx₁, y₁, hy₁, a₁, b₁, ha₁, hb₁, hab₁, rfl⟩
     _ ⟨x₂, hx₂, y₂, hy₂, a₂, b₂, ha₂, hb₂, hab₂, rfl⟩ p q hp hq hpq
   rcases hs.exists_mem_add_smul_eq hx₁ hx₂ (mul_nonneg hp ha₁) (mul_nonneg hq ha₂) with ⟨x, hxs, hx⟩

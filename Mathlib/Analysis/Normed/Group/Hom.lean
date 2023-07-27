@@ -2,13 +2,10 @@
 Copyright (c) 2021 Johan Commelin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Johan Commelin
-
-! This file was ported from Lean 3 source module analysis.normed.group.hom
-! leanprover-community/mathlib commit 3c4225288b55380a90df078ebae0991080b12393
-! Please do not edit these lines, except to modify the commit id
-! if you have ported upstream changes.
 -/
 import Mathlib.Analysis.Normed.Group.Basic
+
+#align_import analysis.normed.group.hom from "leanprover-community/mathlib"@"3c4225288b55380a90df078ebae0991080b12393"
 
 /-!
 # Normed groups homomorphisms
@@ -73,7 +70,7 @@ theorem exists_pos_bound_of_bound {V W : Type _} [SeminormedAddCommGroup V]
   ⟨max M 1, lt_of_lt_of_le zero_lt_one (le_max_right _ _), fun x =>
     calc
       ‖f x‖ ≤ M * ‖x‖ := h x
-      _ ≤ max M 1 * ‖x‖ := mul_le_mul_of_nonneg_right (le_max_left _ _) (norm_nonneg _)
+      _ ≤ max M 1 * ‖x‖ := by gcongr; apply le_max_left
       ⟩
 #align exists_pos_bound_of_bound exists_pos_bound_of_bound
 
@@ -189,7 +186,7 @@ theorem SurjectiveOnWith.mono {f : NormedAddGroupHom V₁ V₂} {K : AddSubgroup
   use g, rfl
   by_cases Hg : ‖f g‖ = 0
   · simpa [Hg] using hg
-  · exact hg.trans ((mul_le_mul_right <| (Ne.symm Hg).le_iff_lt.mp (norm_nonneg _)).mpr H)
+  · exact hg.trans (by gcongr)
 #align normed_add_group_hom.surjective_on_with.mono NormedAddGroupHom.SurjectiveOnWith.mono
 
 theorem SurjectiveOnWith.exists_pos {f : NormedAddGroupHom V₁ V₂} {K : AddSubgroup V₂} {C : ℝ}
@@ -210,18 +207,18 @@ theorem SurjectiveOnWith.surjOn {f : NormedAddGroupHom V₁ V₂} {K : AddSubgro
 
 /-- The operator norm of a seminormed group homomorphism is the inf of all its bounds. -/
 def opNorm (f : NormedAddGroupHom V₁ V₂) :=
-  infₛ { c | 0 ≤ c ∧ ∀ x, ‖f x‖ ≤ c * ‖x‖ }
+  sInf { c | 0 ≤ c ∧ ∀ x, ‖f x‖ ≤ c * ‖x‖ }
 #align normed_add_group_hom.op_norm NormedAddGroupHom.opNorm
 
 instance hasOpNorm : Norm (NormedAddGroupHom V₁ V₂) :=
   ⟨opNorm⟩
 #align normed_add_group_hom.has_op_norm NormedAddGroupHom.hasOpNorm
 
-theorem norm_def : ‖f‖ = infₛ { c | 0 ≤ c ∧ ∀ x, ‖f x‖ ≤ c * ‖x‖ } :=
+theorem norm_def : ‖f‖ = sInf { c | 0 ≤ c ∧ ∀ x, ‖f x‖ ≤ c * ‖x‖ } :=
   rfl
 #align normed_add_group_hom.norm_def NormedAddGroupHom.norm_def
 
--- So that invocations of `le_cinfₛ` make sense: we show that the set of
+-- So that invocations of `le_csInf` make sense: we show that the set of
 -- bounds is nonempty and bounded below.
 theorem bounds_nonempty {f : NormedAddGroupHom V₁ V₂} :
     ∃ c, c ∈ { c | 0 ≤ c ∧ ∀ x, ‖f x‖ ≤ c * ‖x‖ } :=
@@ -235,7 +232,7 @@ theorem bounds_bddBelow {f : NormedAddGroupHom V₁ V₂} :
 #align normed_add_group_hom.bounds_bdd_below NormedAddGroupHom.bounds_bddBelow
 
 theorem opNorm_nonneg : 0 ≤ ‖f‖ :=
-  le_cinfₛ bounds_nonempty fun _ ⟨hx, _⟩ => hx
+  le_csInf bounds_nonempty fun _ ⟨hx, _⟩ => hx
 #align normed_add_group_hom.op_norm_nonneg NormedAddGroupHom.opNorm_nonneg
 
 /-- The fundamental property of the operator norm: `‖f x‖ ≤ ‖f‖ * ‖x‖`. -/
@@ -243,19 +240,19 @@ theorem le_opNorm (x : V₁) : ‖f x‖ ≤ ‖f‖ * ‖x‖ := by
   obtain ⟨C, _Cpos, hC⟩ := f.bound
   replace hC := hC x
   by_cases h : ‖x‖ = 0
-  · rwa [h, mul_zero] at hC⊢
+  · rwa [h, mul_zero] at hC ⊢
   have hlt : 0 < ‖x‖ := lt_of_le_of_ne (norm_nonneg x) (Ne.symm h)
   exact
     (div_le_iff hlt).mp
-      (le_cinfₛ bounds_nonempty fun c ⟨_, hc⟩ => (div_le_iff hlt).mpr <| by apply hc)
+      (le_csInf bounds_nonempty fun c ⟨_, hc⟩ => (div_le_iff hlt).mpr <| by apply hc)
 #align normed_add_group_hom.le_op_norm NormedAddGroupHom.le_opNorm
 
 theorem le_opNorm_of_le {c : ℝ} {x} (h : ‖x‖ ≤ c) : ‖f x‖ ≤ ‖f‖ * c :=
-  le_trans (f.le_opNorm x) (mul_le_mul_of_nonneg_left h f.opNorm_nonneg)
+  le_trans (f.le_opNorm x) (by gcongr; exact f.opNorm_nonneg)
 #align normed_add_group_hom.le_op_norm_of_le NormedAddGroupHom.le_opNorm_of_le
 
 theorem le_of_opNorm_le {c : ℝ} (h : ‖f‖ ≤ c) (x : V₁) : ‖f x‖ ≤ c * ‖x‖ :=
-  (f.le_opNorm x).trans (mul_le_mul_of_nonneg_right h (norm_nonneg x))
+  (f.le_opNorm x).trans (by gcongr)
 #align normed_add_group_hom.le_of_op_norm_le NormedAddGroupHom.le_of_opNorm_le
 
 /-- continuous linear maps are Lipschitz continuous. -/
@@ -280,13 +277,13 @@ theorem ratio_le_opNorm (x : V₁) : ‖f x‖ / ‖x‖ ≤ ‖f‖ :=
 
 /-- If one controls the norm of every `f x`, then one controls the norm of `f`. -/
 theorem opNorm_le_bound {M : ℝ} (hMp : 0 ≤ M) (hM : ∀ x, ‖f x‖ ≤ M * ‖x‖) : ‖f‖ ≤ M :=
-  cinfₛ_le bounds_bddBelow ⟨hMp, hM⟩
+  csInf_le bounds_bddBelow ⟨hMp, hM⟩
 #align normed_add_group_hom.op_norm_le_bound NormedAddGroupHom.opNorm_le_bound
 
 theorem opNorm_eq_of_bounds {M : ℝ} (M_nonneg : 0 ≤ M) (h_above : ∀ x, ‖f x‖ ≤ M * ‖x‖)
     (h_below : ∀ N ≥ 0, (∀ x, ‖f x‖ ≤ N * ‖x‖) → M ≤ N) : ‖f‖ = M :=
   le_antisymm (f.opNorm_le_bound M_nonneg h_above)
-    ((le_cinfₛ_iff NormedAddGroupHom.bounds_bddBelow ⟨M, M_nonneg, h_above⟩).mpr
+    ((le_csInf_iff NormedAddGroupHom.bounds_bddBelow ⟨M, M_nonneg, h_above⟩).mpr
       fun N ⟨N_nonneg, hN⟩ => h_below N N_nonneg hN)
 #align normed_add_group_hom.op_norm_eq_of_bounds NormedAddGroupHom.opNorm_eq_of_bounds
 
@@ -315,7 +312,7 @@ given to the constructor or zero if this bound is negative. -/
 theorem mkNormedAddGroupHom_norm_le' (f : V₁ →+ V₂) {C : ℝ} (h : ∀ x, ‖f x‖ ≤ C * ‖x‖) :
     ‖f.mkNormedAddGroupHom C h‖ ≤ max C 0 :=
   opNorm_le_bound _ (le_max_right _ _) fun x =>
-    (h x).trans <| mul_le_mul_of_nonneg_right (le_max_left _ _) (norm_nonneg x)
+    (h x).trans <| by gcongr; apply le_max_left
 #align normed_add_group_hom.mk_normed_add_group_hom_norm_le' NormedAddGroupHom.mkNormedAddGroupHom_norm_le'
 
 alias mkNormedAddGroupHom_norm_le ← _root_.AddMonoidHom.mkNormedAddGroupHom_norm_le
@@ -333,7 +330,7 @@ instance add : Add (NormedAddGroupHom V₁ V₂) :=
     (f.toAddMonoidHom + g.toAddMonoidHom).mkNormedAddGroupHom (‖f‖ + ‖g‖) fun v =>
       calc
         ‖f v + g v‖ ≤ ‖f v‖ + ‖g v‖ := norm_add_le _ _
-        _ ≤ ‖f‖ * ‖v‖ + ‖g‖ * ‖v‖ := (add_le_add (le_opNorm f v) (le_opNorm g v))
+        _ ≤ ‖f‖ * ‖v‖ + ‖g‖ * ‖v‖ := by gcongr <;> apply le_opNorm
         _ = (‖f‖ + ‖g‖) * ‖v‖ := by rw [add_mul]
         ⟩
 
@@ -375,7 +372,7 @@ instance inhabited : Inhabited (NormedAddGroupHom V₁ V₂) :=
 /-- The norm of the `0` operator is `0`. -/
 theorem opNorm_zero : ‖(0 : NormedAddGroupHom V₁ V₂)‖ = 0 :=
   le_antisymm
-    (cinfₛ_le bounds_bddBelow
+    (csInf_le bounds_bddBelow
       ⟨ge_of_eq rfl, fun _ =>
         le_of_eq
           (by
@@ -512,7 +509,7 @@ instance smul : SMul R (NormedAddGroupHom V₁ V₂) where
           rw [map_zero, smul_zero, dist_zero_right, dist_zero_right] at this
           rw [mul_assoc]
           refine' this.trans _
-          refine' mul_le_mul_of_nonneg_left _ dist_nonneg
+          gcongr
           exact hb x⟩ }
 
 @[simp]
@@ -547,7 +544,7 @@ instance nsmul : SMul ℕ (NormedAddGroupHom V₁ V₂) where
         let ⟨b, hb⟩ := f.bound'
         ⟨n • b, fun v => by
           rw [Pi.smul_apply, nsmul_eq_mul, mul_assoc]
-          exact (norm_nsmul_le _ _).trans (mul_le_mul_of_nonneg_left (hb _) (Nat.cast_nonneg _))⟩ }
+          exact (norm_nsmul_le _ _).trans (by gcongr; apply hb)⟩ }
 #align normed_add_group_hom.has_nat_scalar NormedAddGroupHom.nsmul
 
 @[simp]
@@ -568,7 +565,7 @@ instance zsmul : SMul ℤ (NormedAddGroupHom V₁ V₂) where
         let ⟨b, hb⟩ := f.bound'
         ⟨‖z‖ • b, fun v => by
           rw [Pi.smul_apply, smul_eq_mul, mul_assoc]
-          exact (norm_zsmul_le _ _).trans (mul_le_mul_of_nonneg_left (hb _) <| norm_nonneg _)⟩ }
+          exact (norm_zsmul_le _ _).trans (by gcongr; apply hb)⟩ }
 #align normed_add_group_hom.has_int_scalar NormedAddGroupHom.zsmul
 
 @[simp]
@@ -650,7 +647,7 @@ protected def comp (g : NormedAddGroupHom V₂ V₃) (f : NormedAddGroupHom V₁
   (g.toAddMonoidHom.comp f.toAddMonoidHom).mkNormedAddGroupHom (‖g‖ * ‖f‖) fun v =>
     calc
       ‖g (f v)‖ ≤ ‖g‖ * ‖f v‖ := le_opNorm _ _
-      _ ≤ ‖g‖ * (‖f‖ * ‖v‖) := (mul_le_mul_of_nonneg_left (le_opNorm _ _) (opNorm_nonneg _))
+      _ ≤ ‖g‖ * (‖f‖ * ‖v‖) := by gcongr; apply le_opNorm
       _ = ‖g‖ * ‖f‖ * ‖v‖ := by rw [mul_assoc]
 #align normed_add_group_hom.comp NormedAddGroupHom.comp
 
@@ -661,7 +658,7 @@ theorem norm_comp_le (g : NormedAddGroupHom V₂ V₃) (f : NormedAddGroupHom V�
 
 theorem norm_comp_le_of_le {g : NormedAddGroupHom V₂ V₃} {C₁ C₂ : ℝ} (hg : ‖g‖ ≤ C₂)
     (hf : ‖f‖ ≤ C₁) : ‖g.comp f‖ ≤ C₂ * C₁ :=
-  le_trans (norm_comp_le g f) <| mul_le_mul hg hf (norm_nonneg _) (le_trans (norm_nonneg _) hg)
+  le_trans (norm_comp_le g f) <| by gcongr; exact le_trans (norm_nonneg _) hg
 #align normed_add_group_hom.norm_comp_le_of_le NormedAddGroupHom.norm_comp_le_of_le
 
 theorem norm_comp_le_of_le' {g : NormedAddGroupHom V₂ V₃} (C₁ C₂ C₃ : ℝ) (h : C₃ = C₂ * C₁)

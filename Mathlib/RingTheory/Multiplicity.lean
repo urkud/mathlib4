@@ -2,15 +2,12 @@
 Copyright (c) 2018 Robert Y. Lewis. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Robert Y. Lewis, Chris Hughes
-
-! This file was ported from Lean 3 source module ring_theory.multiplicity
-! leanprover-community/mathlib commit e8638a0fcaf73e4500469f368ef9494e495099b3
-! Please do not edit these lines, except to modify the commit id
-! if you have ported upstream changes.
 -/
 import Mathlib.Algebra.Associated
 import Mathlib.Algebra.BigOperators.Basic
 import Mathlib.RingTheory.Valuation.Basic
+
+#align_import ring_theory.multiplicity from "leanprover-community/mathlib"@"e8638a0fcaf73e4500469f368ef9494e495099b3"
 
 /-!
 # Multiplicity of a divisor
@@ -34,7 +31,7 @@ open Nat Part
 open BigOperators
 
 /-- `multiplicity a b` returns the largest natural number `n` such that
-  `a ^ n ∣ b`, as an `PartENat` or natural with infinity. If `∀ n, a ^ n ∣ b`,
+  `a ^ n ∣ b`, as a `PartENat` or natural with infinity. If `∀ n, a ^ n ∣ b`,
   then it returns `⊤`-/
 def multiplicity [Monoid α] [DecidableRel ((· ∣ ·) : α → α → Prop)] (a b : α) : PartENat :=
   PartENat.find fun n => ¬a ^ (n + 1) ∣ b
@@ -122,8 +119,8 @@ theorem is_greatest' {a b : α} {m : ℕ} (h : Finite a b) (hm : get (multiplici
   is_greatest (by rwa [← PartENat.coe_lt_coe, PartENat.natCast_get] at hm)
 #align multiplicity.is_greatest' multiplicity.is_greatest'
 
-theorem pos_of_dvd {a b : α} (hfin : Finite a b) (hdiv : a ∣ b) : 0 < (multiplicity a b).get hfin :=
-  by
+theorem pos_of_dvd {a b : α} (hfin : Finite a b) (hdiv : a ∣ b) :
+    0 < (multiplicity a b).get hfin := by
   refine' zero_lt_iff.2 fun h => _
   simpa [hdiv] using is_greatest' hfin (lt_one_iff.mpr h)
 #align multiplicity.pos_of_dvd multiplicity.pos_of_dvd
@@ -168,8 +165,7 @@ theorem eq_coe_iff {a b : α} {n : ℕ} :
 #align multiplicity.eq_coe_iff multiplicity.eq_coe_iff
 
 theorem eq_top_iff {a b : α} : multiplicity a b = ⊤ ↔ ∀ n : ℕ, a ^ n ∣ b :=
-  (PartENat.find_eq_top_iff _).trans <|
-    by
+  (PartENat.find_eq_top_iff _).trans <| by
     simp only [Classical.not_not]
     exact
       ⟨fun h n =>
@@ -391,8 +387,7 @@ theorem multiplicity_mk_eq_multiplicity
       rw [finite_iff_dom, PartENat.not_dom_iff_eq_top] at h this
       rw [h, this]
     refine'
-      not_finite_iff_forall.mpr fun n =>
-        by
+      not_finite_iff_forall.mpr fun n => by
         rw [← Associates.mk_pow, Associates.mk_dvd_mk]
         exact not_finite_iff_forall.mp h n
 #align multiplicity.multiplicity_mk_eq_multiplicity multiplicity.multiplicity_mk_eq_multiplicity
@@ -477,7 +472,7 @@ variable [CancelCommMonoidWithZero α]
 
 /- Porting note: removed previous wf recursion hints and added termination_by
 Also pulled a b intro parameters since Lean parses that more easily -/
-theorem finite_mul_aux {p : α} (hp : Prime p) {a b : α}:
+theorem finite_mul_aux {p : α} (hp : Prime p) {a b : α} :
     ∀ {n m : ℕ}, ¬p ^ (n + 1) ∣ a → ¬p ^ (m + 1) ∣ b → ¬p ^ (n + m + 1) ∣ a * b
   | n, m => fun ha hb ⟨s, hs⟩ =>
     have : p ∣ a * b := ⟨p ^ (n + m) * s, by simp [hs, pow_add, mul_comm, mul_assoc, mul_left_comm]⟩
@@ -508,7 +503,7 @@ theorem finite_mul_aux {p : α} (hp : Prime p) {a b : α}:
         ⟨s, mul_right_cancel₀ hp.1 (by
               rw [add_assoc, tsub_add_cancel_of_le (succ_le_of_lt hm0)]
               simp_all [mul_comm, mul_assoc, mul_left_comm, pow_add])⟩
-termination_by finite_mul_aux _ _ n m  => n+m
+termination_by finite_mul_aux _ _ n m => n+m
 #align multiplicity.finite_mul_aux multiplicity.finite_mul_aux
 
 theorem finite_mul {p a b : α} (hp : Prime p) : Finite p a → Finite p b → Finite p (a * b) :=
@@ -599,8 +594,7 @@ theorem Finset.prod {β : Type _} {p : α} (hp : Prime p) (s : Finset β) (f : �
 
 -- Porting note: with protected could not use pow' k in the succ branch
 protected theorem pow' {p a : α} (hp : Prime p) (ha : Finite p a) :
-    ∀ {k : ℕ}, get (multiplicity p (a ^ k)) (finite_pow hp ha) = k * get (multiplicity p a) ha :=
-  by
+    ∀ {k : ℕ}, get (multiplicity p (a ^ k)) (finite_pow hp ha) = k * get (multiplicity p a) ha := by
   intro k
   induction' k with k hk
   · simp [one_right hp.not_unit]

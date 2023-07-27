@@ -2,16 +2,13 @@
 Copyright (c) 2020 Kenny Lau. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Kenny Lau
-
-! This file was ported from Lean 3 source module field_theory.tower
-! leanprover-community/mathlib commit c7bce2818663f456335892ddbdd1809f111a5b72
-! Please do not edit these lines, except to modify the commit id
-! if you have ported upstream changes.
 -/
 import Mathlib.Data.Nat.Prime
 import Mathlib.RingTheory.AlgebraTower
 import Mathlib.LinearAlgebra.FiniteDimensional
 import Mathlib.LinearAlgebra.FreeModule.Finite.Matrix
+
+#align_import field_theory.tower from "leanprover-community/mathlib"@"c7bce2818663f456335892ddbdd1809f111a5b72"
 
 /-!
 # Tower of field extensions
@@ -49,9 +46,8 @@ variable [CommRing F] [Ring K] [AddCommGroup A]
 variable [Algebra F K] [Module K A] [Module F A] [IsScalarTower F K A]
 
 variable [StrongRankCondition F] [StrongRankCondition K]
-  [eta_experiment% Module.Free F K] [Module.Free K A]
+  [Module.Free F K] [Module.Free K A]
 
-set_option synthInstance.etaExperiment true in
 /-- Tower law: if `A` is a `K`-module and `K` is an extension of `F` then
 $\operatorname{rank}_F(A) = \operatorname{rank}_F(K) * \operatorname{rank}_K(A)$. -/
 theorem lift_rank_mul_lift_rank :
@@ -66,7 +62,6 @@ theorem lift_rank_mul_lift_rank :
     lift_lift, lift_umax.{v, w}]
 #align lift_rank_mul_lift_rank lift_rank_mul_lift_rank
 
-set_option synthInstance.etaExperiment true in
 /-- Tower law: if `A` is a `K`-module and `K` is an extension of `F` then
 $\operatorname{rank}_F(A) = \operatorname{rank}_F(K) * \operatorname{rank}_K(A)$.
 
@@ -78,7 +73,6 @@ theorem rank_mul_rank (F : Type u) (K A : Type v) [CommRing F] [Ring K] [AddComm
   convert lift_rank_mul_lift_rank F K A <;> rw [lift_id]
 #align rank_mul_rank rank_mul_rank
 
-set_option synthInstance.etaExperiment true in
 /-- Tower law: if `A` is a `K`-module and `K` is an extension of `F` then
 $\operatorname{rank}_F(A) = \operatorname{rank}_F(K) * \operatorname{rank}_K(A)$. -/
 theorem FiniteDimensional.finrank_mul_finrank' [Nontrivial K] [Module.Finite F K]
@@ -102,12 +96,10 @@ namespace FiniteDimensional
 
 open IsNoetherian
 
-set_option synthInstance.etaExperiment true in
 theorem trans [FiniteDimensional F K] [FiniteDimensional K A] : FiniteDimensional F A :=
   Module.Finite.trans K A
 #align finite_dimensional.trans FiniteDimensional.trans
 
-set_option synthInstance.etaExperiment true in
 /-- In a tower of field extensions `L / K / F`, if `L / F` is finite, so is `K / F`.
 
 (In fact, it suffices that `L` is a nontrivial ring.)
@@ -119,7 +111,6 @@ theorem left (K L : Type _) [Field K] [Algebra F K] [Ring L] [Nontrivial L] [Alg
   FiniteDimensional.of_injective (IsScalarTower.toAlgHom F K L).toLinearMap (RingHom.injective _)
 #align finite_dimensional.left FiniteDimensional.left
 
-set_option synthInstance.etaExperiment true in
 theorem right [hf : FiniteDimensional F A] : FiniteDimensional K A :=
   let ⟨⟨b, hb⟩⟩ := hf
   ⟨⟨b, Submodule.restrictScalars_injective F _ _ <| by
@@ -127,7 +118,6 @@ theorem right [hf : FiniteDimensional F A] : FiniteDimensional K A :=
     exact Submodule.subset_span⟩⟩
 #align finite_dimensional.right FiniteDimensional.right
 
-set_option synthInstance.etaExperiment true in
 /-- Tower law: if `A` is a `K`-vector space and `K` is a field extension of `F` then
 `dim_F(A) = dim_F(K) * dim_K(A)`.
 
@@ -140,7 +130,6 @@ theorem finrank_mul_finrank [FiniteDimensional F K] : finrank F K * finrank K A 
     exact mt (@right F K A _ _ _ _ _ _ _) hA
 #align finite_dimensional.finrank_mul_finrank FiniteDimensional.finrank_mul_finrank
 
-set_option synthInstance.etaExperiment true in
 theorem Subalgebra.isSimpleOrder_of_finrank_prime (A) [Ring A] [IsDomain A] [Algebra F A]
     (hp : (finrank F A).Prime) : IsSimpleOrder (Subalgebra F A) :=
   { toNontrivial :=
@@ -156,8 +145,6 @@ theorem Subalgebra.isSimpleOrder_of_finrank_prime (A) [Ring A] [IsDomain A] [Alg
 #align finite_dimensional.subalgebra.is_simple_order_of_finrank_prime FiniteDimensional.Subalgebra.isSimpleOrder_of_finrank_prime
 -- TODO: `IntermediateField` version
 
-set_option synthInstance.maxHeartbeats 60000 in
-set_option synthInstance.etaExperiment true in
 -- TODO: generalize by removing [FiniteDimensional F K]
 -- V = ⊕F,
 -- (V →ₗ[F] K) = ((⊕F) →ₗ[F] K) = (⊕ (F →ₗ[F] K)) = ⊕K
@@ -167,7 +154,6 @@ instance _root_.LinearMap.finite_dimensional'' (F : Type u) (K : Type v) (V : Ty
   right F _ _
 #align linear_map.finite_dimensional'' LinearMap.finite_dimensional''
 
-set_option synthInstance.etaExperiment true in
 theorem finrank_linear_map' (F : Type u) (K : Type v) (V : Type w) [Field F] [Field K] [Algebra F K]
     [FiniteDimensional F K] [AddCommGroup V] [Module F V] [FiniteDimensional F V] :
     finrank K (V →ₗ[F] K) = finrank F V :=

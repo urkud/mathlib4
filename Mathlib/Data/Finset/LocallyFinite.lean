@@ -2,14 +2,11 @@
 Copyright (c) 2019 Scott Morrison. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Morrison, Yaël Dillies
-
-! This file was ported from Lean 3 source module data.finset.locally_finite
-! leanprover-community/mathlib commit 52fa514ec337dd970d71d8de8d0fd68b455a1e54
-! Please do not edit these lines, except to modify the commit id
-! if you have ported upstream changes.
 -/
 import Mathlib.Order.LocallyFinite
 import Mathlib.Data.Set.Intervals.Monoid
+
+#align_import data.finset.locally_finite from "leanprover-community/mathlib"@"1d29de43a5ba4662dd33b5cfeecfc2a27a5a8a29"
 
 /-!
 # Intervals as finsets
@@ -19,7 +16,7 @@ This file provides basic results about all the `Finset.Ixx`, which are defined i
 
 ## TODO
 
-This file was originally only about `finset.Ico a b` where `a b : ℕ`. No care has yet been taken to
+This file was originally only about `Finset.Ico a b` where `a b : ℕ`. No care has yet been taken to
 generalize these lemmas properly and many lemmas about `Icc`, `Ioc`, `Ioo` are missing. In general,
 what's to do is taking the lemmas in `Data.X.Intervals` and abstract away the concrete structure.
 

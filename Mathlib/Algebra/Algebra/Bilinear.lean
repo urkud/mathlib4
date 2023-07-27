@@ -2,16 +2,13 @@
 Copyright (c) 2018 Kenny Lau. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Kenny Lau, Yury Kudryashov
-
-! This file was ported from Lean 3 source module algebra.algebra.bilinear
-! leanprover-community/mathlib commit 657df4339ae6ceada048c8a2980fb10e393143ec
-! Please do not edit these lines, except to modify the commit id
-! if you have ported upstream changes.
 -/
 import Mathlib.Algebra.Algebra.Basic
 import Mathlib.Algebra.Hom.Iterate
 import Mathlib.Algebra.Hom.NonUnitalAlg
 import Mathlib.LinearAlgebra.TensorProduct
+
+#align_import algebra.algebra.bilinear from "leanprover-community/mathlib"@"657df4339ae6ceada048c8a2980fb10e393143ec"
 
 /-!
 # Facts about algebras involving bilinear maps and tensor products
@@ -234,12 +231,6 @@ end Semiring
 section Ring
 
 variable {R A : Type _} [CommSemiring R] [Ring A] [Algebra R A]
-
-/-- This instance should not be necessary. porting note: drop after lean4#2074 resolved? -/
-local instance : Module R A := Algebra.toModule
-
-/-- This instance should not be necessary. porting note: drop after lean4#2074 resolved? -/
-local instance : Module A A := Semiring.toModule
 
 theorem mulLeft_injective [NoZeroDivisors A] {x : A} (hx : x ≠ 0) :
     Function.Injective (mulLeft R x) := by

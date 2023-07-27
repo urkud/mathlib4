@@ -2,14 +2,11 @@
 Copyright (c) 2017 Simon Hudon. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Simon Hudon
-
-! This file was ported from Lean 3 source module control.applicative
-! leanprover-community/mathlib commit 70d50ecfd4900dd6d328da39ab7ebd516abe4025
-! Please do not edit these lines, except to modify the commit id
-! if you have ported upstream changes.
 -/
 import Mathlib.Algebra.Group.Defs
 import Mathlib.Control.Functor
+
+#align_import control.applicative from "leanprover-community/mathlib"@"70d50ecfd4900dd6d328da39ab7ebd516abe4025"
 
 /-!
 # `applicative` instances
@@ -48,8 +45,8 @@ theorem Applicative.ext {F} :
           @Seq.seq _ A1.toSeq _ _ f (fun _ => x) = @Seq.seq _ A2.toSeq _ _ f (fun _ => x)) →
       A1 = A2
   | { toFunctor := F1, seq := s1, pure := p1, seqLeft := sl1, seqRight := sr1 },
-    { toFunctor := F2, seq := s2, pure := p2, seqLeft := sl2, seqRight := sr2 }, L1, L2, H1, H2 =>
-    by
+    { toFunctor := F2, seq := s2, pure := p2, seqLeft := sl2, seqRight := sr2 },
+    L1, L2, H1, H2 => by
     obtain rfl : @p1 = @p2 := by
       funext α x
       apply H1

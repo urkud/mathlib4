@@ -2,15 +2,12 @@
 Copyright (c) 2018 Johannes Hölzl. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Johannes Hölzl, Jens Wagemaker
-
-! This file was ported from Lean 3 source module algebra.associated
-! leanprover-community/mathlib commit 2f3994e1b117b1e1da49bcfb67334f33460c3ce4
-! Please do not edit these lines, except to modify the commit id
-! if you have ported upstream changes.
 -/
 import Mathlib.Algebra.Divisibility.Basic
 import Mathlib.Algebra.GroupPower.Lemmas
 import Mathlib.Algebra.Parity
+
+#align_import algebra.associated from "leanprover-community/mathlib"@"2f3994e1b117b1e1da49bcfb67334f33460c3ce4"
 
 /-!
 # Associated, prime, and irreducible elements.
@@ -152,7 +149,7 @@ theorem prime_pow_succ_dvd_mul {α : Type _} [CancelCommMonoidWithZero α] {p x 
     rw [pow_one]
     rw [pow_one] at hxy
     exact (h.dvd_or_dvd hxy).resolve_right hy
-  rw [pow_succ] at hxy⊢
+  rw [pow_succ] at hxy ⊢
   obtain ⟨x', rfl⟩ := (h.dvd_or_dvd (dvd_of_mul_right_dvd hxy)).resolve_right hy
   rw [mul_assoc] at hxy
   exact mul_dvd_mul_left p (ih ((mul_dvd_mul_iff_left h.ne_zero).mp hxy))
@@ -225,7 +222,7 @@ theorem irreducible_or_factor {α} [Monoid α] (x : α) (h : ¬IsUnit x) :
     Irreducible x ∨ ∃ a b, ¬IsUnit a ∧ ¬IsUnit b ∧ a * b = x := by
   haveI := Classical.dec
   refine' or_iff_not_imp_right.2 fun H => _
-  simp [h, irreducible_iff] at H⊢
+  simp [h, irreducible_iff] at H ⊢
   refine' fun a b h => by_contradiction fun o => _
   simp [not_or] at o
   exact H _ o.1 _ o.2 h.symm
@@ -531,7 +528,7 @@ theorem Associated.mul_right [CommMonoid α] {a b : α} (h : a ~ᵤ b) (c : α) 
 
 theorem Associated.pow_pow [CommMonoid α] {a b : α} {n : ℕ} (h : a ~ᵤ b) : a ^ n ~ᵤ b ^ n := by
   induction' n with n ih;
-  · simp [h] ; rfl
+  · simp [h]; rfl
   convert h.mul_mul ih <;> rw [pow_succ]
 #align associated.pow_pow Associated.pow_pow
 
@@ -641,7 +638,7 @@ protected theorem Associated.irreducible [Monoid α] {p q : α} (h : p ~ᵤ q) (
     have hpab : p = a * (b * (u⁻¹ : αˣ)) :=
       calc
         p = p * u * (u⁻¹ : αˣ) := by simp
-        _ = _ := by rw [hu] ; simp [hab, mul_assoc]
+        _ = _ := by rw [hu]; simp [hab, mul_assoc]
 
     (hp.isUnit_or_isUnit hpab).elim Or.inl fun ⟨v, hv⟩ => Or.inr ⟨v * u, by simp [hv]⟩⟩
 #align associated.irreducible Associated.irreducible
@@ -664,7 +661,7 @@ theorem Associated.of_mul_left [CancelCommMonoidWithZero α] {a b c d : α} (h :
 
 theorem Associated.of_mul_right [CancelCommMonoidWithZero α] {a b c d : α} :
     a * b ~ᵤ c * d → b ~ᵤ d → b ≠ 0 → a ~ᵤ c := by
-  rw [mul_comm a, mul_comm c] ; exact Associated.of_mul_left
+  rw [mul_comm a, mul_comm c]; exact Associated.of_mul_left
 #align associated.of_mul_right Associated.of_mul_right
 
 theorem Associated.of_pow_associated_of_prime [CancelCommMonoidWithZero α] {p₁ p₂ : α} {k₁ k₂ : ℕ}
@@ -715,13 +712,13 @@ variable {R : Type _} [CancelCommMonoidWithZero R] [Unique Rˣ] {p₁ p₂ : R} 
 
 theorem eq_of_prime_pow_eq (hp₁ : Prime p₁) (hp₂ : Prime p₂) (hk₁ : 0 < k₁)
     (h : p₁ ^ k₁ = p₂ ^ k₂) : p₁ = p₂ := by
-  rw [← associated_iff_eq] at h⊢
+  rw [← associated_iff_eq] at h ⊢
   apply h.of_pow_associated_of_prime hp₁ hp₂ hk₁
 #align eq_of_prime_pow_eq eq_of_prime_pow_eq
 
 theorem eq_of_prime_pow_eq' (hp₁ : Prime p₁) (hp₂ : Prime p₂) (hk₁ : 0 < k₂)
     (h : p₁ ^ k₁ = p₂ ^ k₂) : p₁ = p₂ := by
-  rw [← associated_iff_eq] at h⊢
+  rw [← associated_iff_eq] at h ⊢
   apply h.of_pow_associated_of_prime' hp₁ hp₂ hk₁
 #align eq_of_prime_pow_eq' eq_of_prime_pow_eq'
 
@@ -913,7 +910,7 @@ theorem le_mul_right {a b : Associates α} : a ≤ a * b :=
   ⟨b, rfl⟩
 #align associates.le_mul_right Associates.le_mul_right
 
-theorem le_mul_left {a b : Associates α} : a ≤ b * a := by rw [mul_comm] ; exact le_mul_right
+theorem le_mul_left {a b : Associates α} : a ≤ b * a := by rw [mul_comm]; exact le_mul_right
 #align associates.le_mul_left Associates.le_mul_left
 
 instance : OrderBot (Associates α) where
@@ -925,8 +922,7 @@ end Order
 theorem dvd_of_mk_le_mk {a b : α} : Associates.mk a ≤ Associates.mk b → a ∣ b
   | ⟨c', hc'⟩ =>
     let step : ∀ (c : α),
-      Associates.mk b = Associates.mk a * Quotient.mk (Associated.setoid α) c → a ∣ b :=
-    by
+      Associates.mk b = Associates.mk a * Quotient.mk (Associated.setoid α) c → a ∣ b := by
       intro c hc
       let ⟨d, hd⟩ := (Quotient.exact hc).symm
       exact ⟨↑d * c,
@@ -934,11 +930,11 @@ theorem dvd_of_mk_le_mk {a b : α} : Associates.mk a ≤ Associates.mk b → a �
             b = a * c * ↑d := hd.symm
             _ = a * (↑d * c) := by ac_rfl
             ⟩
-    Quotient.inductionOn c' step  hc'
+    Quotient.inductionOn c' step hc'
 #align associates.dvd_of_mk_le_mk Associates.dvd_of_mk_le_mk
 
 theorem mk_le_mk_of_dvd {a b : α} : a ∣ b → Associates.mk a ≤ Associates.mk b := fun ⟨c, hc⟩ =>
-  ⟨Associates.mk c, by simp [hc] ; rfl⟩
+  ⟨Associates.mk c, by simp [hc]; rfl⟩
 #align associates.mk_le_mk_of_dvd Associates.mk_le_mk_of_dvd
 
 theorem mk_le_mk_iff_dvd_iff {a b : α} : Associates.mk a ≤ Associates.mk b ↔ a ∣ b :=
@@ -1231,5 +1227,4 @@ theorem dvd_prime_pow [CancelCommMonoidWithZero α] {p q : α} (hp : Prime p) (n
 
 end CancelCommMonoidWithZero
 
--- Porting note: `assert_not_exists` has not been ported yet.
--- assert_not_exists multiset
+assert_not_exists Multiset

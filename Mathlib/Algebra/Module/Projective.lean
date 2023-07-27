@@ -2,15 +2,12 @@
 Copyright (c) 2021 Kevin Buzzard. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Kevin Buzzard, Antoine Labelle
-
-! This file was ported from Lean 3 source module algebra.module.projective
-! leanprover-community/mathlib commit 405ea5cee7a7070ff8fb8dcb4cfb003532e34bce
-! Please do not edit these lines, except to modify the commit id
-! if you have ported upstream changes.
 -/
 import Mathlib.Algebra.Module.Basic
 import Mathlib.LinearAlgebra.Finsupp
 import Mathlib.LinearAlgebra.FreeModule.Basic
+
+#align_import algebra.module.projective from "leanprover-community/mathlib"@"405ea5cee7a7070ff8fb8dcb4cfb003532e34bce"
 
 /-!
 
@@ -102,7 +99,7 @@ theorem projective_lifting_property [h : Projective R P] (f : M →ₗ[R] N) (g 
   /-
     Here's the first step of the proof.
     Recall that `X →₀ R` is Lean's way of talking about the free `R`-module
-    on a type `X`. The universal property `finsupp.total` says that to a map
+    on a type `X`. The universal property `Finsupp.total` says that to a map
     `X → N` from a type to an `R`-module, we get an associated R-module map
     `(X →₀ R) →ₗ N`. Apply this to a (noncomputable) map `P → M` coming from the map
     `P →ₗ N` and a random splitting of the surjection `M →ₗ N`, and we get
@@ -142,11 +139,11 @@ variable {ι : Type _} (A : ι → Type _) [∀ i : ι, AddCommMonoid (A i)] [�
 instance [h : ∀ i : ι, Projective R (A i)] : Projective R (Π₀ i, A i) :=
   .of_lifting_property'' fun f hf ↦ by
     classical
-      choose g hg using fun i ↦ projective_lifting_property f (Dfinsupp.lsingle i) hf
-      replace hg : ∀ i x, f (g i x) = Dfinsupp.single i x := fun i ↦ FunLike.congr_fun (hg i)
-      refine ⟨Dfinsupp.coprodMap g, ?_⟩
+      choose g hg using fun i ↦ projective_lifting_property f (DFinsupp.lsingle i) hf
+      replace hg : ∀ i x, f (g i x) = DFinsupp.single i x := fun i ↦ FunLike.congr_fun (hg i)
+      refine ⟨DFinsupp.coprodMap g, ?_⟩
       ext i x j
-      simp only [comp_apply, id_apply, Dfinsupp.lsingle_apply, Dfinsupp.coprodMap_apply_single, hg]
+      simp only [comp_apply, id_apply, DFinsupp.lsingle_apply, DFinsupp.coprodMap_apply_single, hg]
 
 end Semiring
 
@@ -154,7 +151,6 @@ section Ring
 
 variable {R : Type _} [Ring R] {P : Type _} [AddCommGroup P] [Module R P]
 
-set_option synthInstance.etaExperiment true in
 /-- Free modules are projective. -/
 theorem Projective.of_basis {ι : Type _} (b : Basis ι R P) : Projective R P := by
   -- need P →ₗ (P →₀ R) for definition of projective.
@@ -190,7 +186,6 @@ theorem Projective.of_lifting_property' {R : Type u} [Semiring R] {P : Type max 
 #align module.projective_of_lifting_property' Module.Projective.of_lifting_property'
 
 -- porting note: todo: generalize to `P : Type v`?
-set_option synthInstance.etaExperiment true in
 /-- A variant of `of_lifting_property'` when we're working over a `[Ring R]`,
 which only requires quantifying over modules with an `AddCommGroup` instance. -/
 theorem Projective.of_lifting_property {R : Type u} [Ring R] {P : Type max u v} [AddCommGroup P]

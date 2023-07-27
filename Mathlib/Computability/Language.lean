@@ -2,16 +2,13 @@
 Copyright (c) 2020 Fox Thomson. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Fox Thomson
-
-! This file was ported from Lean 3 source module computability.language
-! leanprover-community/mathlib commit a239cd3e7ac2c7cde36c913808f9d40c411344f6
-! Please do not edit these lines, except to modify the commit id
-! if you have ported upstream changes.
 -/
 import Mathlib.Algebra.Hom.Ring
 import Mathlib.Algebra.Order.Kleene
 import Mathlib.Data.List.Join
 import Mathlib.Data.Set.Lattice
+
+#align_import computability.language from "leanprover-community/mathlib"@"a239cd3e7ac2c7cde36c913808f9d40c411344f6"
 
 /-!
 # Languages
@@ -37,7 +34,7 @@ def Language (α) :=
 instance : Membership (List α) (Language α) := ⟨Set.Mem⟩
 instance : Singleton (List α) (Language α) := ⟨Set.singleton⟩
 instance : Insert (List α) (Language α) := ⟨Set.insert⟩
-instance : CompleteBooleanAlgebra (Language α) := Set.instCompleteBooleanAlgebraSet
+instance : CompleteAtomicBooleanAlgebra (Language α) := Set.completeAtomicBooleanAlgebra
 
 namespace Language
 
@@ -48,14 +45,13 @@ variable {l m : Language α} {a b x : List α}
 
 /-- Zero language has no elements. -/
 instance : Zero (Language α) :=
-  ⟨fun _ => False⟩
+  ⟨(∅ : Set _)⟩
 
 /-- `1 : Language α` contains only one element `[]`. -/
 instance : One (Language α) :=
-  ⟨fun l => l = []⟩
+  ⟨{[]}⟩
 
-instance : Inhabited (Language α) :=
-  ⟨fun _ => False⟩
+instance : Inhabited (Language α) := ⟨(∅ : Set _)⟩
 
 /-- The sum of two languages is their union. -/
 instance : Add (Language α) :=
@@ -133,7 +129,7 @@ theorem nil_mem_kstar (l : Language α) : [] ∈ l∗ :=
   ⟨[], rfl, fun _ h ↦ by contradiction⟩
 #align language.nil_mem_kstar Language.nil_mem_kstar
 
-instance : Semiring (Language α) where
+instance instSemiring : Semiring (Language α) where
   add := (· + ·)
   add_assoc := union_assoc
   zero := 0
@@ -182,16 +178,11 @@ theorem kstar_def_nonempty (l : Language α) :
   constructor
   · rintro ⟨S, rfl, h⟩
     refine' ⟨S.filter fun l ↦ ¬List.isEmpty l, by simp, fun y hy ↦ _⟩
-    simp [mem_filter, List.isEmpty_iff_eq_nil] at hy
     -- Porting note: The previous code was:
-    -- exact ⟨h y hy.1, hy.2⟩
-    --
-    -- The goal `y ≠ []` for the second argument cannot be resolved
-    -- by `hy.2 : isEmpty y = false`.
-    let ⟨hyl, hyr⟩ := hy
-    apply And.intro (h y hyl)
-    cases y <;> simp only [ne_eq, not_true, not_false_iff]
-    contradiction
+    -- rw [mem_filter, empty_iff_eq_nil] at hy
+    rw [mem_filter, decide_not, Bool.decide_coe, Bool.not_eq_true', ← Bool.bool_iff_false,
+      isEmpty_iff_eq_nil] at hy
+    exact ⟨h y hy.1, hy.2⟩
   · rintro ⟨S, hx, h⟩
     exact ⟨S, hx, fun y hy ↦ (h y hy).1⟩
 #align language.kstar_def_nonempty Language.kstar_def_nonempty
@@ -202,7 +193,7 @@ theorem le_iff (l m : Language α) : l ≤ m ↔ l + m = m :=
 
 theorem le_mul_congr {l₁ l₂ m₁ m₂ : Language α} : l₁ ≤ m₁ → l₂ ≤ m₂ → l₁ * l₂ ≤ m₁ * m₂ := by
   intro h₁ h₂ x hx
-  simp only [mul_def, exists_and_left, mem_image2, image_prod] at hx⊢
+  simp only [mul_def, exists_and_left, mem_image2, image_prod] at hx ⊢
   tauto
 #align language.le_mul_congr Language.le_mul_congr
 
@@ -210,29 +201,29 @@ theorem le_add_congr {l₁ l₂ m₁ m₂ : Language α} : l₁ ≤ m₁ → l�
   sup_le_sup
 #align language.le_add_congr Language.le_add_congr
 
-theorem mem_supᵢ {ι : Sort v} {l : ι → Language α} {x : List α} : (x ∈ ⨆ i, l i) ↔ ∃ i, x ∈ l i :=
-  mem_unionᵢ
-#align language.mem_supr Language.mem_supᵢ
+theorem mem_iSup {ι : Sort v} {l : ι → Language α} {x : List α} : (x ∈ ⨆ i, l i) ↔ ∃ i, x ∈ l i :=
+  mem_iUnion
+#align language.mem_supr Language.mem_iSup
 
-theorem supᵢ_mul {ι : Sort v} (l : ι → Language α) (m : Language α) :
+theorem iSup_mul {ι : Sort v} (l : ι → Language α) (m : Language α) :
     (⨆ i, l i) * m = ⨆ i, l i * m :=
-  image2_unionᵢ_left _ _ _
-#align language.supr_mul Language.supᵢ_mul
+  image2_iUnion_left _ _ _
+#align language.supr_mul Language.iSup_mul
 
-theorem mul_supᵢ {ι : Sort v} (l : ι → Language α) (m : Language α) :
+theorem mul_iSup {ι : Sort v} (l : ι → Language α) (m : Language α) :
     (m * ⨆ i, l i) = ⨆ i, m * l i :=
-  image2_unionᵢ_right _ _ _
-#align language.mul_supr Language.mul_supᵢ
+  image2_iUnion_right _ _ _
+#align language.mul_supr Language.mul_iSup
 
-theorem supᵢ_add {ι : Sort v} [Nonempty ι] (l : ι → Language α) (m : Language α) :
+theorem iSup_add {ι : Sort v} [Nonempty ι] (l : ι → Language α) (m : Language α) :
     (⨆ i, l i) + m = ⨆ i, l i + m :=
-  supᵢ_sup
-#align language.supr_add Language.supᵢ_add
+  iSup_sup
+#align language.supr_add Language.iSup_add
 
-theorem add_supᵢ {ι : Sort v} [Nonempty ι] (l : ι → Language α) (m : Language α) :
+theorem add_iSup {ι : Sort v} [Nonempty ι] (l : ι → Language α) (m : Language α) :
     (m + ⨆ i, l i) = ⨆ i, m + l i :=
-  sup_supᵢ
-#align language.add_supr Language.add_supᵢ
+  sup_iSup
+#align language.add_supr Language.add_iSup
 
 theorem mem_pow {l : Language α} {x : List α} {n : ℕ} :
     x ∈ l ^ n ↔ ∃ S : List (List α), x = S.join ∧ S.length = n ∧ ∀ y ∈ S, y ∈ l := by
@@ -241,16 +232,8 @@ theorem mem_pow {l : Language α} {x : List α} {n : ℕ} :
     constructor
     · rintro rfl
       exact ⟨[], rfl, rfl, fun _ h ↦ by contradiction⟩
-    · -- Porting note: The previous code was:
-      -- rintro ⟨_, rfl, rfl, _⟩
-      -- rfl
-      --
-      -- The code reports an error for the second `rfl`.
-      rintro ⟨_, rfl, h₀, _⟩
-      simp; intros _ h₁
-      rw [length_eq_zero] at h₀
-      rw [h₀] at h₁
-      contradiction
+    · rintro ⟨_, rfl, rfl, _⟩
+      rfl
   · simp only [pow_succ, mem_mul, ihn]
     constructor
     · rintro ⟨a, b, ha, ⟨S, rfl, rfl, hS⟩, rfl⟩
@@ -260,31 +243,31 @@ theorem mem_pow {l : Language α} {x : List α} {n : ℕ} :
       exact ⟨a, _, hS.1, ⟨S, rfl, rfl, hS.2⟩, rfl⟩
 #align language.mem_pow Language.mem_pow
 
-theorem kstar_eq_supᵢ_pow (l : Language α) : l∗ = ⨆ i : ℕ, l ^ i := by
+theorem kstar_eq_iSup_pow (l : Language α) : l∗ = ⨆ i : ℕ, l ^ i := by
   ext x
-  simp only [mem_kstar, mem_supᵢ, mem_pow]
+  simp only [mem_kstar, mem_iSup, mem_pow]
   constructor
   · rintro ⟨S, rfl, hS⟩
     exact ⟨_, S, rfl, rfl, hS⟩
   · rintro ⟨_, S, rfl, rfl, hS⟩
     exact ⟨S, rfl, hS⟩
-#align language.kstar_eq_supr_pow Language.kstar_eq_supᵢ_pow
+#align language.kstar_eq_supr_pow Language.kstar_eq_iSup_pow
 
 @[simp]
 theorem map_kstar (f : α → β) (l : Language α) : map f l∗ = (map f l)∗ := by
-  rw [kstar_eq_supᵢ_pow, kstar_eq_supᵢ_pow]
+  rw [kstar_eq_iSup_pow, kstar_eq_iSup_pow]
   simp_rw [← map_pow]
-  exact image_unionᵢ
+  exact image_iUnion
 #align language.map_kstar Language.map_kstar
 
 theorem mul_self_kstar_comm (l : Language α) : l∗ * l = l * l∗ := by
-  simp only [kstar_eq_supᵢ_pow, mul_supᵢ, supᵢ_mul, ← pow_succ, ← pow_succ']
+  simp only [kstar_eq_iSup_pow, mul_iSup, iSup_mul, ← pow_succ, ← pow_succ']
 #align language.mul_self_kstar_comm Language.mul_self_kstar_comm
 
 @[simp]
 theorem one_add_self_mul_kstar_eq_kstar (l : Language α) : 1 + l * l∗ = l∗ := by
-  simp only [kstar_eq_supᵢ_pow, mul_supᵢ, ← pow_succ, ← pow_zero l]
-  exact sup_supᵢ_nat_succ _
+  simp only [kstar_eq_iSup_pow, mul_iSup, ← pow_succ, ← pow_zero l]
+  exact sup_iSup_nat_succ _
 #align language.one_add_self_mul_kstar_eq_kstar Language.one_add_self_mul_kstar_eq_kstar
 
 @[simp]
@@ -293,21 +276,21 @@ theorem one_add_kstar_mul_self_eq_kstar (l : Language α) : 1 + l∗ * l = l∗ 
 #align language.one_add_kstar_mul_self_eq_kstar Language.one_add_kstar_mul_self_eq_kstar
 
 instance : KleeneAlgebra (Language α) :=
-  { Language.instSemiringLanguage, Set.instCompleteBooleanAlgebraSet with
+  { Language.instSemiring, Set.completeAtomicBooleanAlgebra with
     kstar := fun L ↦ L∗,
     one_le_kstar := fun a l hl ↦ ⟨[], hl, by simp⟩,
     mul_kstar_le_kstar := fun a ↦ (one_add_self_mul_kstar_eq_kstar a).le.trans' le_sup_right,
     kstar_mul_le_kstar := fun a ↦ (one_add_kstar_mul_self_eq_kstar a).le.trans' le_sup_right,
     kstar_mul_le_self := fun l m h ↦ by
-      rw [kstar_eq_supᵢ_pow, supᵢ_mul]
-      refine' supᵢ_le (fun n ↦ _)
+      rw [kstar_eq_iSup_pow, iSup_mul]
+      refine' iSup_le (fun n ↦ _)
       induction' n with n ih
       · simp
       rw [pow_succ', mul_assoc (l^n) l m]
       exact le_trans (le_mul_congr le_rfl h) ih,
     mul_kstar_le_self := fun l m h ↦ by
-      rw [kstar_eq_supᵢ_pow, mul_supᵢ]
-      refine' supᵢ_le (fun n ↦ _)
+      rw [kstar_eq_iSup_pow, mul_iSup]
+      refine' iSup_le (fun n ↦ _)
       induction' n with n ih
       · simp
       rw [pow_succ, ←mul_assoc m l (l^n)]

@@ -2,16 +2,13 @@
 Copyright (c) 2019 Jeremy Avigad. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jeremy Avigad, Yury Kudryashov
-
-! This file was ported from Lean 3 source module analysis.asymptotics.asymptotics
-! leanprover-community/mathlib commit f2ce6086713c78a7f880485f7917ea547a215982
-! Please do not edit these lines, except to modify the commit id
-! if you have ported upstream changes.
 -/
 import Mathlib.Analysis.Normed.Group.InfiniteSum
 import Mathlib.Analysis.NormedSpace.Basic
 import Mathlib.Topology.Algebra.Order.LiminfLimsup
 import Mathlib.Topology.LocalHomeomorph
+
+#align_import analysis.asymptotics.asymptotics from "leanprover-community/mathlib"@"f2ce6086713c78a7f880485f7917ea547a215982"
 
 /-!
 # Asymptotics
@@ -59,13 +56,14 @@ namespace Asymptotics
 set_option linter.uppercaseLean3 false
 
 variable {α : Type _} {β : Type _} {E : Type _} {F : Type _} {G : Type _} {E' : Type _}
-  {F' : Type _} {G' : Type _} {E'' : Type _} {F'' : Type _} {G'' : Type _} {R : Type _}
-  {R' : Type _} {𝕜 : Type _} {𝕜' : Type _}
+  {F' : Type _} {G' : Type _} {E'' : Type _} {F'' : Type _} {G'' : Type _} {E''' : Type _}
+  {R : Type _} {R' : Type _} {𝕜 : Type _} {𝕜' : Type _}
 
 variable [Norm E] [Norm F] [Norm G]
 
 variable [SeminormedAddCommGroup E'] [SeminormedAddCommGroup F'] [SeminormedAddCommGroup G']
   [NormedAddCommGroup E''] [NormedAddCommGroup F''] [NormedAddCommGroup G''] [SeminormedRing R]
+  [SeminormedAddGroup E''']
   [SeminormedRing R']
 
 variable [NormedField 𝕜] [NormedField 𝕜']
@@ -120,6 +118,40 @@ theorem isBigO_iff : f =O[l] g ↔ ∃ c : ℝ, ∀ᶠ x in l, ‖f x‖ ≤ c *
   simp only [IsBigO_def, IsBigOWith_def]
 #align asymptotics.is_O_iff Asymptotics.isBigO_iff
 
+/-- Definition of `IsBigO` in terms of filters, with a positive constant. -/
+theorem isBigO_iff' {g : α → E'''} :
+    f =O[l] g ↔ ∃ c > 0, ∀ᶠ x in l, ‖f x‖ ≤ c * ‖g x‖ := by
+  refine ⟨fun h => ?mp, fun h => ?mpr⟩
+  case mp =>
+    rw [isBigO_iff] at h
+    obtain ⟨c, hc⟩ := h
+    refine' ⟨max c 1, zero_lt_one.trans_le (le_max_right _ _), _⟩
+    filter_upwards [hc] with x hx
+    apply hx.trans
+    gcongr
+    exact le_max_left _ _
+  case mpr =>
+    rw [isBigO_iff]
+    obtain ⟨c, ⟨_, hc⟩⟩ := h
+    exact ⟨c, hc⟩
+
+/-- Definition of `IsBigO` in terms of filters, with the constant in the lower bound. -/
+theorem isBigO_iff'' {g : α → E'''} :
+    f =O[l] g ↔ ∃ c > 0, ∀ᶠ x in l, c * ‖f x‖ ≤ ‖g x‖ := by
+  refine ⟨fun h => ?mp, fun h => ?mpr⟩
+  case mp =>
+    rw [isBigO_iff'] at h
+    obtain ⟨c, ⟨hc_pos, hc⟩⟩ := h
+    refine ⟨c⁻¹, ⟨by positivity, ?_⟩⟩
+    filter_upwards [hc] with x hx
+    rwa [inv_mul_le_iff (by positivity)]
+  case mpr =>
+    rw [isBigO_iff']
+    obtain ⟨c, ⟨hc_pos, hc⟩⟩ := h
+    refine ⟨c⁻¹, ⟨by positivity, ?_⟩⟩
+    filter_upwards [hc] with x hx
+    rwa [←inv_inv c, inv_mul_le_iff (by positivity)] at hx
+
 theorem IsBigO.of_bound (c : ℝ) (h : ∀ᶠ x in l, ‖f x‖ ≤ c * ‖g x‖) : f =O[l] g :=
   isBigO_iff.2 ⟨c, h⟩
 #align asymptotics.is_O.of_bound Asymptotics.IsBigO.of_bound
@@ -171,6 +203,9 @@ theorem IsLittleO.def' (h : f =o[l] g) (hc : 0 < c) : IsBigOWith c l f g :=
   isBigOWith_iff.2 <| isLittleO_iff.1 h hc
 #align asymptotics.is_o.def' Asymptotics.IsLittleO.def'
 
+theorem IsLittleO.eventuallyLE (h : f =o[l] g) : ∀ᶠ x in l, ‖f x‖ ≤ ‖g x‖ := by
+  simpa using h.def zero_lt_one
+
 end Defs
 
 /-! ### Conversions -/
@@ -196,7 +231,7 @@ theorem IsBigOWith.weaken (h : IsBigOWith c l f g') (hc : c ≤ c') : IsBigOWith
     mem_of_superset h.bound fun x hx =>
       calc
         ‖f x‖ ≤ c * ‖g' x‖ := hx
-        _ ≤ _ := mul_le_mul_of_nonneg_right hc (norm_nonneg _)
+        _ ≤ _ := by gcongr
 #align asymptotics.is_O_with.weaken Asymptotics.IsBigOWith.weaken
 
 theorem IsBigOWith.exists_pos (h : IsBigOWith c l f g') :
@@ -462,7 +497,7 @@ theorem IsBigOWith.trans (hfg : IsBigOWith c l f g) (hgk : IsBigOWith c' l g k) 
   filter_upwards [hfg, hgk]with x hx hx'
   calc
     ‖f x‖ ≤ c * ‖g x‖ := hx
-    _ ≤ c * (c' * ‖k x‖) := (mul_le_mul_of_nonneg_left hx' hc)
+    _ ≤ c * (c' * ‖k x‖) := by gcongr
     _ = c * c' * ‖k x‖ := (mul_assoc _ _ _).symm
 #align asymptotics.is_O_with.trans Asymptotics.IsBigOWith.trans
 
@@ -660,13 +695,13 @@ theorem isLittleO_sup : f =o[l ⊔ l'] g ↔ f =o[l] g ∧ f =o[l'] g :=
 #align asymptotics.is_o_sup Asymptotics.isLittleO_sup
 
 theorem isBigOWith_insert [TopologicalSpace α] {x : α} {s : Set α} {C : ℝ} {g : α → E} {g' : α → F}
-    (h : ‖g x‖ ≤ C * ‖g' x‖) : IsBigOWith C (𝓝[insert x s] x) g g' ↔ IsBigOWith C (𝓝[s] x) g g' :=
-  by
+    (h : ‖g x‖ ≤ C * ‖g' x‖) : IsBigOWith C (𝓝[insert x s] x) g g' ↔
+    IsBigOWith C (𝓝[s] x) g g' := by
   simp_rw [IsBigOWith_def, nhdsWithin_insert, eventually_sup, eventually_pure, h, true_and_iff]
 #align asymptotics.is_O_with_insert Asymptotics.isBigOWith_insert
 
-theorem IsBigOWith.insert [TopologicalSpace α] {x : α} {s : Set α} {C : ℝ} {g : α → E} {g' : α → F}
-    (h1 : IsBigOWith C (𝓝[s] x) g g') (h2 : ‖g x‖ ≤ C * ‖g' x‖) :
+protected theorem IsBigOWith.insert [TopologicalSpace α] {x : α} {s : Set α} {C : ℝ} {g : α → E}
+    {g' : α → F} (h1 : IsBigOWith C (𝓝[s] x) g g') (h2 : ‖g x‖ ≤ C * ‖g' x‖) :
     IsBigOWith C (𝓝[insert x s] x) g g' :=
   (isBigOWith_insert h2).mpr h1
 #align asymptotics.is_O_with.insert Asymptotics.IsBigOWith.insert
@@ -680,8 +715,8 @@ theorem isLittleO_insert [TopologicalSpace α] {x : α} {s : Set α} {g : α →
   exact mul_nonneg hc.le (norm_nonneg _)
 #align asymptotics.is_o_insert Asymptotics.isLittleO_insert
 
-theorem IsLittleO.insert [TopologicalSpace α] {x : α} {s : Set α} {g : α → E'} {g' : α → F'}
-    (h1 : g =o[𝓝[s] x] g') (h2 : g x = 0) : g =o[𝓝[insert x s] x] g' :=
+protected theorem IsLittleO.insert [TopologicalSpace α] {x : α} {s : Set α} {g : α → E'}
+    {g' : α → F'} (h1 : g =o[𝓝[s] x] g') (h2 : g x = 0) : g =o[𝓝[insert x s] x] g' :=
   (isLittleO_insert h2).mpr h1
 #align asymptotics.is_o.insert Asymptotics.IsLittleO.insert
 
@@ -1326,8 +1361,8 @@ theorem isLittleO_one_iff : f' =o[l] (fun _x => 1 : α → F) ↔ Tendsto f' l (
 #align asymptotics.is_o_one_iff Asymptotics.isLittleO_one_iff
 
 @[simp]
-theorem isBigO_one_iff : f =O[l] (fun _x => 1 : α → F) ↔ IsBoundedUnder (· ≤ ·) l fun x => ‖f x‖ :=
-  by
+theorem isBigO_one_iff : f =O[l] (fun _x => 1 : α → F) ↔
+    IsBoundedUnder (· ≤ ·) l fun x => ‖f x‖ := by
   simp only [isBigO_iff, norm_one, mul_one]
   rfl
 #align asymptotics.is_O_one_iff Asymptotics.isBigO_one_iff
@@ -1388,13 +1423,12 @@ theorem isBigO_const_of_ne {c : F''} (hc : c ≠ 0) :
   ⟨fun h => h.isBoundedUnder_le, fun h => h.isBigO_const hc⟩
 #align asymptotics.is_O_const_of_ne Asymptotics.isBigO_const_of_ne
 
-theorem isBigO_const_iff {c : F''} :
-    (f'' =O[l] fun _x => c) ↔ (c = 0 → f'' =ᶠ[l] 0) ∧ IsBoundedUnder (· ≤ ·) l fun x => ‖f'' x‖ :=
-  by
+theorem isBigO_const_iff {c : F''} : (f'' =O[l] fun _x => c) ↔
+    (c = 0 → f'' =ᶠ[l] 0) ∧ IsBoundedUnder (· ≤ ·) l fun x => ‖f'' x‖ := by
   refine' ⟨fun h => ⟨fun hc => isBigO_zero_right_iff.1 (by rwa [← hc]), h.isBoundedUnder_le⟩, _⟩
   rintro ⟨hcf, hf⟩
   rcases eq_or_ne c 0 with (hc | hc)
-  exacts[(hcf hc).trans_isBigO (isBigO_zero _ _), hf.isBigO_const hc]
+  exacts [(hcf hc).trans_isBigO (isBigO_zero _ _), hf.isBigO_const hc]
 #align asymptotics.is_O_const_iff Asymptotics.isBigO_const_iff
 
 theorem isBigO_iff_isBoundedUnder_le_div (h : ∀ᶠ x in l, g'' x ≠ 0) :
@@ -1405,7 +1439,7 @@ theorem isBigO_iff_isBoundedUnder_le_div (h : ∀ᶠ x in l, g'' x ≠ 0) :
       eventually_congr <| h.mono fun x hx => (div_le_iff <| norm_pos_iff.2 hx).symm
 #align asymptotics.is_O_iff_is_bounded_under_le_div Asymptotics.isBigO_iff_isBoundedUnder_le_div
 
-/-- `(λ x, c) =O[l] f` if and only if `f` is bounded away from zero. -/
+/-- `(fun x ↦ c) =O[l] f` if and only if `f` is bounded away from zero. -/
 theorem isBigO_const_left_iff_pos_le_norm {c : E''} (hc : c ≠ 0) :
     (fun _x => c) =O[l] f' ↔ ∃ b, 0 < b ∧ ∀ᶠ x in l, b ≤ ‖f' x‖ := by
   constructor
@@ -1632,8 +1666,7 @@ theorem IsBigOWith.of_pow {n : ℕ} {f : α → 𝕜} {g : α → R} (h : IsBigO
         calc
           ‖f x‖ ^ n = ‖f x ^ n‖ := (norm_pow _ _).symm
           _ ≤ c' ^ n * ‖g x ^ n‖ := hx
-          _ ≤ c' ^ n * ‖g x‖ ^ n :=
-            (mul_le_mul_of_nonneg_left (norm_pow_le' _ hn.bot_lt) (pow_nonneg hc' _))
+          _ ≤ c' ^ n * ‖g x‖ ^ n := by gcongr; exact norm_pow_le' _ hn.bot_lt
           _ = (c' * ‖g x‖) ^ n := (mul_pow _ _ _).symm
 #align asymptotics.is_O_with.of_pow Asymptotics.IsBigOWith.of_pow
 
@@ -1935,11 +1968,11 @@ theorem isBigOWith_of_eq_mul (φ : α → 𝕜) (hφ : ∀ᶠ x in l, ‖φ x‖
   simp only [IsBigOWith_def]
   refine' h.symm.rw (fun x a => ‖a‖ ≤ c * ‖v x‖) (hφ.mono fun x hx => _)
   simp only [norm_mul, Pi.mul_apply]
-  exact mul_le_mul_of_nonneg_right hx (norm_nonneg _)
+  gcongr
 #align asymptotics.is_O_with_of_eq_mul Asymptotics.isBigOWith_of_eq_mul
 
 theorem isBigOWith_iff_exists_eq_mul (hc : 0 ≤ c) :
-    IsBigOWith c l u v ↔ ∃ (φ : α → 𝕜)(_hφ : ∀ᶠ x in l, ‖φ x‖ ≤ c), u =ᶠ[l] φ * v := by
+    IsBigOWith c l u v ↔ ∃ (φ : α → 𝕜) (_hφ : ∀ᶠ x in l, ‖φ x‖ ≤ c), u =ᶠ[l] φ * v := by
   constructor
   · intro h
     use fun x => u x / v x
@@ -1950,12 +1983,12 @@ theorem isBigOWith_iff_exists_eq_mul (hc : 0 ≤ c) :
 #align asymptotics.is_O_with_iff_exists_eq_mul Asymptotics.isBigOWith_iff_exists_eq_mul
 
 theorem IsBigOWith.exists_eq_mul (h : IsBigOWith c l u v) (hc : 0 ≤ c) :
-    ∃ (φ : α → 𝕜)(_hφ : ∀ᶠ x in l, ‖φ x‖ ≤ c), u =ᶠ[l] φ * v :=
+    ∃ (φ : α → 𝕜) (_hφ : ∀ᶠ x in l, ‖φ x‖ ≤ c), u =ᶠ[l] φ * v :=
   (isBigOWith_iff_exists_eq_mul hc).mp h
 #align asymptotics.is_O_with.exists_eq_mul Asymptotics.IsBigOWith.exists_eq_mul
 
 theorem isBigO_iff_exists_eq_mul :
-    u =O[l] v ↔ ∃ (φ : α → 𝕜)(_hφ : l.IsBoundedUnder (· ≤ ·) (norm ∘ φ)), u =ᶠ[l] φ * v := by
+    u =O[l] v ↔ ∃ (φ : α → 𝕜) (_hφ : l.IsBoundedUnder (· ≤ ·) (norm ∘ φ)), u =ᶠ[l] φ * v := by
   constructor
   · rintro h
     rcases h.exists_nonneg with ⟨c, hnnc, hc⟩
@@ -1969,7 +2002,7 @@ alias isBigO_iff_exists_eq_mul ↔ IsBigO.exists_eq_mul _
 #align asymptotics.is_O.exists_eq_mul Asymptotics.IsBigO.exists_eq_mul
 
 theorem isLittleO_iff_exists_eq_mul :
-    u =o[l] v ↔ ∃ (φ : α → 𝕜)(_hφ : Tendsto φ l (𝓝 0)), u =ᶠ[l] φ * v := by
+    u =o[l] v ↔ ∃ (φ : α → 𝕜) (_hφ : Tendsto φ l (𝓝 0)), u =ᶠ[l] φ * v := by
   constructor
   · exact fun h => ⟨fun x => u x / v x, h.tendsto_div_nhds_zero, h.eventually_mul_div_cancel.symm⟩
   · simp only [IsLittleO_def]
@@ -1983,7 +2016,7 @@ alias isLittleO_iff_exists_eq_mul ↔ IsLittleO.exists_eq_mul _
 
 end ExistsMulEq
 
-/-! ### Miscellanous lemmas -/
+/-! ### Miscellaneous lemmas -/
 
 
 theorem div_isBoundedUnder_of_isBigO {α : Type _} {l : Filter α} {f g : α → 𝕜} (h : f =O[l] g) :
@@ -2074,7 +2107,7 @@ theorem IsBigOWith.right_le_sub_of_lt_1 {f₁ f₂ : α → E'} (h : IsBigOWith 
     IsBigOWith (1 / (1 - c)) l f₂ fun x => f₂ x - f₁ x :=
   IsBigOWith.of_bound <|
     mem_of_superset h.bound fun x hx => by
-      simp only [mem_setOf_eq] at hx⊢
+      simp only [mem_setOf_eq] at hx ⊢
       rw [mul_comm, one_div, ← div_eq_mul_inv, _root_.le_div_iff, mul_sub, mul_one, mul_comm]
       · exact le_trans (sub_le_sub_left hx _) (norm_sub_norm_le _ _)
       · exact sub_pos.2 hc
@@ -2153,6 +2186,16 @@ theorem isLittleO_pi {ι : Type _} [Fintype ι] {E' : ι → Type _} [∀ i, Nor
   simp (config := { contextual := true }) only [IsLittleO_def, isBigOWith_pi, le_of_lt]
   exact ⟨fun h i c hc => h hc i, fun h c hc i => h i hc⟩
 #align asymptotics.is_o_pi Asymptotics.isLittleO_pi
+
+theorem IsBigO.nat_cast_atTop {R : Type _} [StrictOrderedSemiring R] [Archimedean R]
+    {f : R → E} {g : R → F} (h : f =O[atTop] g) :
+    (fun (n:ℕ) => f n) =O[atTop] (fun n => g n) :=
+  IsBigO.comp_tendsto h tendsto_nat_cast_atTop_atTop
+
+theorem IsLittleO.nat_cast_atTop {R : Type _} [StrictOrderedSemiring R] [Archimedean R]
+    {f : R → E} {g : R → F} (h : f =o[atTop] g) :
+    (fun (n:ℕ) => f n) =o[atTop] (fun n => g n) :=
+  IsLittleO.comp_tendsto h tendsto_nat_cast_atTop_atTop
 
 end Asymptotics
 

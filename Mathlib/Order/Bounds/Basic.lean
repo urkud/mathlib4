@@ -2,13 +2,11 @@
 Copyright (c) 2017 Johannes Hölzl. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Johannes Hölzl, Yury Kudryashov
-! This file was ported from Lean 3 source module order.bounds.basic
-! leanprover-community/mathlib commit 3310acfa9787aa171db6d4cba3945f6f275fe9f2
-! Please do not edit these lines, except to modify the commit id
-! if you have ported upstream changes.
 -/
 import Mathlib.Data.Set.Intervals.Basic
 import Mathlib.Data.Set.NAry
+
+#align_import order.bounds.basic from "leanprover-community/mathlib"@"3310acfa9787aa171db6d4cba3945f6f275fe9f2"
 
 /-!
 # Upper / lower bounds
@@ -410,7 +408,7 @@ theorem BddBelow.inter_of_right (h : BddBelow t) : BddBelow (s ∩ t) :=
   h.mono <| inter_subset_right s t
 #align bdd_below.inter_of_right BddBelow.inter_of_right
 
-/-- If `s` and `t` are bounded above sets in a `semilattice_sup`, then so is `s ∪ t`. -/
+/-- If `s` and `t` are bounded above sets in a `SemilatticeSup`, then so is `s ∪ t`. -/
 theorem BddAbove.union [SemilatticeSup γ] {s t : Set γ} :
     BddAbove s → BddAbove t → BddAbove (s ∪ t) := by
   rintro ⟨bs, hs⟩ ⟨bt, ht⟩
@@ -926,7 +924,7 @@ theorem bddAbove_insert [SemilatticeSup γ] (a : γ) {s : Set γ} :
   simp only [insert_eq, bddAbove_union, bddAbove_singleton, true_and_iff]
 #align bdd_above_insert bddAbove_insert
 
-theorem BddAbove.insert [SemilatticeSup γ] (a : γ) {s : Set γ} (hs : BddAbove s) :
+protected theorem BddAbove.insert [SemilatticeSup γ] (a : γ) {s : Set γ} (hs : BddAbove s) :
     BddAbove (insert a s) :=
   (bddAbove_insert a).2 hs
 #align bdd_above.insert BddAbove.insert
@@ -938,30 +936,30 @@ theorem bddBelow_insert [SemilatticeInf γ] (a : γ) {s : Set γ} :
   simp only [insert_eq, bddBelow_union, bddBelow_singleton, true_and_iff]
 #align bdd_below_insert bddBelow_insert
 
-theorem BddBelow.insert [SemilatticeInf γ] (a : γ) {s : Set γ} (hs : BddBelow s) :
+protected theorem BddBelow.insert [SemilatticeInf γ] (a : γ) {s : Set γ} (hs : BddBelow s) :
     BddBelow (insert a s) :=
   (bddBelow_insert a).2 hs
 #align bdd_below.insert BddBelow.insert
 
-theorem IsLUB.insert [SemilatticeSup γ] (a) {b} {s : Set γ} (hs : IsLUB s b) :
+protected theorem IsLUB.insert [SemilatticeSup γ] (a) {b} {s : Set γ} (hs : IsLUB s b) :
     IsLUB (insert a s) (a ⊔ b) := by
   rw [insert_eq]
   exact isLUB_singleton.union hs
 #align is_lub.insert IsLUB.insert
 
-theorem IsGLB.insert [SemilatticeInf γ] (a) {b} {s : Set γ} (hs : IsGLB s b) :
+protected theorem IsGLB.insert [SemilatticeInf γ] (a) {b} {s : Set γ} (hs : IsGLB s b) :
     IsGLB (insert a s) (a ⊓ b) := by
   rw [insert_eq]
   exact isGLB_singleton.union hs
 #align is_glb.insert IsGLB.insert
 
-theorem IsGreatest.insert [LinearOrder γ] (a) {b} {s : Set γ} (hs : IsGreatest s b) :
+protected theorem IsGreatest.insert [LinearOrder γ] (a) {b} {s : Set γ} (hs : IsGreatest s b) :
     IsGreatest (insert a s) (max a b) := by
   rw [insert_eq]
   exact isGreatest_singleton.union hs
 #align is_greatest.insert IsGreatest.insert
 
-theorem IsLeast.insert [LinearOrder γ] (a) {b} {s : Set γ} (hs : IsLeast s b) :
+protected theorem IsLeast.insert [LinearOrder γ] (a) {b} {s : Set γ} (hs : IsLeast s b) :
     IsLeast (insert a s) (min a b) := by
   rw [insert_eq]
   exact isLeast_singleton.union hs
@@ -1279,13 +1277,13 @@ theorem image_lowerBounds_subset_lowerBounds_image : f '' lowerBounds s ⊆ lowe
 #align monotone.image_lower_bounds_subset_lower_bounds_image Monotone.image_lowerBounds_subset_lowerBounds_image
 
 /-- The image under a monotone function of a set which is bounded above is bounded above. See also
-`bdd_above.image2`. -/
+`BddAbove.image2`. -/
 theorem map_bddAbove : BddAbove s → BddAbove (f '' s)
   | ⟨C, hC⟩ => ⟨f C, Hf.mem_upperBounds_image hC⟩
 #align monotone.map_bdd_above Monotone.map_bddAbove
 
 /-- The image under a monotone function of a set which is bounded below is bounded below. See also
-`bdd_below.image2`. -/
+`BddBelow.image2`. -/
 theorem map_bddBelow : BddBelow s → BddBelow (f '' s)
   | ⟨C, hC⟩ => ⟨f C, Hf.mem_lowerBounds_image hC⟩
 #align monotone.map_bdd_below Monotone.map_bddBelow
@@ -1552,19 +1550,29 @@ end AntitoneMonotone
 
 end Image2
 
-theorem IsGLB.of_image [Preorder α] [Preorder β] {f : α → β} (hf : ∀ {x y}, f x ≤ f y ↔ x ≤ y)
-    {s : Set α} {x : α} (hx : IsGLB (f '' s) (f x)) : IsGLB s x :=
-  ⟨fun _ hy => hf.1 <| hx.1 <| mem_image_of_mem _ hy, fun _ hy =>
-    hf.1 <| hx.2 <| Monotone.mem_lowerBounds_image (fun _ _ => hf.2) hy⟩
-#align is_glb.of_image IsGLB.of_image
+section Pi
 
-theorem IsLUB.of_image [Preorder α] [Preorder β] {f : α → β} (hf : ∀ {x y}, f x ≤ f y ↔ x ≤ y)
-    {s : Set α} {x : α} (hx : IsLUB (f '' s) (f x)) : IsLUB s x :=
-  ⟨fun _ hy => hf.1 <| hx.1 <| mem_image_of_mem _ hy, fun _ hy =>
-    hf.1 <| hx.2 <| Monotone.mem_upperBounds_image (fun _ _ => hf.2) hy⟩
-#align is_lub.of_image IsLUB.of_image
+variable {π : α → Type _} [∀ a, Preorder (π a)]
 
-theorem isLUB_pi {π : α → Type _} [∀ a, Preorder (π a)] {s : Set (∀ a, π a)} {f : ∀ a, π a} :
+lemma bddAbove_pi {s : Set (∀ a, π a)} :
+    BddAbove s ↔ ∀ a, BddAbove (Function.eval a '' s) :=
+  ⟨fun ⟨f, hf⟩ a ↦ ⟨f a, ball_image_of_ball fun _ hg ↦ hf hg a⟩,
+    fun h ↦ ⟨fun a ↦ (h a).some, fun _ hg a ↦ (h a).some_mem <| mem_image_of_mem _ hg⟩⟩
+
+lemma bddBelow_pi {s : Set (∀ a, π a)} :
+    BddBelow s ↔ ∀ a, BddBelow (Function.eval a '' s) :=
+  bddAbove_pi (π := fun a ↦ (π a)ᵒᵈ)
+
+lemma bddAbove_range_pi {F : ι → ∀ a, π a} :
+    BddAbove (range F) ↔ ∀ a, BddAbove (range fun i ↦ F i a) := by
+  simp only [bddAbove_pi, ←range_comp]
+  rfl
+
+lemma bddBelow_range_pi {F : ι → ∀ a, π a} :
+    BddBelow (range F) ↔ ∀ a, BddBelow (range fun i ↦ F i a) :=
+  bddAbove_range_pi (π := fun a ↦ (π a)ᵒᵈ)
+
+theorem isLUB_pi {s : Set (∀ a, π a)} {f : ∀ a, π a} :
     IsLUB s f ↔ ∀ a, IsLUB (Function.eval a '' s) (f a) := by
   classical
     refine'
@@ -1576,10 +1584,24 @@ theorem isLUB_pi {π : α → Type _} [∀ a, Preorder (π a)] {s : Set (∀ a, 
     · exact fun g hg a => (H a).2 ((Function.monotone_eval a).mem_upperBounds_image hg)
 #align is_lub_pi isLUB_pi
 
-theorem isGLB_pi {π : α → Type _} [∀ a, Preorder (π a)] {s : Set (∀ a, π a)} {f : ∀ a, π a} :
+theorem isGLB_pi {s : Set (∀ a, π a)} {f : ∀ a, π a} :
     IsGLB s f ↔ ∀ a, IsGLB (Function.eval a '' s) (f a) :=
   @isLUB_pi α (fun a => (π a)ᵒᵈ) _ s f
 #align is_glb_pi isGLB_pi
+
+end Pi
+
+theorem IsGLB.of_image [Preorder α] [Preorder β] {f : α → β} (hf : ∀ {x y}, f x ≤ f y ↔ x ≤ y)
+    {s : Set α} {x : α} (hx : IsGLB (f '' s) (f x)) : IsGLB s x :=
+  ⟨fun _ hy => hf.1 <| hx.1 <| mem_image_of_mem _ hy, fun _ hy =>
+    hf.1 <| hx.2 <| Monotone.mem_lowerBounds_image (fun _ _ => hf.2) hy⟩
+#align is_glb.of_image IsGLB.of_image
+
+theorem IsLUB.of_image [Preorder α] [Preorder β] {f : α → β} (hf : ∀ {x y}, f x ≤ f y ↔ x ≤ y)
+    {s : Set α} {x : α} (hx : IsLUB (f '' s) (f x)) : IsLUB s x :=
+  ⟨fun _ hy => hf.1 <| hx.1 <| mem_image_of_mem _ hy, fun _ hy =>
+    hf.1 <| hx.2 <| Monotone.mem_upperBounds_image (fun _ _ => hf.2) hy⟩
+#align is_lub.of_image IsLUB.of_image
 
 theorem isLUB_prod [Preorder α] [Preorder β] {s : Set (α × β)} (p : α × β) :
     IsLUB s p ↔ IsLUB (Prod.fst '' s) p.1 ∧ IsLUB (Prod.snd '' s) p.2 := by
@@ -1593,8 +1615,7 @@ theorem isLUB_prod [Preorder α] [Preorder β] {s : Set (α × β)} (p : α × �
   · suffices h : (p.1, a) ∈ upperBounds s from (H.2 h).2
     exact fun q hq => ⟨(H.1 hq).1, ha <| mem_image_of_mem _ hq⟩
   · exact fun q hq => ⟨H.1.1 <| mem_image_of_mem _ hq, H.2.1 <| mem_image_of_mem _ hq⟩
-  ·
-    exact fun q hq =>
+  · exact fun q hq =>
       ⟨H.1.2 <| monotone_fst.mem_upperBounds_image hq,
         H.2.2 <| monotone_snd.mem_upperBounds_image hq⟩
 #align is_lub_prod isLUB_prod

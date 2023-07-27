@@ -2,15 +2,11 @@
 Copyright (c) 2022 Sébastien Gouëzel. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Sébastien Gouëzel
-
-! This file was ported from Lean 3 source module topology.algebra.order.left_right_lim
-! leanprover-community/mathlib commit 0a0ec35061ed9960bf0e7ffb0335f44447b58977
-! Please do not edit these lines, except to modify the commit id
-! if you have ported upstream changes.
 -/
-import Mathlib.Tactic.WLOG
 import Mathlib.Topology.Order.Basic
 import Mathlib.Topology.Algebra.Order.LeftRight
+
+#align_import topology.algebra.order.left_right_lim from "leanprover-community/mathlib"@"0a0ec35061ed9960bf0e7ffb0335f44447b58977"
 
 /-!
 # Left and right limits
@@ -91,10 +87,10 @@ namespace Monotone
 variable {α β : Type _} [LinearOrder α] [ConditionallyCompleteLinearOrder β] [TopologicalSpace β]
   [OrderTopology β] {f : α → β} (hf : Monotone f) {x y : α}
 
-theorem leftLim_eq_supₛ [TopologicalSpace α] [OrderTopology α] (h : 𝓝[<] x ≠ ⊥) :
-    leftLim f x = supₛ (f '' Iio x) :=
+theorem leftLim_eq_sSup [TopologicalSpace α] [OrderTopology α] (h : 𝓝[<] x ≠ ⊥) :
+    leftLim f x = sSup (f '' Iio x) :=
   leftLim_eq_of_tendsto h (hf.tendsto_nhdsWithin_Iio x)
-#align monotone.left_lim_eq_Sup Monotone.leftLim_eq_supₛ
+#align monotone.left_lim_eq_Sup Monotone.leftLim_eq_sSup
 
 theorem leftLim_le (h : x ≤ y) : leftLim f x ≤ f y := by
   letI : TopologicalSpace α := Preorder.topology α
@@ -102,8 +98,8 @@ theorem leftLim_le (h : x ≤ y) : leftLim f x ≤ f y := by
   rcases eq_or_ne (𝓝[<] x) ⊥ with (h' | h')
   · simpa [leftLim, h'] using hf h
   haveI A : NeBot (𝓝[<] x) := neBot_iff.2 h'
-  rw [leftLim_eq_supₛ hf h']
-  refine' csupₛ_le _ _
+  rw [leftLim_eq_sSup hf h']
+  refine' csSup_le _ _
   · simp only [nonempty_image_iff]
     exact (forall_mem_nonempty_iff_neBot.2 A) _ self_mem_nhdsWithin
   · simp only [mem_image, mem_Iio, forall_exists_index, and_imp, forall_apply_eq_imp_iff₂]
@@ -117,8 +113,8 @@ theorem le_leftLim (h : x < y) : f x ≤ leftLim f y := by
   rcases eq_or_ne (𝓝[<] y) ⊥ with (h' | h')
   · rw [leftLim_eq_of_eq_bot _ h']
     exact hf h.le
-  rw [leftLim_eq_supₛ hf h']
-  refine' le_csupₛ ⟨f y, _⟩ (mem_image_of_mem _ h)
+  rw [leftLim_eq_sSup hf h']
+  refine' le_csSup ⟨f y, _⟩ (mem_image_of_mem _ h)
   simp only [upperBounds, mem_image, mem_Iio, forall_exists_index, and_imp,
     forall_apply_eq_imp_iff₂, mem_setOf_eq]
   intro z hz
@@ -168,7 +164,7 @@ variable [TopologicalSpace α] [OrderTopology α]
 theorem tendsto_leftLim (x : α) : Tendsto f (𝓝[<] x) (𝓝 (leftLim f x)) := by
   rcases eq_or_ne (𝓝[<] x) ⊥ with (h' | h')
   · simp [h']
-  rw [leftLim_eq_supₛ hf h']
+  rw [leftLim_eq_sSup hf h']
   exact hf.tendsto_nhdsWithin_Iio x
 #align monotone.tendsto_left_lim Monotone.tendsto_leftLim
 
@@ -213,8 +209,7 @@ theorem continuousAt_iff_leftLim_eq_rightLim : ContinuousAt f x ↔ leftLim f x 
     have B : rightLim f x = f x :=
       hf.continuousWithinAt_Ioi_iff_rightLim_eq.1 h.continuousWithinAt
     exact A.trans B.symm
-  · have h' : leftLim f x = f x :=
-      by
+  · have h' : leftLim f x = f x := by
       apply le_antisymm (leftLim_le hf (le_refl _))
       rw [h]
       exact le_rightLim hf (le_refl _)
@@ -234,8 +229,7 @@ theorem countable_not_continuousWithinAt_Ioi [TopologicalSpace.SecondCountableTo
     be countable as `β` is second-countable. -/
   nontriviality α
   let s := { x | ¬ContinuousWithinAt f (Ioi x) x }
-  have : ∀ x, x ∈ s → ∃ z, f x < z ∧ ∀ y, x < y → z ≤ f y :=
-    by
+  have : ∀ x, x ∈ s → ∃ z, f x < z ∧ ∀ y, x < y → z ≤ f y := by
     rintro x (hx : ¬ContinuousWithinAt f (Ioi x) x)
     contrapose! hx
     refine' tendsto_order.2 ⟨fun m hm => _, fun u hu => _⟩
@@ -256,8 +250,7 @@ theorem countable_not_continuousWithinAt_Ioi [TopologicalSpace.SecondCountableTo
 
   -- show that `f s` is countable by arguing that a disjoint family of disjoint open intervals
   -- (the intervals `(f x, z x)`) is at most countable.
-  have fs_count : (f '' s).Countable :=
-    by
+  have fs_count : (f '' s).Countable := by
     have A : (f '' s).PairwiseDisjoint fun x => Ioo x (z (invFunOn f s x)) := by
       rintro _ ⟨u, us, rfl⟩ _ ⟨v, vs, rfl⟩ huv
       wlog hle : u ≤ v generalizing u v
@@ -291,7 +284,7 @@ theorem countable_not_continuousAt [TopologicalSpace.SecondCountableTopology β]
   refine' compl_subset_compl.1 _
   simp only [compl_union]
   rintro x ⟨hx, h'x⟩
-  simp only [mem_setOf_eq, Classical.not_not, mem_compl_iff] at hx h'x⊢
+  simp only [mem_setOf_eq, Classical.not_not, mem_compl_iff] at hx h'x ⊢
   exact continuousAt_iff_continuous_left'_right'.2 ⟨h'x, hx⟩
 #align monotone.countable_not_continuous_at Monotone.countable_not_continuousAt
 

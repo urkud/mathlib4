@@ -2,15 +2,12 @@
 Copyright (c) 2021 Christopher Hoskin. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Christopher Hoskin
-
-! This file was ported from Lean 3 source module analysis.normed.order.lattice
-! leanprover-community/mathlib commit 17ef379e997badd73e5eabb4d38f11919ab3c4b3
-! Please do not edit these lines, except to modify the commit id
-! if you have ported upstream changes.
 -/
 import Mathlib.Topology.Order.Lattice
 import Mathlib.Analysis.Normed.Group.Basic
 import Mathlib.Algebra.Order.LatticeGroup
+
+#align_import analysis.normed.order.lattice from "leanprover-community/mathlib"@"5dc275ec639221ca4d5f56938eb966f6ad9bc89f"
 
 /-!
 # Normed lattice ordered groups
@@ -34,7 +31,7 @@ normed, lattice, ordered, group
 
 
 /-!
-### Normed lattice orderd groups
+### Normed lattice ordered groups
 
 Motivated by the theory of Banach Lattices, this section introduces normed lattice ordered groups.
 -/
@@ -43,24 +40,46 @@ Motivated by the theory of Banach Lattices, this section introduces normed latti
 -- porting note: this now exists as a global notation
 -- local notation "|" a "|" => abs a
 
+section SolidNorm
+
+/-- Let `α` be an `AddCommGroup` with a `Lattice` structure. A norm on `α` is *solid* if, for `a`
+and `b` in `α`, with absolute values `|a|` and `|b|` respectively, `|a| ≤ |b|` implies `‖a‖ ≤ ‖b‖`.
+-/
+class HasSolidNorm (α : Type _) [NormedAddCommGroup α] [Lattice α] : Prop where
+  solid : ∀ ⦃x y : α⦄, |x| ≤ |y| → ‖x‖ ≤ ‖y‖
+#align has_solid_norm HasSolidNorm
+
+variable {α : Type _} [NormedAddCommGroup α] [Lattice α] [HasSolidNorm α]
+
+theorem norm_le_norm_of_abs_le_abs {a b : α} (h : |a| ≤ |b|) : ‖a‖ ≤ ‖b‖ :=
+  HasSolidNorm.solid h
+#align norm_le_norm_of_abs_le_abs norm_le_norm_of_abs_le_abs
+
+/-- If `α` has a solid norm, then the balls centered at the origin of `α` are solid sets. -/
+theorem LatticeOrderedAddCommGroup.isSolid_ball (r : ℝ) :
+    LatticeOrderedAddCommGroup.IsSolid (Metric.ball (0 : α) r) := fun _ hx _ hxy =>
+  mem_ball_zero_iff.mpr ((HasSolidNorm.solid hxy).trans_lt (mem_ball_zero_iff.mp hx))
+#align lattice_ordered_add_comm_group.is_solid_ball LatticeOrderedAddCommGroup.isSolid_ball
+
+instance : HasSolidNorm ℝ := ⟨fun _ _ => id⟩
+
+instance : HasSolidNorm ℚ := ⟨fun _ _ _ => by simpa only [norm, ← Rat.cast_abs, Rat.cast_le] ⟩
+
+end SolidNorm
+
 /--
 Let `α` be a normed commutative group equipped with a partial order covariant with addition, with
 respect which `α` forms a lattice. Suppose that `α` is *solid*, that is to say, for `a` and `b` in
 `α`, with absolute values `|a|` and `|b|` respectively, `|a| ≤ |b|` implies `‖a‖ ≤ ‖b‖`. Then `α` is
 said to be a normed lattice ordered group.
 -/
-class NormedLatticeAddCommGroup (α : Type _) extends NormedAddCommGroup α, Lattice α where
+class NormedLatticeAddCommGroup (α : Type _) extends NormedAddCommGroup α, Lattice α, HasSolidNorm α
+  where
   add_le_add_left : ∀ a b : α, a ≤ b → ∀ c : α, c + a ≤ c + b
-  solid : ∀ a b : α, |a| ≤ |b| → ‖a‖ ≤ ‖b‖
 #align normed_lattice_add_comm_group NormedLatticeAddCommGroup
-
-theorem solid {α : Type _} [NormedLatticeAddCommGroup α] {a b : α} (h : |a| ≤ |b|) : ‖a‖ ≤ ‖b‖ :=
-  NormedLatticeAddCommGroup.solid a b h
-#align solid solid
 
 instance Real.normedLatticeAddCommGroup : NormedLatticeAddCommGroup ℝ where
   add_le_add_left _ _ h _ := add_le_add le_rfl h
-  solid _ _ := id
 
 -- see Note [lower instance priority]
 /-- A normed lattice ordered group is an ordered additive commutative group
@@ -72,7 +91,7 @@ instance (priority := 100) NormedLatticeAddCommGroup.toOrderedAddCommGroup {α :
 
 variable {α : Type _} [NormedLatticeAddCommGroup α]
 
-open LatticeOrderedCommGroup
+open LatticeOrderedCommGroup HasSolidNorm
 
 theorem dual_solid (a b : α) (h : b ⊓ -b ≤ a ⊓ -a) : ‖a‖ ≤ ‖b‖ := by
   apply solid
@@ -98,7 +117,7 @@ theorem norm_abs_eq_norm (a : α) : ‖|a|‖ = ‖a‖ :=
 
 theorem norm_inf_sub_inf_le_add_norm (a b c d : α) : ‖a ⊓ b - c ⊓ d‖ ≤ ‖a - c‖ + ‖b - d‖ := by
   rw [← norm_abs_eq_norm (a - c), ← norm_abs_eq_norm (b - d)]
-  refine' le_trans (solid _) (norm_add_le (|a - c|) (|b - d|))
+  refine' le_trans (solid _) (norm_add_le |a - c| |b - d|)
   rw [abs_of_nonneg (|a - c| + |b - d|) (add_nonneg (abs_nonneg (a - c)) (abs_nonneg (b - d)))]
   calc
     |a ⊓ b - c ⊓ d| = |a ⊓ b - c ⊓ b + (c ⊓ b - c ⊓ d)| := by rw [sub_add_sub_cancel]
@@ -112,7 +131,7 @@ theorem norm_inf_sub_inf_le_add_norm (a b c d : α) : ‖a ⊓ b - c ⊓ d‖ �
 
 theorem norm_sup_sub_sup_le_add_norm (a b c d : α) : ‖a ⊔ b - c ⊔ d‖ ≤ ‖a - c‖ + ‖b - d‖ := by
   rw [← norm_abs_eq_norm (a - c), ← norm_abs_eq_norm (b - d)]
-  refine' le_trans (solid _) (norm_add_le (|a - c|) (|b - d|))
+  refine' le_trans (solid _) (norm_add_le |a - c| |b - d|)
   rw [abs_of_nonneg (|a - c| + |b - d|) (add_nonneg (abs_nonneg (a - c)) (abs_nonneg (b - d)))]
   calc
     |a ⊔ b - c ⊔ d| = |a ⊔ b - c ⊔ b + (c ⊔ b - c ⊔ d)| := by rw [sub_add_sub_cancel]
@@ -142,9 +161,8 @@ instance (priority := 100) NormedLatticeAddCommGroup.continuousInf : ContinuousI
   have : ∀ p : α × α, ‖p.1 ⊓ p.2 - q.1 ⊓ q.2‖ ≤ ‖p.1 - q.1‖ + ‖p.2 - q.2‖ := fun _ =>
     norm_inf_sub_inf_le_add_norm _ _ _ _
   refine' squeeze_zero (fun e => norm_nonneg _) this _
-  -- porting note: I wish `convert` were better at unification.
-  convert ((continuous_fst.tendsto q).sub <| tendsto_const_nhds (a := q.fst)).norm.add
-    ((continuous_snd.tendsto q).sub <| tendsto_const_nhds (a := q.snd)).norm
+  convert ((continuous_fst.tendsto q).sub <| tendsto_const_nhds).norm.add
+    ((continuous_snd.tendsto q).sub <| tendsto_const_nhds).norm
   simp
 #align normed_lattice_add_comm_group_has_continuous_inf NormedLatticeAddCommGroup.continuousInf
 
@@ -194,13 +212,12 @@ theorem continuous_neg' : Continuous (NegPart.neg : α → α) := by
 #align continuous_neg' continuous_neg'
 
 theorem isClosed_nonneg {E} [NormedLatticeAddCommGroup E] : IsClosed { x : E | 0 ≤ x } := by
-  suffices { x : E | 0 ≤ x } = NegPart.neg ⁻¹' {(0 : E)}
-    by
+  suffices { x : E | 0 ≤ x } = NegPart.neg ⁻¹' {(0 : E)} by
     rw [this]
     exact IsClosed.preimage continuous_neg' isClosed_singleton
   ext1 x
   simp only [Set.mem_preimage, Set.mem_singleton_iff, Set.mem_setOf_eq,
-    @neg_eq_zero_iff E _ _ (OrderedAddCommGroup.to_covariantClass_left_le E)  ]
+    @neg_eq_zero_iff E _ _ (OrderedAddCommGroup.to_covariantClass_left_le E)]
   -- porting note: I'm not sure why Lean couldn't synthesize this instance because it works with
   -- `have : CovariantClass E E (· + ·) (· ≤ ·) := inferInstance`
 #align is_closed_nonneg isClosed_nonneg

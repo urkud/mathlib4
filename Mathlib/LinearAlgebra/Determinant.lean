@@ -2,11 +2,6 @@
 Copyright (c) 2019 Johannes Hölzl. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Johannes Hölzl, Patrick Massot, Casper Putz, Anne Baanen
-
-! This file was ported from Lean 3 source module linear_algebra.determinant
-! leanprover-community/mathlib commit b1c23399f01266afe392a0d8f71f599a0dad4f7b
-! Please do not edit these lines, except to modify the commit id
-! if you have ported upstream changes.
 -/
 import Mathlib.LinearAlgebra.FiniteDimensional
 import Mathlib.LinearAlgebra.GeneralLinearGroup
@@ -14,6 +9,8 @@ import Mathlib.LinearAlgebra.Matrix.Reindex
 import Mathlib.Tactic.FieldSimp
 import Mathlib.LinearAlgebra.Matrix.NonsingularInverse
 import Mathlib.LinearAlgebra.Matrix.Basis
+
+#align_import linear_algebra.determinant from "leanprover-community/mathlib"@"bd65478311e4dfd41f48bf38c7e3b02fb75d0163"
 
 /-!
 # Determinant of families of vectors
@@ -65,7 +62,6 @@ variable {A : Type _} [CommRing A]
 
 variable {m n : Type _} [Fintype m] [Fintype n]
 
-set_option synthInstance.etaExperiment true in
 /-- If `R^m` and `R^n` are linearly equivalent, then `m` and `n` are also equivalent. -/
 def equivOfPiLEquivPi {R : Type _} [CommRing R] [Nontrivial R] (e : (m → R) ≃ₗ[R] n → R) : m ≃ n :=
   Basis.indexEquiv (Basis.ofEquivFun e.symm) (Pi.basisFun _ _)
@@ -126,7 +122,6 @@ theorem det_toMatrix_eq_det_toMatrix [DecidableEq κ] (b : Basis ι A M) (c : Ba
     rw [Basis.toMatrix_mul_toMatrix, Basis.toMatrix_self]
 #align linear_map.det_to_matrix_eq_det_to_matrix LinearMap.det_toMatrix_eq_det_toMatrix
 
-set_option synthInstance.etaExperiment true
 
 /-- The determinant of an endomorphism given a basis.
 
@@ -368,7 +363,6 @@ theorem bot_lt_ker_of_det_eq_zero {𝕜 : Type _} [Field 𝕜] [Module 𝕜 M] {
 
 end LinearMap
 
-set_option synthInstance.etaExperiment true
 
 namespace LinearEquiv
 
@@ -399,7 +393,6 @@ theorem det_trans (f g : M ≃ₗ[R] M) :
   map_mul _ g f
 #align linear_equiv.det_trans LinearEquiv.det_trans
 
--- Porting note: The lint can't use `synthInstance.etaExperiment`.
 @[simp, nolint simpNF]
 theorem det_symm (f : M ≃ₗ[R] M) : LinearEquiv.det f.symm = LinearEquiv.det f⁻¹ :=
   map_inv _ f
@@ -478,12 +471,6 @@ theorem LinearEquiv.coe_ofIsUnitDet {f : M →ₗ[R] M'} {v : Basis ι R M} {v' 
   rfl
 #align linear_equiv.coe_of_is_unit_det LinearEquiv.coe_ofIsUnitDet
 
--- Porting note: The next line should be deleted in future.
--- The problem here is a slow `isDefEq` problem:
--- [Meta.isDefEq] [8.157421s] ✅ Matrix.det
---       (↑(LinearMap.toMatrix (FiniteDimensional.finBasis 𝕜 M) (FiniteDimensional.finBasis 𝕜 M))
---         f) =?= Matrix.det (↑(LinearMap.toMatrix ?b ?b) ?f) ▶
-set_option maxHeartbeats 300000 in
 /-- Builds a linear equivalence from a linear map on a finite-dimensional vector space whose
 determinant is nonzero. -/
 @[reducible]
@@ -549,7 +536,7 @@ theorem Basis.det_self : e.det e = 1 := by simp [e.det_apply]
 #align basis.det_self Basis.det_self
 
 @[simp]
-theorem Basis.det_isEmpty [IsEmpty ι] : e.det = AlternatingMap.constOfIsEmpty R M 1 := by
+theorem Basis.det_isEmpty [IsEmpty ι] : e.det = AlternatingMap.constOfIsEmpty R M ι 1 := by
   ext v
   exact Matrix.det_isEmpty
 #align basis.det_is_empty Basis.det_isEmpty
@@ -565,7 +552,7 @@ theorem is_basis_iff_det {v : ι → M} :
     set v' := Basis.mk hli hspan.ge
     rw [e.det_apply]
     convert LinearEquiv.isUnit_det (LinearEquiv.refl R M) v' e using 2
-    ext (i j)
+    ext i j
     simp
   · intro h
     rw [Basis.det_apply, Basis.toMatrix_eq_toMatrix_constr] at h
@@ -620,7 +607,7 @@ theorem Basis.det_comp_basis [Module A M'] (b : Basis ι A M) (b' : Basis ι A M
     b'.det (f ∘ b) = LinearMap.det (f ∘ₗ (b'.equiv b (Equiv.refl ι) : M' →ₗ[A] M)) := by
   rw [Basis.det_apply, ← LinearMap.det_toMatrix b', LinearMap.toMatrix_comp _ b, Matrix.det_mul,
     LinearMap.toMatrix_basis_equiv, Matrix.det_one, mul_one]
-  congr 1; ext (i j)
+  congr 1; ext i j
   rw [Basis.toMatrix_apply, LinearMap.toMatrix_apply, Function.comp_apply]
 #align basis.det_comp_basis Basis.det_comp_basis
 

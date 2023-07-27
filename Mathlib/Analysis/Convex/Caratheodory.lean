@@ -2,15 +2,12 @@
 Copyright (c) 2020 Scott Morrison. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Johan Commelin, Scott Morrison
-
-! This file was ported from Lean 3 source module analysis.convex.caratheodory
-! leanprover-community/mathlib commit e6fab1dc073396d45da082c644642c4f8bff2264
-! Please do not edit these lines, except to modify the commit id
-! if you have ported upstream changes.
 -/
 import Mathlib.Analysis.Convex.Combination
 import Mathlib.LinearAlgebra.AffineSpace.Independent
 import Mathlib.Tactic.FieldSimp
+
+#align_import analysis.convex.caratheodory from "leanprover-community/mathlib"@"e6fab1dc073396d45da082c644642c4f8bff2264"
 
 /-!
 # Carathéodory's convexity theorem
@@ -57,12 +54,12 @@ then it is in the convex hull of a strict subset of `t`. -/
 theorem mem_convexHull_erase [DecidableEq E] {t : Finset E} (h : ¬AffineIndependent 𝕜 ((↑) : t → E))
     {x : E} (m : x ∈ convexHull 𝕜 (↑t : Set E)) :
     ∃ y : (↑t : Set E), x ∈ convexHull 𝕜 (↑(t.erase y) : Set E) := by
-  simp only [Finset.convexHull_eq, mem_setOf_eq] at m⊢
+  simp only [Finset.convexHull_eq, mem_setOf_eq] at m ⊢
   obtain ⟨f, fpos, fsum, rfl⟩ := m
   obtain ⟨g, gcombo, gsum, gpos⟩ := exists_nontrivial_relation_sum_zero_of_not_affine_ind h
   replace gpos := exists_pos_of_sum_zero_of_exists_nonzero g gsum gpos
   clear h
-  let s := @Finset.filter _ (fun z => 0 < g z) (fun _ => LinearOrder.decidable_lt _ _) t
+  let s := @Finset.filter _ (fun z => 0 < g z) (fun _ => LinearOrder.decidableLT _ _) t
   obtain ⟨i₀, mem, w⟩ : ∃ i₀ ∈ s, ∀ i ∈ s, f i₀ / g i₀ ≤ f i / g i := by
     apply s.exists_min_image fun z => f z / g z
     obtain ⟨x, hx, hgx⟩ : ∃ x ∈ t, 0 < g x := gpos
@@ -73,9 +70,9 @@ theorem mem_convexHull_erase [DecidableEq E] {t : Finset E} (h : ¬AffineIndepen
   have hi₀ : i₀ ∈ t := filter_subset _ _ mem
   let k : E → 𝕜 := fun z => f z - f i₀ / g i₀ * g z
   have hk : k i₀ = 0 := by field_simp [ne_of_gt hg]
-  have ksum : (∑ e in t.erase i₀, k e) = 1 := by
+  have ksum : ∑ e in t.erase i₀, k e = 1 := by
     calc
-      (∑ e in t.erase i₀, k e) = ∑ e in t, k e := by
+      ∑ e in t.erase i₀, k e = ∑ e in t, k e := by
         conv_rhs => rw [← insert_erase hi₀, sum_insert (not_mem_erase i₀ t), hk, zero_add]
       _ = ∑ e in t, (f e - f i₀ / g i₀ * g e) := rfl
       _ = 1 := by rw [sum_sub_distrib, fsum, ← mul_sum, gsum, MulZeroClass.mul_zero, sub_zero]
@@ -96,7 +93,7 @@ theorem mem_convexHull_erase [DecidableEq E] {t : Finset E} (h : ¬AffineIndepen
         _ ≤ f e := fpos e het
   · rw [Subtype.coe_mk, centerMass_eq_of_sum_1 _ id ksum]
     calc
-      (∑ e in t.erase i₀, k e • e) = ∑ e in t, k e • e := sum_erase _ (by rw [hk, zero_smul])
+      ∑ e in t.erase i₀, k e • e = ∑ e in t, k e • e := sum_erase _ (by rw [hk, zero_smul])
       _ = ∑ e in t, (f e - f i₀ / g i₀ * g e) • e := rfl
       _ = t.centerMass f id := by
         simp only [sub_smul, mul_smul, sum_sub_distrib, ← smul_sum, gcombo, smul_zero, sub_zero,
@@ -109,7 +106,7 @@ variable {s : Set E} {x : E} (hx : x ∈ convexHull 𝕜 s)
 cardinality, whose convex hull contains `x`. -/
 noncomputable def minCardFinsetOfMemConvexHull : Finset E :=
   Function.argminOn Finset.card Nat.lt_wfRel.2 { t | ↑t ⊆ s ∧ x ∈ convexHull 𝕜 (t : Set E) } <| by
-    simpa only [convexHull_eq_union_convexHull_finite_subsets s, exists_prop, mem_unionᵢ] using hx
+    simpa only [convexHull_eq_union_convexHull_finite_subsets s, exists_prop, mem_iUnion] using hx
 #align caratheodory.min_card_finset_of_mem_convex_hull Caratheodory.minCardFinsetOfMemConvexHull
 
 theorem minCardFinsetOfMemConvexHull_subseteq : ↑(minCardFinsetOfMemConvexHull hx) ⊆ s :=
@@ -157,12 +154,12 @@ theorem convexHull_eq_union : convexHull 𝕜 s =
     ⋃ (t : Finset E) (hss : ↑t ⊆ s) (hai : AffineIndependent 𝕜 ((↑) : t → E)), convexHull 𝕜 ↑t := by
   apply Set.Subset.antisymm
   · intro x hx
-    simp only [exists_prop, Set.mem_unionᵢ]
+    simp only [exists_prop, Set.mem_iUnion]
     exact ⟨Caratheodory.minCardFinsetOfMemConvexHull hx,
       Caratheodory.minCardFinsetOfMemConvexHull_subseteq hx,
       Caratheodory.affineIndependent_minCardFinsetOfMemConvexHull hx,
       Caratheodory.mem_minCardFinsetOfMemConvexHull hx⟩
-  · iterate 3 convert Set.unionᵢ_subset _; intro
+  · iterate 3 convert Set.iUnion_subset _; intro
     exact convexHull_mono ‹_›
 #align convex_hull_eq_union convexHull_eq_union
 
@@ -170,9 +167,9 @@ theorem convexHull_eq_union : convexHull 𝕜 s =
 theorem eq_pos_convex_span_of_mem_convexHull {x : E} (hx : x ∈ convexHull 𝕜 s) :
     ∃ (ι : Sort (u + 1)) (_ : Fintype ι),
       ∃ (z : ι → E) (w : ι → 𝕜) (_ : Set.range z ⊆ s) (_ : AffineIndependent 𝕜 z)
-        (_ : ∀ i, 0 < w i), (∑ i, w i) = 1 ∧ (∑ i, w i • z i) = x := by
+        (_ : ∀ i, 0 < w i), ∑ i, w i = 1 ∧ ∑ i, w i • z i = x := by
   rw [convexHull_eq_union] at hx
-  simp only [exists_prop, Set.mem_unionᵢ] at hx
+  simp only [exists_prop, Set.mem_iUnion] at hx
   obtain ⟨t, ht₁, ht₂, ht₃⟩ := hx
   simp only [t.convexHull_eq, exists_prop, Set.mem_setOf_eq] at ht₃
   obtain ⟨w, hw₁, hw₂, hw₃⟩ := ht₃

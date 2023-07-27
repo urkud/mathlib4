@@ -2,13 +2,11 @@
 Copyright (c) 2018 Kenny Lau. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Kenny Lau, Mario Carneiro, Johan Commelin, Amelia Livingston, Anne Baanen
-! This file was ported from Lean 3 source module ring_theory.localization.ideal
-! leanprover-community/mathlib commit e7f0ddbf65bd7181a85edb74b64bdc35ba4bdc74
-! Please do not edit these lines, except to modify the commit id
-! if you have ported upstream changes.
 -/
 import Mathlib.RingTheory.Ideal.QuotientOperations
 import Mathlib.RingTheory.Localization.Basic
+
+#align_import ring_theory.localization.ideal from "leanprover-community/mathlib"@"e7f0ddbf65bd7181a85edb74b64bdc35ba4bdc74"
 
 /-!
 # Ideals in localizations of commutative rings
@@ -28,7 +26,7 @@ variable {R : Type _} [CommSemiring R] (M : Submonoid R) (S : Type _) [CommSemir
 
 variable [Algebra R S] [IsLocalization M S]
 
-/-- Explicit characterization of the ideal given by `Ideal.map (algebra_map R S) I`.
+/-- Explicit characterization of the ideal given by `Ideal.map (algebraMap R S) I`.
 In practice, this ideal differs only in that the carrier set is defined explicitly.
 This definition is only meant to be used in proving `mem_map_algebraMap_iff`,
 and any proof that needs to refer to the explicit carrier set should use that theorem. -/
@@ -53,12 +51,11 @@ private def map_ideal (I : Ideal R) : Ideal S where
     ring
 -- Porting note: removed #align declaration since it is a private def
 
-theorem mem_map_algebraMap_iff {I : Ideal R} {z} :
-    z ∈ Ideal.map (algebraMap R S) I ↔ ∃ x : I × M, z * algebraMap R S x.2 = algebraMap R S x.1 :=
-  by
+theorem mem_map_algebraMap_iff {I : Ideal R} {z} : z ∈ Ideal.map (algebraMap R S) I ↔
+    ∃ x : I × M, z * algebraMap R S x.2 = algebraMap R S x.1 := by
   constructor
   · change _ → z ∈ map_ideal M S I
-    refine' fun h => Ideal.mem_infₛ.1 h fun z hz => _
+    refine' fun h => Ideal.mem_sInf.1 h fun z hz => _
     obtain ⟨y, hy⟩ := hz
     let Z : { x // x ∈ I } := ⟨y, hy.left⟩
     use ⟨Z, 1⟩
@@ -71,7 +68,7 @@ theorem mem_map_algebraMap_iff {I : Ideal R} {z} :
 theorem map_comap (J : Ideal S) : Ideal.map (algebraMap R S) (Ideal.comap (algebraMap R S) J) = J :=
   le_antisymm (Ideal.map_le_iff_le_comap.2 le_rfl) fun x hJ => by
     obtain ⟨r, s, hx⟩ := mk'_surjective M x
-    rw [← hx] at hJ⊢
+    rw [← hx] at hJ ⊢
     exact
       Ideal.mul_mem_right _ _
         (Ideal.mem_map_of_mem _

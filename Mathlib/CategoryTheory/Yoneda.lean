@@ -2,15 +2,12 @@
 Copyright (c) 2017 Scott Morrison. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Morrison
-
-! This file was ported from Lean 3 source module category_theory.yoneda
-! leanprover-community/mathlib commit 369525b73f229ccd76a6ec0e0e0bf2be57599768
-! Please do not edit these lines, except to modify the commit id
-! if you have ported upstream changes.
 -/
 import Mathlib.CategoryTheory.Functor.Hom
 import Mathlib.CategoryTheory.Functor.Currying
 import Mathlib.CategoryTheory.Products.Basic
+
+#align_import category_theory.yoneda from "leanprover-community/mathlib"@"369525b73f229ccd76a6ec0e0e0bf2be57599768"
 
 /-!
 # The Yoneda embedding
@@ -42,14 +39,9 @@ See <https://stacks.math.columbia.edu/tag/001O>.
 def yoneda : C ⥤ Cᵒᵖ ⥤ Type v₁ where
   obj X :=
     { obj := fun Y => unop Y ⟶ X
-      map := fun f g => f.unop ≫ g
-      map_comp := fun f g => by funext; dsimp; erw [Category.assoc]
-      map_id := fun Y => by funext; dsimp; erw [Category.id_comp] }
+      map := fun f g => f.unop ≫ g }
   map f :=
-    { app := fun Y g => g ≫ f
-      naturality := fun Y Y' g => by funext Z; aesop_cat }
-  map_id := by aesop_cat
-  map_comp f g := by ext Y; dsimp; rw [Category.assoc]
+    { app := fun Y g => g ≫ f }
 #align category_theory.yoneda CategoryTheory.yoneda
 
 /-- The co-Yoneda embedding, as a functor from `Cᵒᵖ` into co-presheaves on `C`.
@@ -58,12 +50,9 @@ def yoneda : C ⥤ Cᵒᵖ ⥤ Type v₁ where
 def coyoneda : Cᵒᵖ ⥤ C ⥤ Type v₁ where
   obj X :=
     { obj := fun Y => unop X ⟶ Y
-      map := fun f g => g ≫ f
-      map_comp := fun f g => by funext; dsimp; erw [Category.assoc]
-      map_id := fun Y => by funext; dsimp; erw [Category.comp_id] }
+      map := fun f g => g ≫ f }
   map f :=
-    { app := fun Y g => f.unop ≫ g
-      naturality := fun Y Y' g => by funext Z; aesop_cat }
+    { app := fun Y g => f.unop ≫ g }
 #align category_theory.coyoneda CategoryTheory.coyoneda
 
 namespace Yoneda
@@ -86,7 +75,6 @@ See <https://stacks.math.columbia.edu/tag/001P>.
 -/
 instance yonedaFull : Full (yoneda : C ⥤ Cᵒᵖ ⥤ Type v₁) where
   preimage {X} {Y} f := f.app (op X) (𝟙 X)
-  witness {X} {Y} f := by simp only [yoneda]; aesop_cat
 #align category_theory.yoneda.yoneda_full CategoryTheory.Yoneda.yonedaFull
 
 /-- The Yoneda embedding is faithful.
@@ -103,20 +91,16 @@ instance yoneda_faithful : Faithful (yoneda : C ⥤ Cᵒᵖ ⥤ Type v₁) where
 -- Goal is `X ≅ Y`
 apply yoneda.ext,
 -- Goals are now functions `(Z ⟶ X) → (Z ⟶ Y)`, `(Z ⟶ Y) → (Z ⟶ X)`, and the fact that these
-functions are inverses and natural in `Z`.
+-- functions are inverses and natural in `Z`.
 ```
 -/
 def ext (X Y : C) (p : ∀ {Z : C}, (Z ⟶ X) → (Z ⟶ Y)) (q : ∀ {Z : C}, (Z ⟶ Y) → (Z ⟶ X))
     (h₁ : ∀ {Z : C} (f : Z ⟶ X), q (p f) = f) (h₂ : ∀ {Z : C} (f : Z ⟶ Y), p (q f) = f)
     (n : ∀ {Z Z' : C} (f : Z' ⟶ Z) (g : Z ⟶ X), p (f ≫ g) = f ≫ p g) : X ≅ Y :=
   yoneda.preimageIso
-    (NatIso.ofComponents
-      (fun Z =>
-        { hom := p
-          inv := q
-          hom_inv_id := by simp only [yoneda]; funext; apply h₁
-          inv_hom_id := by simp only [yoneda]; funext; apply h₂ })
-      (fun f => by simp only [yoneda]; funext; apply n))
+    (NatIso.ofComponents fun Z =>
+      { hom := p
+        inv := q })
 #align category_theory.yoneda.ext CategoryTheory.Yoneda.ext
 
 /-- If `yoneda.map f` is an isomorphism, so was `f`.
@@ -154,17 +138,15 @@ theorem isIso {X Y : Cᵒᵖ} (f : X ⟶ Y) [IsIso (coyoneda.map f)] : IsIso f :
 
 /-- The identity functor on `Type` is isomorphic to the coyoneda functor coming from `punit`. -/
 def punitIso : coyoneda.obj (Opposite.op PUnit) ≅ 𝟭 (Type v₁) :=
-  NatIso.ofComponents
-    (fun X =>
-      { hom := fun f => f ⟨⟩
-        inv := fun x _ => x })
-    (by aesop_cat)
+  NatIso.ofComponents fun X =>
+    { hom := fun f => f ⟨⟩
+      inv := fun x _ => x }
 #align category_theory.coyoneda.punit_iso CategoryTheory.Coyoneda.punitIso
 
 /-- Taking the `unop` of morphisms is a natural isomorphism. -/
 @[simps!]
 def objOpOp (X : C) : coyoneda.obj (op (op X)) ≅ yoneda.obj X :=
-  NatIso.ofComponents (fun _ => (opEquiv _ _).toIso) fun _ {_Y} _f => rfl
+  NatIso.ofComponents fun _ => (opEquiv _ _).toIso
 #align category_theory.coyoneda.obj_op_op CategoryTheory.Coyoneda.objOpOp
 
 end Coyoneda
@@ -177,7 +159,7 @@ See <https://stacks.math.columbia.edu/tag/001Q>.
 -/
 class Representable (F : Cᵒᵖ ⥤ Type v₁) : Prop where
   /-- `Hom(-,X) ≅ F` via `f` -/
-  has_representation : ∃ (X : _)(f : yoneda.obj X ⟶ F), IsIso f
+  has_representation : ∃ (X : _) (f : yoneda.obj X ⟶ F), IsIso f
 #align category_theory.functor.representable CategoryTheory.Functor.Representable
 
 instance {X : C} : Representable (yoneda.obj X) where has_representation := ⟨X, 𝟙 _, inferInstance⟩
@@ -188,7 +170,7 @@ See <https://stacks.math.columbia.edu/tag/001Q>.
 -/
 class Corepresentable (F : C ⥤ Type v₁) : Prop where
   /-- `Hom(X,-) ≅ F` via `f` -/
-  has_corepresentation : ∃ (X : _)(f : coyoneda.obj X ⟶ F), IsIso f
+  has_corepresentation : ∃ (X : _) (f : coyoneda.obj X ⟶ F), IsIso f
 #align category_theory.functor.corepresentable CategoryTheory.Functor.Corepresentable
 
 instance {X : Cᵒᵖ} : Corepresentable (coyoneda.obj X) where
@@ -204,7 +186,7 @@ variable [F.Representable]
 
 /-- The representing object for the representable functor `F`. -/
 noncomputable def reprX : C :=
-  (Representable.has_representation : ∃ (_ : _)(_ : _ ⟶ F), _).choose
+  (Representable.has_representation : ∃ (_ : _) (_ : _ ⟶ F), _).choose
 set_option linter.uppercaseLean3 false
 #align category_theory.functor.repr_X CategoryTheory.Functor.reprX
 
@@ -253,7 +235,7 @@ variable [F.Corepresentable]
 
 /-- The representing object for the corepresentable functor `F`. -/
 noncomputable def coreprX : C :=
-  (Corepresentable.has_corepresentation : ∃ (_ : _)(_ : _ ⟶ F), _).choose.unop
+  (Corepresentable.has_corepresentation : ∃ (_ : _) (_ : _ ⟶ F), _).choose.unop
 set_option linter.uppercaseLean3 false
 #align category_theory.functor.corepr_X CategoryTheory.Functor.coreprX
 
@@ -279,8 +261,8 @@ noncomputable def coreprW : coyoneda.obj (op F.coreprX) ≅ F :=
   asIso F.coreprF
 #align category_theory.functor.corepr_w CategoryTheory.Functor.coreprW
 
-theorem coreprW_app_hom (X : C) (f : F.coreprX ⟶ X) : (F.coreprW.app X).hom f = F.map f F.coreprx :=
-  by
+theorem coreprW_app_hom (X : C) (f : F.coreprX ⟶ X) :
+    (F.coreprW.app X).hom f = F.map f F.coreprx := by
   change F.coreprF.app X f = (F.coreprF.app F.coreprX ≫ F.map f) (𝟙 F.coreprX)
   rw [← F.coreprF.naturality]
   dsimp
@@ -340,13 +322,20 @@ def yonedaPairing : Cᵒᵖ × (Cᵒᵖ ⥤ Type v₁) ⥤ Type max u₁ v₁ :=
   Functor.prod yoneda.op (𝟭 (Cᵒᵖ ⥤ Type v₁)) ⋙ Functor.hom (Cᵒᵖ ⥤ Type v₁)
 #align category_theory.yoneda_pairing CategoryTheory.yonedaPairing
 
+-- Porting note: we need to provide this `@[ext]` lemma separately,
+-- as `ext` will not look through the definition.
+-- See https://github.com/leanprover-community/mathlib4/issues/5229
+@[ext]
+lemma yonedaPairingExt {x y : (yonedaPairing C).obj X} (w : ∀ Y, x.app Y = y.app Y) : x = y :=
+  NatTrans.ext _ _ (funext w)
+
 @[simp]
 theorem yonedaPairing_map (P Q : Cᵒᵖ × (Cᵒᵖ ⥤ Type v₁)) (α : P ⟶ Q) (β : (yonedaPairing C).obj P) :
     (yonedaPairing C).map α β = yoneda.map α.1.unop ≫ β ≫ α.2 :=
   rfl
 #align category_theory.yoneda_pairing_map CategoryTheory.yonedaPairing_map
 
-/-- The Yoneda lemma asserts that that the Yoneda pairing
+/-- The Yoneda lemma asserts that the Yoneda pairing
 `(X : Cᵒᵖ, F : Cᵒᵖ ⥤ Type) ↦ (yoneda.obj (unop X) ⟶ F)`
 is naturally isomorphic to the evaluation `(X, F) ↦ F.obj X`.
 
@@ -356,26 +345,35 @@ def yonedaLemma : yonedaPairing C ≅ yonedaEvaluation C where
   hom :=
     { app := fun F x => ULift.up ((x.app F.1) (𝟙 (unop F.1)))
       naturality := by
-        intro X Y f; simp only [yonedaEvaluation]; funext; dsimp
+        intro X Y f
+        simp only [yonedaEvaluation]
+        ext
+        dsimp
         erw [Category.id_comp, ←FunctorToTypes.naturality]
         simp only [Category.comp_id, yoneda_obj_map] }
   inv :=
     { app := fun F x =>
         { app := fun X a => (F.2.map a.op) x.down
           naturality := by
-            intro X Y f; funext; dsimp
+            intro X Y f
+            ext
+            dsimp
             rw [FunctorToTypes.map_comp_apply] }
       naturality := by
-        intro X Y f; simp only [yoneda]; funext; apply NatTrans.ext; funext; funext; dsimp
+        intro X Y f
+        simp only [yoneda]
+        ext
+        dsimp
         rw [←FunctorToTypes.naturality X.snd Y.snd f.snd, FunctorToTypes.map_comp_apply] }
   hom_inv_id := by
-    apply NatTrans.ext; funext; funext;
-    apply NatTrans.ext; funext; funext; dsimp
+    ext
+    dsimp
     erw [← FunctorToTypes.naturality, obj_map_id]
     simp only [yoneda_map_app, Quiver.Hom.unop_op]
     erw [Category.id_comp]
   inv_hom_id := by
-    apply NatTrans.ext; funext; funext; dsimp
+    ext
+    dsimp
     rw [FunctorToTypes.map_id_apply, ULift.up_down]
 #align category_theory.yoneda_lemma CategoryTheory.yonedaLemma
 
@@ -449,23 +447,12 @@ def curriedYonedaLemma {C : Type u₁} [SmallCategory C] :
     eqToIso ?_
   · apply Functor.ext
     · intro X Y f
-      simp only [curry, yoneda, coyoneda, curryObj, yonedaPairing]
-      dsimp
-      apply NatTrans.ext
-      dsimp at *
-      funext F g
-      apply NatTrans.ext
+      ext
       simp
-    · intro X
-      simp only [curry, yoneda, coyoneda, curryObj, yonedaPairing]
-      aesop_cat
+    · aesop_cat
   · apply Functor.ext
     · intro X Y f
-      simp only [curry, yoneda, coyoneda, curryObj, yonedaPairing]
-      dsimp
-      apply NatTrans.ext
-      dsimp at *
-      funext F g
+      ext
       simp
     · intro X
       simp only [curry, yoneda, coyoneda, curryObj, yonedaPairing]
@@ -481,11 +468,9 @@ def curriedYonedaLemma' {C : Type u₁} [SmallCategory C] :
     ≪≫ eqToIso ?_
   · apply Functor.ext
     · intro X Y f
-      simp only [curry, yoneda, coyoneda, curryObj, yonedaPairing]
       aesop_cat
   · apply Functor.ext
-    · intro X Y f
-      aesop_cat
+    · aesop_cat
 #align category_theory.curried_yoneda_lemma' CategoryTheory.curriedYonedaLemma'
 
 end CategoryTheory

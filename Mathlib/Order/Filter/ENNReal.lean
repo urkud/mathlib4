@@ -2,13 +2,10 @@
 Copyright (c) 2021 Rémy Degenne. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rémy Degenne
-
-! This file was ported from Lean 3 source module order.filter.ennreal
-! leanprover-community/mathlib commit 52932b3a083d4142e78a15dc928084a22fea9ba0
-! Please do not edit these lines, except to modify the commit id
-! if you have ported upstream changes.
 -/
 import Mathlib.Topology.Instances.ENNReal
+
+#align_import order.filter.ennreal from "leanprover-community/mathlib"@"52932b3a083d4142e78a15dc928084a22fea9ba0"
 
 /-!
 # Order properties of extended non-negative reals
@@ -55,7 +52,7 @@ theorem limsup_const_mul [CountableInterFilter f] {u : α → ℝ≥0∞} {a : �
     f.limsup (a * u ·) = a * f.limsup u := by
   by_cases ha_top : a ≠ ⊤
   · exact limsup_const_mul_of_ne_top ha_top
-  push_neg  at ha_top
+  push_neg at ha_top
   by_cases hu : u =ᶠ[f] 0
   · have hau : (a * u ·) =ᶠ[f] 0 := hu.mono fun x hx => by simp [hx]
     simp only [limsup_congr hu, limsup_congr hau, Pi.zero_apply, ← ENNReal.bot_eq_zero,
@@ -83,7 +80,7 @@ theorem limsup_mul_le [CountableInterFilter f] (u v : α → ℝ≥0∞) :
 
 theorem limsup_add_le [CountableInterFilter f] (u v : α → ℝ≥0∞) :
     f.limsup (u + v) ≤ f.limsup u + f.limsup v :=
-  infₛ_le ((eventually_le_limsup u).mp
+  sInf_le ((eventually_le_limsup u).mp
     ((eventually_le_limsup v).mono fun _ hxg hxf => add_le_add hxf hxg))
 #align ennreal.limsup_add_le ENNReal.limsup_add_le
 
@@ -94,7 +91,7 @@ theorem limsup_liminf_le_liminf_limsup {β} [Countable β] {f : Filter α} [Coun
   have h1 : ∀ᶠ a in f, ∀ b, u a b ≤ f.limsup fun a' => u a' b := by
     rw [eventually_countable_forall]
     exact fun b => ENNReal.eventually_le_limsup fun a => u a b
-  infₛ_le <| h1.mono fun x hx => Filter.liminf_le_liminf (Filter.eventually_of_forall hx)
+  sInf_le <| h1.mono fun x hx => Filter.liminf_le_liminf (Filter.eventually_of_forall hx)
 #align ennreal.limsup_liminf_le_liminf_limsup ENNReal.limsup_liminf_le_liminf_limsup
 
 end ENNReal

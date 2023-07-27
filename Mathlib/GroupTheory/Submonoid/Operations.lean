@@ -3,16 +3,13 @@ Copyright (c) 2018 Johannes Hölzl. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Johannes Hölzl, Kenny Lau, Johan Commelin, Mario Carneiro, Kevin Buzzard,
 Amelia Livingston, Yury Kudryashov
-
-! This file was ported from Lean 3 source module group_theory.submonoid.operations
-! leanprover-community/mathlib commit cf8e77c636317b059a8ce20807a29cf3772a0640
-! Please do not edit these lines, except to modify the commit id
-! if you have ported upstream changes.
 -/
 import Mathlib.Algebra.Order.Monoid.Cancel.Basic
 import Mathlib.GroupTheory.GroupAction.Defs
 import Mathlib.GroupTheory.Submonoid.Basic
 import Mathlib.GroupTheory.Subsemigroup.Operations
+
+#align_import group_theory.submonoid.operations from "leanprover-community/mathlib"@"cf8e77c636317b059a8ce20807a29cf3772a0640"
 
 /-!
 # Operations on `Submonoid`s
@@ -332,10 +329,10 @@ theorem map_sup (S T : Submonoid M) (f : F) : (S ⊔ T).map f = S.map f ⊔ T.ma
 #align add_submonoid.map_sup AddSubmonoid.map_sup
 
 @[to_additive]
-theorem map_supᵢ {ι : Sort _} (f : F) (s : ι → Submonoid M) : (supᵢ s).map f = ⨆ i, (s i).map f :=
-  (gc_map_comap f : GaloisConnection (map f) (comap f)).l_supᵢ
-#align submonoid.map_supr Submonoid.map_supᵢ
-#align add_submonoid.map_supr AddSubmonoid.map_supᵢ
+theorem map_iSup {ι : Sort _} (f : F) (s : ι → Submonoid M) : (iSup s).map f = ⨆ i, (s i).map f :=
+  (gc_map_comap f : GaloisConnection (map f) (comap f)).l_iSup
+#align submonoid.map_supr Submonoid.map_iSup
+#align add_submonoid.map_supr AddSubmonoid.map_iSup
 
 @[to_additive]
 theorem comap_inf (S T : Submonoid N) (f : F) : (S ⊓ T).comap f = S.comap f ⊓ T.comap f :=
@@ -344,11 +341,11 @@ theorem comap_inf (S T : Submonoid N) (f : F) : (S ⊓ T).comap f = S.comap f �
 #align add_submonoid.comap_inf AddSubmonoid.comap_inf
 
 @[to_additive]
-theorem comap_infᵢ {ι : Sort _} (f : F) (s : ι → Submonoid N) :
-    (infᵢ s).comap f = ⨅ i, (s i).comap f :=
-  (gc_map_comap f : GaloisConnection (map f) (comap f)).u_infᵢ
-#align submonoid.comap_infi Submonoid.comap_infᵢ
-#align add_submonoid.comap_infi AddSubmonoid.comap_infᵢ
+theorem comap_iInf {ι : Sort _} (f : F) (s : ι → Submonoid N) :
+    (iInf s).comap f = ⨅ i, (s i).comap f :=
+  (gc_map_comap f : GaloisConnection (map f) (comap f)).u_iInf
+#align submonoid.comap_infi Submonoid.comap_iInf
+#align add_submonoid.comap_infi AddSubmonoid.comap_iInf
 
 @[to_additive (attr := simp)]
 theorem map_bot (f : F) : (⊥ : Submonoid M).map f = ⊥ :=
@@ -404,10 +401,10 @@ theorem comap_inf_map_of_injective (S T : Submonoid M) : (S.map f ⊓ T.map f).c
 #align add_submonoid.comap_inf_map_of_injective AddSubmonoid.comap_inf_map_of_injective
 
 @[to_additive]
-theorem comap_infᵢ_map_of_injective (S : ι → Submonoid M) : (⨅ i, (S i).map f).comap f = infᵢ S :=
-  (gciMapComap hf).u_infᵢ_l _
-#align submonoid.comap_infi_map_of_injective Submonoid.comap_infᵢ_map_of_injective
-#align add_submonoid.comap_infi_map_of_injective AddSubmonoid.comap_infᵢ_map_of_injective
+theorem comap_iInf_map_of_injective (S : ι → Submonoid M) : (⨅ i, (S i).map f).comap f = iInf S :=
+  (gciMapComap hf).u_iInf_l _
+#align submonoid.comap_infi_map_of_injective Submonoid.comap_iInf_map_of_injective
+#align add_submonoid.comap_infi_map_of_injective AddSubmonoid.comap_iInf_map_of_injective
 
 @[to_additive]
 theorem comap_sup_map_of_injective (S T : Submonoid M) : (S.map f ⊔ T.map f).comap f = S ⊔ T :=
@@ -416,10 +413,10 @@ theorem comap_sup_map_of_injective (S T : Submonoid M) : (S.map f ⊔ T.map f).c
 #align add_submonoid.comap_sup_map_of_injective AddSubmonoid.comap_sup_map_of_injective
 
 @[to_additive]
-theorem comap_supᵢ_map_of_injective (S : ι → Submonoid M) : (⨆ i, (S i).map f).comap f = supᵢ S :=
-  (gciMapComap hf).u_supᵢ_l _
-#align submonoid.comap_supr_map_of_injective Submonoid.comap_supᵢ_map_of_injective
-#align add_submonoid.comap_supr_map_of_injective AddSubmonoid.comap_supᵢ_map_of_injective
+theorem comap_iSup_map_of_injective (S : ι → Submonoid M) : (⨆ i, (S i).map f).comap f = iSup S :=
+  (gciMapComap hf).u_iSup_l _
+#align submonoid.comap_supr_map_of_injective Submonoid.comap_iSup_map_of_injective
+#align add_submonoid.comap_supr_map_of_injective AddSubmonoid.comap_iSup_map_of_injective
 
 @[to_additive]
 theorem map_le_map_iff_of_injective {S T : Submonoid M} : S.map f ≤ T.map f ↔ S ≤ T :=
@@ -473,10 +470,10 @@ theorem map_inf_comap_of_surjective (S T : Submonoid N) : (S.comap f ⊓ T.comap
 #align add_submonoid.map_inf_comap_of_surjective AddSubmonoid.map_inf_comap_of_surjective
 
 @[to_additive]
-theorem map_infᵢ_comap_of_surjective (S : ι → Submonoid N) : (⨅ i, (S i).comap f).map f = infᵢ S :=
-  (giMapComap hf).l_infᵢ_u _
-#align submonoid.map_infi_comap_of_surjective Submonoid.map_infᵢ_comap_of_surjective
-#align add_submonoid.map_infi_comap_of_surjective AddSubmonoid.map_infᵢ_comap_of_surjective
+theorem map_iInf_comap_of_surjective (S : ι → Submonoid N) : (⨅ i, (S i).comap f).map f = iInf S :=
+  (giMapComap hf).l_iInf_u _
+#align submonoid.map_infi_comap_of_surjective Submonoid.map_iInf_comap_of_surjective
+#align add_submonoid.map_infi_comap_of_surjective AddSubmonoid.map_iInf_comap_of_surjective
 
 @[to_additive]
 theorem map_sup_comap_of_surjective (S T : Submonoid N) : (S.comap f ⊔ T.comap f).map f = S ⊔ T :=
@@ -485,10 +482,10 @@ theorem map_sup_comap_of_surjective (S T : Submonoid N) : (S.comap f ⊔ T.comap
 #align add_submonoid.map_sup_comap_of_surjective AddSubmonoid.map_sup_comap_of_surjective
 
 @[to_additive]
-theorem map_supᵢ_comap_of_surjective (S : ι → Submonoid N) : (⨆ i, (S i).comap f).map f = supᵢ S :=
-  (giMapComap hf).l_supᵢ_u _
-#align submonoid.map_supr_comap_of_surjective Submonoid.map_supᵢ_comap_of_surjective
-#align add_submonoid.map_supr_comap_of_surjective AddSubmonoid.map_supᵢ_comap_of_surjective
+theorem map_iSup_comap_of_surjective (S : ι → Submonoid N) : (⨆ i, (S i).comap f).map f = iSup S :=
+  (giMapComap hf).l_iSup_u _
+#align submonoid.map_supr_comap_of_surjective Submonoid.map_iSup_comap_of_surjective
+#align add_submonoid.map_supr_comap_of_surjective AddSubmonoid.map_iSup_comap_of_surjective
 
 @[to_additive]
 theorem comap_le_comap_iff_of_surjective {S T : Submonoid N} : S.comap f ≤ T.comap f ↔ S ≤ T :=
@@ -575,7 +572,7 @@ theorem mk_pow {M} [Monoid M] {A : Type _} [SetLike A M] [SubmonoidClass A M] {S
 -- Prefer subclasses of `Monoid` over subclasses of `SubmonoidClass`.
 /-- A submonoid of a unital magma inherits a unital magma structure. -/
 @[to_additive
-      "An `AddSubmonoid` of an unital additive magma inherits an unital additive magma structure."]
+      "An `AddSubmonoid` of a unital additive magma inherits a unital additive magma structure."]
 instance (priority := 75) toMulOneClass {M : Type _} [MulOneClass M] {A : Type _} [SetLike A M]
     [SubmonoidClass A M] (S : A) : MulOneClass S :=
     Subtype.coe_injective.mulOneClass (↑) rfl (fun _ _ => rfl)
@@ -707,7 +704,7 @@ theorem one_def : (1 : S) = ⟨1, S.one_mem⟩ :=
 
 /-- A submonoid of a unital magma inherits a unital magma structure. -/
 @[to_additive
-      "An `AddSubmonoid` of an unital additive magma inherits an unital additive magma structure."]
+      "An `AddSubmonoid` of a unital additive magma inherits a unital additive magma structure."]
 instance toMulOneClass {M : Type _} [MulOneClass M] (S : Submonoid M) : MulOneClass S :=
   Subtype.coe_injective.mulOneClass (↑) rfl fun _ _ => rfl
 #align submonoid.to_mul_one_class Submonoid.toMulOneClass
@@ -848,7 +845,8 @@ def prod (s : Submonoid M) (t : Submonoid N) :
 #align add_submonoid.prod AddSubmonoid.prod
 
 @[to_additive coe_prod]
-theorem coe_prod (s : Submonoid M) (t : Submonoid N) : (s.prod t : Set (M × N)) = s ×ˢ t :=
+theorem coe_prod (s : Submonoid M) (t : Submonoid N) :
+    (s.prod t : Set (M × N)) = (s : Set M) ×ˢ (t : Set N) :=
   rfl
 #align submonoid.coe_prod Submonoid.coe_prod
 #align add_submonoid.coe_prod AddSubmonoid.coe_prod
@@ -1011,7 +1009,7 @@ interchangeable without proof obligations.
 
 A convenient candidate definition for range which is mathematically correct is `map ⊤ f`, just as
 `Set.range` could have been defined as `f '' Set.univ`. However, this lacks the desired definitional
-convenience, in that it both does not match `Set.range`, and that it introduces a redudant `x ∈ ⊤`
+convenience, in that it both does not match `Set.range`, and that it introduces a redundant `x ∈ ⊤`
 term which clutters proofs. In such a case one may resort to the `copy`
 pattern. A `copy` function converts the definitional problem for the carrier set of a subobject
 into a one-off propositional proof obligation which one discharges while writing the definition of
@@ -1022,14 +1020,14 @@ A good example is the case of a morphism of monoids. A convenient definition for
 definitional convenience, we first define `Submonoid.copy` as follows:
 ```lean
 protected def copy (S : Submonoid M) (s : Set M) (hs : s = S) : Submonoid M :=
-{ carrier  := s,
-  one_mem' := hs.symm ▸ S.one_mem',
-  mul_mem' := hs.symm ▸ S.mul_mem' }
+  { carrier  := s,
+    one_mem' := hs.symm ▸ S.one_mem',
+    mul_mem' := hs.symm ▸ S.mul_mem' }
 ```
 and then finally define:
 ```lean
 def mrange (f : M →* N) : Submonoid N :=
-((⊤ : Submonoid M).map f).copy (Set.range f) Set.image_univ.symm
+  ((⊤ : Submonoid M).map f).copy (Set.range f) Set.image_univ.symm
 ```
 -/
 
@@ -1071,7 +1069,8 @@ theorem mrange_top_iff_surjective {f : F} : mrange f = (⊤ : Submonoid N) ↔ F
 #align add_monoid_hom.mrange_top_iff_surjective AddMonoidHom.mrange_top_iff_surjective
 
 /-- The range of a surjective monoid hom is the whole of the codomain. -/
-@[to_additive "The range of a surjective `AddMonoid` hom is the whole of the codomain."]
+@[to_additive (attr := simp)
+  "The range of a surjective `AddMonoid` hom is the whole of the codomain."]
 theorem mrange_top_of_surjective (f : F) (hf : Function.Surjective f) :
     mrange f = (⊤ : Submonoid N) :=
   mrange_top_iff_surjective.2 hf
@@ -1368,7 +1367,7 @@ theorem eq_bot_iff_forall : S = ⊥ ↔ ∀ x ∈ S, x = (1 : M) :=
 theorem nontrivial_iff_exists_ne_one (S : Submonoid M) : Nontrivial S ↔ ∃ x ∈ S, x ≠ (1 : M) :=
   calc
     Nontrivial S ↔ ∃ x : S, x ≠ 1 := nontrivial_iff_exists_ne 1
-    _ ↔ ∃ (x : _)(hx : x ∈ S), (⟨x, hx⟩ : S) ≠ ⟨1, S.one_mem⟩ := Subtype.exists
+    _ ↔ ∃ (x : _) (hx : x ∈ S), (⟨x, hx⟩ : S) ≠ ⟨1, S.one_mem⟩ := Subtype.exists
     _ ↔ ∃ x ∈ S, x ≠ (1 : M) := by simp [Ne.def]
 #align submonoid.nontrivial_iff_exists_ne_one Submonoid.nontrivial_iff_exists_ne_one
 #align add_submonoid.nontrivial_iff_exists_ne_zero AddSubmonoid.nontrivial_iff_exists_ne_zero
@@ -1468,10 +1467,10 @@ theorem Submonoid.equivMapOfInjective_coe_mulEquiv (e : M ≃* N) :
 
 section Actions
 
-/-! ### Actions by `submonoid`s
+/-! ### Actions by `Submonoid`s
 
-These instances tranfer the action by an element `m : M` of a monoid `M` written as `m • a` onto the
-action by an element `s : S` of a submonoid `S : Submonoid M` such that `s • a = (s : M) • a`.
+These instances transfer the action by an element `m : M` of a monoid `M` written as `m • a` onto
+the action by an element `s : S` of a submonoid `S : Submonoid M` such that `s • a = (s : M) • a`.
 
 These instances work particularly well in conjunction with `Monoid.toMulAction`, enabling
 `s • m` as an alias for `↑s * m`.

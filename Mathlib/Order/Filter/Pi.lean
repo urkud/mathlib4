@@ -2,25 +2,22 @@
 Copyright (c) 2021 Yury G. Kudryashov. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Yury G. Kudryashov, Alex Kontorovich
-
-! This file was ported from Lean 3 source module order.filter.pi
-! leanprover-community/mathlib commit 1f0096e6caa61e9c849ec2adbd227e960e9dff58
-! Please do not edit these lines, except to modify the commit id
-! if you have ported upstream changes.
 -/
 import Mathlib.Order.Filter.Bases
+
+#align_import order.filter.pi from "leanprover-community/mathlib"@"1f0096e6caa61e9c849ec2adbd227e960e9dff58"
 
 /-!
 # (Co)product of a family of filters
 
 In this file we define two filters on `Π i, α i` and prove some basic properties of these filters.
 
-* `Filter.pi (f : Π i, filter (α i))` to be the maximal filter on `Π i, α i` such that
+* `Filter.pi (f : Π i, Filter (α i))` to be the maximal filter on `Π i, α i` such that
   `∀ i, Filter.Tendsto (Function.eval i) (Filter.pi f) (f i)`. It is defined as
   `Π i, Filter.comap (Function.eval i) (f i)`. This is a generalization of `Filter.prod` to indexed
   products.
 
-* `Filter.coprodᵢ (f : Π i, filter (α i))`: a generalization of `Filter.coprod`; it is the supremum
+* `Filter.coprodᵢ (f : Π i, Filter (α i))`: a generalization of `Filter.coprod`; it is the supremum
   of `comap (eval i) (f i)`.
 -/
 
@@ -42,16 +39,16 @@ def pi (f : ∀ i, Filter (α i)) : Filter (∀ i, α i) :=
 
 instance pi.isCountablyGenerated [Countable ι] [∀ i, IsCountablyGenerated (f i)] :
     IsCountablyGenerated (pi f) :=
-  infᵢ.isCountablyGenerated _
+  iInf.isCountablyGenerated _
 #align filter.pi.is_countably_generated Filter.pi.isCountablyGenerated
 
 theorem tendsto_eval_pi (f : ∀ i, Filter (α i)) (i : ι) : Tendsto (eval i) (pi f) (f i) :=
-  tendsto_infᵢ' i tendsto_comap
+  tendsto_iInf' i tendsto_comap
 #align filter.tendsto_eval_pi Filter.tendsto_eval_pi
 
 theorem tendsto_pi {β : Type _} {m : β → ∀ i, α i} {l : Filter β} :
     Tendsto m l (pi f) ↔ ∀ i, Tendsto (fun x => m x i) l (f i) := by
-  simp only [pi, tendsto_infᵢ, tendsto_comap_iff]; rfl
+  simp only [pi, tendsto_iInf, tendsto_comap_iff]; rfl
 #align filter.tendsto_pi Filter.tendsto_pi
 
 theorem le_pi {g : Filter (∀ i, α i)} : g ≤ pi f ↔ ∀ i, Tendsto (eval i) g (f i) :=
@@ -60,26 +57,26 @@ theorem le_pi {g : Filter (∀ i, α i)} : g ≤ pi f ↔ ∀ i, Tendsto (eval i
 
 @[mono]
 theorem pi_mono (h : ∀ i, f₁ i ≤ f₂ i) : pi f₁ ≤ pi f₂ :=
-  infᵢ_mono fun i => comap_mono <| h i
+  iInf_mono fun i => comap_mono <| h i
 #align filter.pi_mono Filter.pi_mono
 
 theorem mem_pi_of_mem (i : ι) {s : Set (α i)} (hs : s ∈ f i) : eval i ⁻¹' s ∈ pi f :=
-  mem_infᵢ_of_mem i <| preimage_mem_comap hs
+  mem_iInf_of_mem i <| preimage_mem_comap hs
 #align filter.mem_pi_of_mem Filter.mem_pi_of_mem
 
 theorem pi_mem_pi {I : Set ι} (hI : I.Finite) (h : ∀ i ∈ I, s i ∈ f i) : I.pi s ∈ pi f := by
-  rw [pi_def, binterᵢ_eq_interᵢ]
-  refine' mem_infᵢ_of_interᵢ hI (fun i => _) Subset.rfl
+  rw [pi_def, biInter_eq_iInter]
+  refine' mem_iInf_of_iInter hI (fun i => _) Subset.rfl
   exact preimage_mem_comap (h i i.2)
 #align filter.pi_mem_pi Filter.pi_mem_pi
 
 theorem mem_pi {s : Set (∀ i, α i)} :
     s ∈ pi f ↔ ∃ I : Set ι, I.Finite ∧ ∃ t : ∀ i, Set (α i), (∀ i, t i ∈ f i) ∧ I.pi t ⊆ s := by
   constructor
-  · simp only [pi, mem_infᵢ', mem_comap, pi_def]
+  · simp only [pi, mem_iInf', mem_comap, pi_def]
     rintro ⟨I, If, V, hVf, -, rfl, -⟩
     choose t htf htV using hVf
-    exact ⟨I, If, t, htf, interᵢ₂_mono fun i _ => htV i⟩
+    exact ⟨I, If, t, htf, iInter₂_mono fun i _ => htV i⟩
   · rintro ⟨I, If, t, htf, hts⟩
     exact mem_of_superset (pi_mem_pi If fun i _ => htf i) hts
 #align filter.mem_pi Filter.mem_pi
@@ -110,12 +107,12 @@ theorem hasBasis_pi {ι' : ι → Type} {s : ∀ i, ι' i → Set (α i)} {p : �
     (h : ∀ i, (f i).HasBasis (p i) (s i)) :
     (pi f).HasBasis (fun If : Set ι × ∀ i, ι' i => If.1.Finite ∧ ∀ i ∈ If.1, p i (If.2 i))
       fun If : Set ι × ∀ i, ι' i => If.1.pi fun i => s i <| If.2 i := by
-  simpa [Set.pi_def] using hasBasis_infᵢ' fun i => (h i).comap (eval i : (∀ j, α j) → α i)
+  simpa [Set.pi_def] using hasBasis_iInf' fun i => (h i).comap (eval i : (∀ j, α j) → α i)
 #align filter.has_basis_pi Filter.hasBasis_pi
 
 @[simp]
-theorem pi_inf_principal_univ_pi_eq_bot : pi f ⊓ 𝓟 (Set.pi univ s) = ⊥ ↔ ∃ i, f i ⊓ 𝓟 (s i) = ⊥ :=
-  by
+theorem pi_inf_principal_univ_pi_eq_bot :
+    pi f ⊓ 𝓟 (Set.pi univ s) = ⊥ ↔ ∃ i, f i ⊓ 𝓟 (s i) = ⊥ := by
   constructor
   · simp only [inf_principal_eq_bot, mem_pi]
     contrapose!
@@ -207,12 +204,12 @@ theorem mem_coprodᵢ_iff {s : Set (∀ i, α i)} :
 
 theorem compl_mem_coprodᵢ {s : Set (∀ i, α i)} :
     sᶜ ∈ Filter.coprodᵢ f ↔ ∀ i, (eval i '' s)ᶜ ∈ f i :=
-  by simp only [Filter.coprodᵢ, mem_supᵢ, compl_mem_comap]
+  by simp only [Filter.coprodᵢ, mem_iSup, compl_mem_comap]
 #align filter.compl_mem_Coprod Filter.compl_mem_coprodᵢ
 
 theorem coprodᵢ_neBot_iff' :
     NeBot (Filter.coprodᵢ f) ↔ (∀ i, Nonempty (α i)) ∧ ∃ d, NeBot (f d) := by
-  simp only [Filter.coprodᵢ, supᵢ_neBot, ← exists_and_left, ← comap_eval_neBot_iff']
+  simp only [Filter.coprodᵢ, iSup_neBot, ← exists_and_left, ← comap_eval_neBot_iff']
 #align filter.Coprod_ne_bot_iff' Filter.coprodᵢ_neBot_iff'
 
 @[simp]
@@ -251,7 +248,7 @@ theorem coprodᵢ_neBot [∀ i, Nonempty (α i)] [Nonempty ι] (f : ∀ i, Filte
 
 @[mono]
 theorem coprodᵢ_mono (hf : ∀ i, f₁ i ≤ f₂ i) : Filter.coprodᵢ f₁ ≤ Filter.coprodᵢ f₂ :=
-  supᵢ_mono fun i => comap_mono (hf i)
+  iSup_mono fun i => comap_mono (hf i)
 #align filter.Coprod_mono Filter.coprodᵢ_mono
 
 variable {β : ι → Type _} {m : ∀ i, α i → β i}

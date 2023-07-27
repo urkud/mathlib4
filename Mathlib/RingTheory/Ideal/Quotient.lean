@@ -2,11 +2,6 @@
 Copyright (c) 2018 Kenny Lau. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Kenny Lau, Chris Hughes, Mario Carneiro, Anne Baanen
-
-! This file was ported from Lean 3 source module ring_theory.ideal.quotient
-! leanprover-community/mathlib commit e064a7bf82ad94c3c17b5128bbd860d1ec34874e
-! Please do not edit these lines, except to modify the commit id
-! if you have ported upstream changes.
 -/
 import Mathlib.Algebra.Ring.Fin
 import Mathlib.Algebra.Ring.Prod
@@ -14,6 +9,8 @@ import Mathlib.LinearAlgebra.Quotient
 import Mathlib.RingTheory.Congruence
 import Mathlib.RingTheory.Ideal.Basic
 import Mathlib.Tactic.FinCases
+
+#align_import ring_theory.ideal.quotient from "leanprover-community/mathlib"@"949dc57e616a621462062668c9f39e4e17b64b69"
 
 /-!
 # Ideal quotients
@@ -43,9 +40,6 @@ open BigOperators
 variable {R : Type u} [CommRing R] (I : Ideal R) {a b : R}
 variable {S : Type v}
 
--- Porting note: we need η for TC
-set_option synthInstance.etaExperiment true
-
 -- Note that at present `Ideal` means a left-ideal,
 -- so this quotient is only useful in a commutative ring.
 -- We should develop quotients by two-sided ideals as well.
@@ -71,7 +65,7 @@ instance one (I : Ideal R) : One (R ⧸ I) :=
 protected def ringCon (I : Ideal R) : RingCon R :=
   { QuotientAddGroup.con I.toAddSubgroup with
     mul' := fun {a₁ b₁ a₂ b₂} h₁ h₂ => by
-      rw [Submodule.quotientRel_r_def] at h₁ h₂⊢
+      rw [Submodule.quotientRel_r_def] at h₁ h₂ ⊢
       have F := I.add_mem (I.mul_mem_left a₂ h₁) (I.mul_mem_right b₁ h₂)
       have : a₁ * a₂ - b₁ * b₂ = a₂ * (a₁ - b₁) + (a₂ - b₂) * b₁ := by
         rw [mul_sub, sub_mul, sub_add_sub_cancel, mul_comm, mul_comm b₁]
@@ -82,6 +76,28 @@ instance commRing (I : Ideal R) : CommRing (R ⧸ I) :=
   { @Submodule.Quotient.addCommGroup _ _ (id _) (id _) (id _) I,
     inferInstanceAs (CommRing (Quotient.ringCon I).Quotient) with }
 #align ideal.quotient.comm_ring Ideal.Quotient.commRing
+
+-- this instance is harder to find than the one via `Algebra α (R ⧸ I)`, so use a lower priority
+instance (priority := 100) isScalarTower_right {α} [SMul α R] [IsScalarTower α R R] :
+    -- porting note: added `letI` since otherwise this instance can't be found
+    letI : SMul (R ⧸ I) (R ⧸ I) := Mul.toSMul _
+    IsScalarTower α (R ⧸ I) (R ⧸ I) :=
+  (Quotient.ringCon I).isScalarTower_right
+#align ideal.quotient.is_scalar_tower_right Ideal.Quotient.isScalarTower_right
+
+instance smulCommClass {α} [SMul α R] [IsScalarTower α R R] [SMulCommClass α R R] :
+    -- porting note: added `letI` since otherwise this instance can't be found
+    letI : SMul (R ⧸ I) (R ⧸ I) := Mul.toSMul _
+    SMulCommClass α (R ⧸ I) (R ⧸ I) :=
+  (Quotient.ringCon I).smulCommClass
+#align ideal.quotient.smul_comm_class Ideal.Quotient.smulCommClass
+
+instance smulCommClass' {α} [SMul α R] [IsScalarTower α R R] [SMulCommClass R α R] :
+    -- porting note: added `letI` since otherwise this instance can't be found
+    letI : SMul (R ⧸ I) (R ⧸ I) := Mul.toSMul _
+    SMulCommClass (R ⧸ I) α (R ⧸ I) :=
+  (Quotient.ringCon I).smulCommClass'
+#align ideal.quotient.smul_comm_class' Ideal.Quotient.smulCommClass'
 
 /-- The ring homomorphism from a ring `R` to a quotient ring `R/I`. -/
 def mk (I : Ideal R) : R →+* R ⧸ I where
@@ -154,7 +170,7 @@ instance : RingHomSurjective (mk I) :=
 theorem quotient_ring_saturate (I : Ideal R) (s : Set R) :
     mk I ⁻¹' (mk I '' s) = ⋃ x : I, (fun y => x.1 + y) '' s := by
   ext x
-  simp only [mem_preimage, mem_image, mem_unionᵢ, Ideal.Quotient.eq]
+  simp only [mem_preimage, mem_image, mem_iUnion, Ideal.Quotient.eq]
   exact
     ⟨fun ⟨a, a_in, h⟩ => ⟨⟨_, I.neg_mem h⟩, a, a_in, by simp⟩, fun ⟨⟨i, hi⟩, a, ha, Eq⟩ =>
       ⟨a, ha, by rw [← Eq, sub_add_eq_sub_sub_swap, sub_self, zero_sub]; exact I.neg_mem hi⟩⟩
@@ -175,7 +191,7 @@ theorem isDomain_iff_prime (I : Ideal R) : IsDomain (R ⧸ I) ↔ I.IsPrime := b
   refine' ⟨fun H => ⟨zero_ne_one_iff.1 _, fun {x y} h => _⟩, fun h => inferInstance⟩
   · haveI : Nontrivial (R ⧸ I) := ⟨H.2.1⟩
     exact zero_ne_one
-  · simp only [← eq_zero_iff_mem, (mk I).map_mul] at h⊢
+  · simp only [← eq_zero_iff_mem, (mk I).map_mul] at h ⊢
     haveI := @IsDomain.to_noZeroDivisors (R ⧸ I) _ H
     exact eq_zero_or_eq_zero_of_mul_eq_zero h
 #align ideal.quotient.is_domain_iff_prime Ideal.Quotient.isDomain_iff_prime
@@ -193,17 +209,31 @@ theorem exists_inv {I : Ideal R} [hI : I.IsMaximal] :
 
 open Classical
 
-/-- quotient by maximal ideal is a field. def rather than instance, since users will have
-computable inverses in some applications.
+-- porting note: the original proof uses `(by infer_instance : MonoidWithZero (R ⧸ I))`;
+-- this doesn't work, `(inferInstance : MonoidWithZero (R ⧸ I))` does, but the statement with
+-- `..Quotient.commRing I` feels nicer.
+/-- The quotient by a maximal ideal is a group with zero. This is a `def` rather than `instance`,
+since users will have computable inverses in some applications.
+
 See note [reducible non-instances]. -/
 @[reducible]
-protected noncomputable def field (I : Ideal R) [hI : I.IsMaximal] : Field (R ⧸ I) :=
+protected noncomputable def groupWithZero (I : Ideal R) [hI : I.IsMaximal] :
+    GroupWithZero (R ⧸ I) :=
   { Quotient.commRing I,
     Quotient.isDomain I with
     inv := fun a => if ha : a = 0 then 0 else Classical.choose (exists_inv ha)
     mul_inv_cancel := fun a (ha : a ≠ 0) =>
       show a * dite _ _ _ = _ by rw [dif_neg ha]; exact Classical.choose_spec (exists_inv ha)
     inv_zero := dif_pos rfl }
+#align ideal.quotient.group_with_zero Ideal.Quotient.groupWithZero
+
+/-- The quotient by a maximal ideal is a field. This is a `def` rather than `instance`, since users
+will have computable inverses (and `qsmul`, `rat_cast`) in some applications.
+
+See note [reducible non-instances]. -/
+@[reducible]
+protected noncomputable def field (I : Ideal R) [hI : I.IsMaximal] : Field (R ⧸ I) :=
+  { Quotient.commRing I, Quotient.groupWithZero I with }
 #align ideal.quotient.field Ideal.Quotient.field
 
 /-- If the quotient by an ideal is a field, then the ideal is maximal. -/
@@ -299,7 +329,6 @@ section Pi
 
 variable (ι : Type v)
 
-set_option maxHeartbeats 300000 in
 /-- `R^n/I^n` is a `R/I`-module. -/
 instance modulePi : Module (R ⧸ I) ((ι → R) ⧸ I.pi ι) where
   smul c m :=
@@ -335,21 +364,19 @@ instance modulePi : Module (R ⧸ I) ((ι → R) ⧸ I.pi ι) where
     congr with i; exact zero_mul (a i)
 #align ideal.module_pi Ideal.modulePi
 
-set_option synthInstance.etaExperiment false in -- Porting note: needed, otherwise type times out
 /-- `R^n/I^n` is isomorphic to `(R/I)^n` as an `R/I`-module. -/
-noncomputable def piQuotEquiv : ((ι → R) ⧸ I.pi ι) ≃ₗ[R ⧸ I] ι → (R ⧸ I) := by
-  refine' ⟨⟨⟨?toFun, _⟩, _⟩, ?invFun, _, _⟩
-  case toFun => set_option synthInstance.etaExperiment true in -- Porting note: to get `Module R R`
-    exact fun x ↦
+noncomputable def piQuotEquiv : ((ι → R) ⧸ I.pi ι) ≃ₗ[R ⧸ I] ι → (R ⧸ I) where
+  toFun := fun x ↦
       Quotient.liftOn' x (fun f i => Ideal.Quotient.mk I (f i)) fun a b hab =>
         funext fun i => (Submodule.Quotient.eq' _).2 (QuotientAddGroup.leftRel_apply.mp hab i)
-  case invFun =>
-    exact fun x ↦ Ideal.Quotient.mk (I.pi ι) fun i ↦ Quotient.out' (x i)
-  · rintro ⟨_⟩ ⟨_⟩; rfl
-  · rintro ⟨_⟩ ⟨_⟩; rfl
-  · rintro ⟨x⟩
+  map_add' := by rintro ⟨_⟩ ⟨_⟩; rfl
+  map_smul' := by rintro ⟨_⟩ ⟨_⟩; rfl
+  invFun := fun x ↦ Ideal.Quotient.mk (I.pi ι) fun i ↦ Quotient.out' (x i)
+  left_inv := by
+    rintro ⟨x⟩
     exact Ideal.Quotient.eq.2 fun i => Ideal.Quotient.eq.1 (Quotient.out_eq' _)
-  · intro x
+  right_inv := by
+    intro x
     ext i
     obtain ⟨_, _⟩ := @Quot.exists_rep _ _ (x i)
     convert Quotient.out_eq' (x i)
@@ -443,7 +470,7 @@ theorem exists_sub_mem [Finite ι] {f : ι → Ideal R} (hf : ∀ i j, i ≠ j �
   Remainder Theorem. It is bijective if the ideals `f i` are comaximal. -/
 def quotientInfToPiQuotient (f : ι → Ideal R) : (R ⧸ ⨅ i, f i) →+* ∀ i, R ⧸ f i :=
   Quotient.lift (⨅ i, f i) (Pi.ringHom fun i : ι => (Quotient.mk (f i) : _)) fun r hr => by
-    rw [Submodule.mem_infᵢ] at hr
+    rw [Submodule.mem_iInf] at hr
     ext i
     exact Quotient.eq_zero_iff_mem.2 (hr i)
 #align ideal.quotient_inf_to_pi_quotient Ideal.quotientInfToPiQuotient
@@ -453,7 +480,7 @@ theorem quotientInfToPiQuotient_bijective [Finite ι] {f : ι → Ideal R}
   ⟨fun x y =>
     Quotient.inductionOn₂' x y fun r s hrs =>
       Quotient.eq.2 <|
-        (Submodule.mem_infᵢ _).2 fun i =>
+        (Submodule.mem_iInf _).2 fun i =>
           Quotient.eq.1 <|
             show quotientInfToPiQuotient f (Quotient.mk'' r) i = _ by rw [hrs]; rfl,
     fun g =>
@@ -478,7 +505,7 @@ noncomputable def quotientInfEquivQuotientProd (I J : Ideal R) (coprime : I ⊔ 
     fin_cases i <;> fin_cases j <;> try contradiction
     · assumption
     · rwa [sup_comm]
-  (Ideal.quotEquivOfEq (by simp [infᵢ, inf_comm])).trans <|
+  (Ideal.quotEquivOfEq (by simp [iInf, inf_comm])).trans <|
             (Ideal.quotientInfRingEquivPiQuotient f hf).trans <| RingEquiv.piFinTwo fun i => R ⧸ f i
 #align ideal.quotient_inf_equiv_quotient_prod Ideal.quotientInfEquivQuotientProd
 

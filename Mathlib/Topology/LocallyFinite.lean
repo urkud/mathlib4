@@ -2,14 +2,11 @@
 Copyright (c) 2022 Yury Kudryashov. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Yury Kudryashov
-
-! This file was ported from Lean 3 source module topology.locally_finite
-! leanprover-community/mathlib commit 55d771df074d0dd020139ee1cd4b95521422df9f
-! Please do not edit these lines, except to modify the commit id
-! if you have ported upstream changes.
 -/
 import Mathlib.Topology.ContinuousOn
 import Mathlib.Order.Filter.SmallSets
+
+#align_import topology.locally_finite from "leanprover-community/mathlib"@"55d771df074d0dd020139ee1cd4b95521422df9f"
 
 /-!
 ### Locally finite families of sets
@@ -77,48 +74,48 @@ theorem exists_mem_basis {ι' : Sort _} (hf : LocallyFinite f) {p : ι' → Prop
   ⟨i, hpi, hi Subset.rfl⟩
 #align locally_finite.exists_mem_basis LocallyFinite.exists_mem_basis
 
-protected theorem nhdsWithin_unionᵢ (hf : LocallyFinite f) (a : X) :
+protected theorem nhdsWithin_iUnion (hf : LocallyFinite f) (a : X) :
     𝓝[⋃ i, f i] a = ⨆ i, 𝓝[f i] a := by
   rcases hf a with ⟨U, haU, hfin⟩
-  refine le_antisymm ?_ (Monotone.le_map_supᵢ fun _ _ ↦ nhdsWithin_mono _)
+  refine le_antisymm ?_ (Monotone.le_map_iSup fun _ _ ↦ nhdsWithin_mono _)
   calc
     𝓝[⋃ i, f i] a = 𝓝[⋃ i, f i ∩ U] a := by
-      rw [← unionᵢ_inter, ← nhdsWithin_inter_of_mem' (nhdsWithin_le_nhds haU)]
+      rw [← iUnion_inter, ← nhdsWithin_inter_of_mem' (nhdsWithin_le_nhds haU)]
     _ = 𝓝[⋃ i ∈ {j | (f j ∩ U).Nonempty}, (f i ∩ U)] a := by
-      simp only [mem_setOf_eq, unionᵢ_nonempty_self]
-    _ = ⨆ i ∈ {j | (f j ∩ U).Nonempty}, 𝓝[f i ∩ U] a := nhdsWithin_bunionᵢ hfin _ _
-    _ ≤ ⨆ i, 𝓝[f i ∩ U] a := supᵢ₂_le_supᵢ _ _
-    _ ≤ ⨆ i, 𝓝[f i] a := supᵢ_mono fun i ↦ nhdsWithin_mono _ <| inter_subset_left _ _
-#align locally_finite.nhds_within_Union LocallyFinite.nhdsWithin_unionᵢ
+      simp only [mem_setOf_eq, iUnion_nonempty_self]
+    _ = ⨆ i ∈ {j | (f j ∩ U).Nonempty}, 𝓝[f i ∩ U] a := nhdsWithin_biUnion hfin _ _
+    _ ≤ ⨆ i, 𝓝[f i ∩ U] a := iSup₂_le_iSup _ _
+    _ ≤ ⨆ i, 𝓝[f i] a := iSup_mono fun i ↦ nhdsWithin_mono _ <| inter_subset_left _ _
+#align locally_finite.nhds_within_Union LocallyFinite.nhdsWithin_iUnion
 
-theorem continuousOn_unionᵢ' {g : X → Y} (hf : LocallyFinite f)
+theorem continuousOn_iUnion' {g : X → Y} (hf : LocallyFinite f)
     (hc : ∀ i x, x ∈ closure (f i) → ContinuousWithinAt g (f i) x) :
     ContinuousOn g (⋃ i, f i) := by
   rintro x -
-  rw [ContinuousWithinAt, hf.nhdsWithin_unionᵢ, tendsto_supᵢ]
+  rw [ContinuousWithinAt, hf.nhdsWithin_iUnion, tendsto_iSup]
   intro i
   by_cases hx : x ∈ closure (f i)
   · exact hc i _ hx
   · rw [mem_closure_iff_nhdsWithin_neBot, not_neBot] at hx
     rw [hx]
     exact tendsto_bot
-#align locally_finite.continuous_on_Union' LocallyFinite.continuousOn_unionᵢ'
+#align locally_finite.continuous_on_Union' LocallyFinite.continuousOn_iUnion'
 
-theorem continuousOn_unionᵢ {g : X → Y} (hf : LocallyFinite f) (h_cl : ∀ i, IsClosed (f i))
+theorem continuousOn_iUnion {g : X → Y} (hf : LocallyFinite f) (h_cl : ∀ i, IsClosed (f i))
     (h_cont : ∀ i, ContinuousOn g (f i)) : ContinuousOn g (⋃ i, f i) :=
-  hf.continuousOn_unionᵢ' fun i x hx ↦ h_cont i x <| (h_cl i).closure_subset hx
-#align locally_finite.continuous_on_Union LocallyFinite.continuousOn_unionᵢ
+  hf.continuousOn_iUnion' fun i x hx ↦ h_cont i x <| (h_cl i).closure_subset hx
+#align locally_finite.continuous_on_Union LocallyFinite.continuousOn_iUnion
 
-protected theorem continuous' {g : X → Y} (hf : LocallyFinite f) (h_cov : (⋃ i, f i) = univ)
+protected theorem continuous' {g : X → Y} (hf : LocallyFinite f) (h_cov : ⋃ i, f i = univ)
     (hc : ∀ i x, x ∈ closure (f i) → ContinuousWithinAt g (f i) x) :
     Continuous g :=
-  continuous_iff_continuousOn_univ.2 <| h_cov ▸ hf.continuousOn_unionᵢ' hc
+  continuous_iff_continuousOn_univ.2 <| h_cov ▸ hf.continuousOn_iUnion' hc
 #align locally_finite.continuous' LocallyFinite.continuous'
 
-protected theorem continuous {g : X → Y} (hf : LocallyFinite f) (h_cov : (⋃ i, f i) = univ)
+protected theorem continuous {g : X → Y} (hf : LocallyFinite f) (h_cov : ⋃ i, f i = univ)
     (h_cl : ∀ i, IsClosed (f i)) (h_cont : ∀ i, ContinuousOn g (f i)) :
     Continuous g :=
-  continuous_iff_continuousOn_univ.2 <| h_cov ▸ hf.continuousOn_unionᵢ h_cl h_cont
+  continuous_iff_continuousOn_univ.2 <| h_cov ▸ hf.continuousOn_iUnion h_cl h_cont
 #align locally_finite.continuous LocallyFinite.continuous
 
 protected theorem closure (hf : LocallyFinite f) : LocallyFinite fun i => closure (f i) := by
@@ -129,25 +126,25 @@ protected theorem closure (hf : LocallyFinite f) : LocallyFinite fun i => closur
     (inter_subset_inter_right _ interior_subset)
 #align locally_finite.closure LocallyFinite.closure
 
-theorem closure_unionᵢ (h : LocallyFinite f) : closure (⋃ i, f i) = ⋃ i, closure (f i) := by
+theorem closure_iUnion (h : LocallyFinite f) : closure (⋃ i, f i) = ⋃ i, closure (f i) := by
   ext x
-  simp only [mem_closure_iff_nhdsWithin_neBot, h.nhdsWithin_unionᵢ, supᵢ_neBot, mem_unionᵢ]
-#align locally_finite.closure_Union LocallyFinite.closure_unionᵢ
+  simp only [mem_closure_iff_nhdsWithin_neBot, h.nhdsWithin_iUnion, iSup_neBot, mem_iUnion]
+#align locally_finite.closure_Union LocallyFinite.closure_iUnion
 
-theorem isClosed_unionᵢ (hf : LocallyFinite f) (hc : ∀ i, IsClosed (f i)) :
+theorem isClosed_iUnion (hf : LocallyFinite f) (hc : ∀ i, IsClosed (f i)) :
     IsClosed (⋃ i, f i) := by
-  simp only [← closure_eq_iff_isClosed, hf.closure_unionᵢ, (hc _).closure_eq]
-#align locally_finite.is_closed_Union LocallyFinite.isClosed_unionᵢ
+  simp only [← closure_eq_iff_isClosed, hf.closure_iUnion, (hc _).closure_eq]
+#align locally_finite.is_closed_Union LocallyFinite.isClosed_iUnion
 
-/-- If `f : β → set α` is a locally finite family of closed sets, then for any `x : α`, the
+/-- If `f : β → Set α` is a locally finite family of closed sets, then for any `x : α`, the
 intersection of the complements to `f i`, `x ∉ f i`, is a neighbourhood of `x`. -/
-theorem interᵢ_compl_mem_nhds (hf : LocallyFinite f) (hc : ∀ i, IsClosed (f i)) (x : X) :
-    (⋂ (i) (_hi : x ∉ f i), f iᶜ) ∈ 𝓝 x := by
-  refine' IsOpen.mem_nhds _ (mem_interᵢ₂.2 fun i => id)
+theorem iInter_compl_mem_nhds (hf : LocallyFinite f) (hc : ∀ i, IsClosed (f i)) (x : X) :
+    (⋂ (i) (_ : x ∉ f i), (f i)ᶜ) ∈ 𝓝 x := by
+  refine' IsOpen.mem_nhds _ (mem_iInter₂.2 fun i => id)
   suffices IsClosed (⋃ i : { i // x ∉ f i }, f i) by
-    rwa [← isOpen_compl_iff, compl_unionᵢ, interᵢ_subtype] at this
-  exact (hf.comp_injective Subtype.val_injective).isClosed_unionᵢ fun i => hc _
-#align locally_finite.Inter_compl_mem_nhds LocallyFinite.interᵢ_compl_mem_nhds
+    rwa [← isOpen_compl_iff, compl_iUnion, iInter_subtype] at this
+  exact (hf.comp_injective Subtype.val_injective).isClosed_iUnion fun i => hc _
+#align locally_finite.Inter_compl_mem_nhds LocallyFinite.iInter_compl_mem_nhds
 
 /-- Let `f : ℕ → Π a, β a` be a sequence of (dependent) functions on a topological space. Suppose
 that the family of sets `s n = {x | f (n + 1) x ≠ f n x}` is locally finite. Then there exists a
@@ -157,7 +154,7 @@ interval `[N, +∞)` and a neighbourhood of `x`.
 We formulate the conclusion in terms of the product of filter `Filter.atTop` and `𝓝 x`. -/
 theorem exists_forall_eventually_eq_prod {π : X → Sort _} {f : ℕ → ∀ x : X, π x}
     (hf : LocallyFinite fun n => { x | f (n + 1) x ≠ f n x }) :
-    ∃ F : ∀ x : X, π x, ∀ x, ∀ᶠ p : ℕ × X in atTop ×ᶠ 𝓝 x, f p.1 p.2 = F p.2 := by
+    ∃ F : ∀ x : X, π x, ∀ x, ∀ᶠ p : ℕ × X in atTop ×ˢ 𝓝 x, f p.1 p.2 = F p.2 := by
   choose U hUx hU using hf
   choose N hN using fun x => (hU x).bddAbove
   replace hN : ∀ (x), ∀ n > N x, ∀ y ∈ U x, f (n + 1) y = f n y
@@ -194,10 +191,17 @@ theorem exists_forall_eventually_atTop_eventuallyEq {f : ℕ → X → α}
 #align locally_finite.exists_forall_eventually_at_top_eventually_eq LocallyFinite.exists_forall_eventually_atTop_eventuallyEq
 
 theorem preimage_continuous {g : Y → X} (hf : LocallyFinite f) (hg : Continuous g) :
-    LocallyFinite fun i => g ⁻¹' f i := fun x =>
+    LocallyFinite (g ⁻¹' f ·) := fun x =>
   let ⟨s, hsx, hs⟩ := hf (g x)
   ⟨g ⁻¹' s, hg.continuousAt hsx, hs.subset fun _ ⟨y, hy⟩ => ⟨g y, hy⟩⟩
 #align locally_finite.preimage_continuous LocallyFinite.preimage_continuous
+
+theorem prod_right (hf : LocallyFinite f) (g : ι → Set Y) : LocallyFinite (fun i ↦ f i ×ˢ g i) :=
+  (hf.preimage_continuous continuous_fst).subset fun _ ↦ prod_subset_preimage_fst _ _
+
+theorem prod_left {g : ι → Set Y} (hg : LocallyFinite g) (f : ι → Set X) :
+    LocallyFinite (fun i ↦ f i ×ˢ g i) :=
+  (hg.preimage_continuous continuous_snd).subset fun _ ↦ prod_subset_preimage_snd _ _
 
 end LocallyFinite
 

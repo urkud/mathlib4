@@ -2,15 +2,12 @@
 Copyright (c) 2021 Yury G. Kudryashov. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Yury G. Kudryashov
-
-! This file was ported from Lean 3 source module topology.urysohns_lemma
-! leanprover-community/mathlib commit f2ce6086713c78a7f880485f7917ea547a215982
-! Please do not edit these lines, except to modify the commit id
-! if you have ported upstream changes.
 -/
 import Mathlib.Analysis.NormedSpace.AddTorsor
 import Mathlib.LinearAlgebra.AffineSpace.Ordered
 import Mathlib.Topology.ContinuousFunction.Basic
+
+#align_import topology.urysohns_lemma from "leanprover-community/mathlib"@"f2ce6086713c78a7f880485f7917ea547a215982"
 
 /-!
 # Urysohn's lemma
@@ -98,7 +95,7 @@ variable [NormalSpace X]
 namespace CU
 
 /-- Due to `normal_exists_closure_subset`, for each `c : CU X` there exists an open set `u`
-such chat `c.C ⊆ u` and `closure u ⊆ c.U`. `c.left` is the pair `(c.C, u)`. -/
+such that `c.C ⊆ u` and `closure u ⊆ c.U`. `c.left` is the pair `(c.C, u)`. -/
 @[simps C]
 def left (c : CU X) : CU X where
   C := c.C
@@ -109,7 +106,7 @@ def left (c : CU X) : CU X where
 #align urysohns.CU.left Urysohns.CU.left
 
 /-- Due to `normal_exists_closure_subset`, for each `c : CU X` there exists an open set `u`
-such chat `c.C ⊆ u` and `closure u ⊆ c.U`. `c.right` is the pair `(closure u, c.U)`. -/
+such that `c.C ⊆ u` and `closure u ⊆ c.U`. `c.right` is the pair `(closure u, c.U)`. -/
 @[simps U]
 def right (c : CU X) : CU X where
   C := closure (normal_exists_closure_subset c.closed_C c.open_U c.subset).choose
@@ -134,7 +131,7 @@ theorem subset_right_C (c : CU X) : c.C ⊆ c.right.C :=
 /-- `n`-th approximation to a continuous function `f : X → ℝ` such that `f = 0` on `c.C` and `f = 1`
 outside of `c.U`. -/
 noncomputable def approx : ℕ → CU X → X → ℝ
-  | 0, c, x => indicator (c.Uᶜ) 1 x
+  | 0, c, x => indicator c.Uᶜ 1 x
   | n + 1, c, x => midpoint ℝ (approx n c.left x) (approx n c.right x)
 #align urysohns.CU.approx Urysohns.CU.approx
 
@@ -220,15 +217,15 @@ protected noncomputable def lim (c : CU X) (x : X) : ℝ :=
 
 theorem tendsto_approx_atTop (c : CU X) (x : X) :
     Tendsto (fun n => c.approx n x) atTop (𝓝 <| c.lim x) :=
-  tendsto_atTop_csupᵢ (c.approx_mono x) ⟨1, fun _ ⟨_, hn⟩ => hn ▸ c.approx_le_one _ _⟩
+  tendsto_atTop_ciSup (c.approx_mono x) ⟨1, fun _ ⟨_, hn⟩ => hn ▸ c.approx_le_one _ _⟩
 #align urysohns.CU.tendsto_approx_at_top Urysohns.CU.tendsto_approx_atTop
 
 theorem lim_of_mem_C (c : CU X) (x : X) (h : x ∈ c.C) : c.lim x = 0 := by
-  simp only [CU.lim, approx_of_mem_C, h, csupᵢ_const]
+  simp only [CU.lim, approx_of_mem_C, h, ciSup_const]
 #align urysohns.CU.lim_of_mem_C Urysohns.CU.lim_of_mem_C
 
 theorem lim_of_nmem_U (c : CU X) (x : X) (h : x ∉ c.U) : c.lim x = 1 := by
-  simp only [CU.lim, approx_of_nmem_U c _ h, csupᵢ_const]
+  simp only [CU.lim, approx_of_nmem_U c _ h, ciSup_const]
 #align urysohns.CU.lim_of_nmem_U Urysohns.CU.lim_of_nmem_U
 
 theorem lim_eq_midpoint (c : CU X) (x : X) :
@@ -239,7 +236,7 @@ theorem lim_eq_midpoint (c : CU X) (x : X) :
 #align urysohns.CU.lim_eq_midpoint Urysohns.CU.lim_eq_midpoint
 
 theorem approx_le_lim (c : CU X) (x : X) (n : ℕ) : c.approx n x ≤ c.lim x :=
-  le_csupᵢ (c.bddAbove_range_approx x) _
+  le_ciSup (c.bddAbove_range_approx x) _
 #align urysohns.CU.approx_le_lim Urysohns.CU.approx_le_lim
 
 theorem lim_nonneg (c : CU X) (x : X) : 0 ≤ c.lim x :=
@@ -247,7 +244,7 @@ theorem lim_nonneg (c : CU X) (x : X) : 0 ≤ c.lim x :=
 #align urysohns.CU.lim_nonneg Urysohns.CU.lim_nonneg
 
 theorem lim_le_one (c : CU X) (x : X) : c.lim x ≤ 1 :=
-  csupᵢ_le fun _ => c.approx_le_one _ _
+  ciSup_le fun _ => c.approx_le_one _ _
 #align urysohns.CU.lim_le_one Urysohns.CU.lim_le_one
 
 theorem lim_mem_Icc (c : CU X) (x : X) : c.lim x ∈ Icc (0 : ℝ) 1 :=
@@ -272,7 +269,7 @@ theorem continuous_lim (c : CU X) : Continuous c.lim := by
         c.right.lim_of_mem_C _ (c.left_U_subset_right_C hxl)]
       refine' (dist_midpoint_midpoint_le _ _ _ _).trans _
       rw [dist_self, add_zero, div_eq_inv_mul]
-      exact mul_le_mul h1234.le hyd dist_nonneg (h0.trans h1234).le
+      gcongr
     · replace hxl : x ∈ c.left.right.Cᶜ
       exact compl_subset_compl.2 c.left.right.subset hxl
       filter_upwards [IsOpen.mem_nhds (isOpen_compl_iff.2 c.left.right.closed_C) hxl,
@@ -287,11 +284,9 @@ theorem continuous_lim (c : CU X) : Continuous c.lim := by
       refine' (div_le_div_of_le_of_nonneg (add_le_add_right (dist_midpoint_midpoint_le _ _ _ _) _)
         zero_le_two).trans _
       rw [dist_self, zero_add]
-      refine' (div_le_div_of_le_of_nonneg (add_le_add (div_le_div_of_le_of_nonneg hydl zero_le_two)
-        hydr) zero_le_two).trans_eq _
-      generalize (3 / 4 : ℝ) ^ n = r
-      field_simp [two_ne_zero' ℝ]
-      ring
+      set r := (3 / 4 : ℝ) ^ n
+      calc _ ≤ (r / 2 + r) / 2 := by gcongr
+        _ = _ := by field_simp; ring
 #align urysohns.CU.continuous_lim Urysohns.CU.continuous_lim
 
 end CU

@@ -2,15 +2,12 @@
 Copyright (c) 2020 Anne Baanen. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Anne Baanen
-
-! This file was ported from Lean 3 source module algebra.invertible
-! leanprover-community/mathlib commit 10b4e499f43088dd3bb7b5796184ad5216648ab1
-! Please do not edit these lines, except to modify the commit id
-! if you have ported upstream changes.
 -/
 import Mathlib.Algebra.Group.Units
 import Mathlib.Algebra.GroupWithZero.Units.Lemmas
 import Mathlib.Algebra.Ring.Defs
+
+#align_import algebra.invertible from "leanprover-community/mathlib"@"722b3b152ddd5e0cf21c0a29787c76596cb6b422"
 /-!
 # Invertible elements
 
@@ -44,7 +41,7 @@ users can choose which instances to use at the point of use.
 
 For example, here's how you can use an `Invertible 1` instance:
 ```lean
-variables {α : Type _} [monoid α]
+variables {α : Type _} [Monoid α]
 
 def something_that_needs_inverses (x : α) [Invertible x] := sorry
 
@@ -167,12 +164,19 @@ instance Invertible.subsingleton [Monoid α] (a : α) : Subsingleton (Invertible
     exact left_inv_eq_right_inv hba hac⟩
 #align invertible.subsingleton Invertible.subsingleton
 
+/-- If `r` is invertible and `s = r` and `si = ⅟r`, then `s` is invertible with `⅟s = si`. -/
+def Invertible.copy' [MulOneClass α] {r : α} (hr : Invertible r) (s : α) (si : α) (hs : s = r)
+    (hsi : si = ⅟ r) : Invertible s where
+  invOf := si
+  invOf_mul_self := by rw [hs, hsi, invOf_mul_self]
+  mul_invOf_self := by rw [hs, hsi, mul_invOf_self]
+#align invertible.copy' Invertible.copy'
+
 /-- If `r` is invertible and `s = r`, then `s` is invertible. -/
+@[reducible]
 def Invertible.copy [MulOneClass α] {r : α} (hr : Invertible r) (s : α) (hs : s = r) :
-    Invertible s where
-  invOf := ⅟ r
-  invOf_mul_self := by rw [hs, invOf_mul_self]
-  mul_invOf_self := by rw [hs, mul_invOf_self]
+    Invertible s :=
+  hr.copy' _ _ hs rfl
 #align invertible.copy Invertible.copy
 
 /-- If `a` is invertible and `a = b`, then `⅟a = ⅟b`. -/
@@ -180,7 +184,7 @@ def Invertible.copy [MulOneClass α] {r : α} (hr : Invertible r) (s : α) (hs :
 theorem Invertible.congr [Ring α] (a b : α) [Invertible a] [Invertible b] (h : a = b) :
   ⅟a = ⅟b := by subst h; congr; apply Subsingleton.allEq
 
-/-- An `invertible` element is a unit. -/
+/-- An `Invertible` element is a unit. -/
 @[simps]
 def unitOfInvertible [Monoid α] (a : α) [Invertible a] :
     αˣ where
@@ -189,6 +193,7 @@ def unitOfInvertible [Monoid α] (a : α) [Invertible a] :
   val_inv := by simp
   inv_val := by simp
 #align unit_of_invertible unitOfInvertible
+#align coe_unit_of_invertible unitOfInvertible_val
 
 theorem isUnit_of_invertible [Monoid α] (a : α) [Invertible a] : IsUnit a :=
   ⟨unitOfInvertible a, rfl⟩
@@ -295,6 +300,13 @@ theorem invOf_mul [Monoid α] (a b : α) [Invertible a] [Invertible b] [Invertib
   invOf_eq_right_inv (by simp [← mul_assoc])
 #align inv_of_mul invOf_mul
 
+/-- A copy of `invertibleMul` for dot notation. -/
+@[reducible]
+def Invertible.mul [Monoid α] {a b : α} (_ : Invertible a) (_ : Invertible b) :
+    Invertible (a * b) :=
+  invertibleMul _ _
+#align invertible.mul Invertible.mul
+
 theorem mul_right_inj_of_invertible [Monoid α] (c : α) [Invertible c] :
     a * c = b * c ↔ a = b :=
   ⟨fun h => by simpa using congr_arg (· * ⅟c) h, congr_arg (· * _)⟩
@@ -357,6 +369,54 @@ instance (priority := 100) Invertible.ne_zero [MulZeroOneClass α] [Nontrivial �
   ⟨nonzero_of_invertible a⟩
 #align invertible.ne_zero Invertible.ne_zero
 
+section Monoid
+
+variable [Monoid α]
+
+/-- This is the `Invertible` version of `Units.isUnit_units_mul` -/
+@[reducible]
+def invertibleOfInvertibleMul (a b : α) [Invertible a] [Invertible (a * b)] : Invertible b
+    where
+  invOf := ⅟ (a * b) * a
+  invOf_mul_self := by rw [mul_assoc, invOf_mul_self]
+  mul_invOf_self := by
+    rw [← (isUnit_of_invertible a).mul_right_inj, ← mul_assoc, ← mul_assoc, mul_invOf_self, mul_one,
+      one_mul]
+#align invertible_of_invertible_mul invertibleOfInvertibleMul
+
+/-- This is the `Invertible` version of `Units.isUnit_mul_units` -/
+@[reducible]
+def invertibleOfMulInvertible (a b : α) [Invertible (a * b)] [Invertible b] : Invertible a
+    where
+  invOf := b * ⅟ (a * b)
+  invOf_mul_self := by
+    rw [← (isUnit_of_invertible b).mul_left_inj, mul_assoc, mul_assoc, invOf_mul_self, mul_one,
+      one_mul]
+  mul_invOf_self := by rw [← mul_assoc, mul_invOf_self]
+#align invertible_of_mul_invertible invertibleOfMulInvertible
+
+/-- `invertibleOfInvertibleMul` and `invertibleMul` as an equivalence. -/
+@[simps]
+def Invertible.mulLeft {a : α} (_ : Invertible a) (b : α) : Invertible b ≃ Invertible (a * b)
+    where
+  toFun _ := invertibleMul a b
+  invFun _ := invertibleOfInvertibleMul a _
+  left_inv _ := Subsingleton.elim _ _
+  right_inv _ := Subsingleton.elim _ _
+#align invertible.mul_left Invertible.mulLeft
+
+/-- `invertibleOfMulInvertible` and `invertibleMul` as an equivalence. -/
+@[simps]
+def Invertible.mulRight (a : α) {b : α} (_ : Invertible b) : Invertible a ≃ Invertible (a * b)
+    where
+  toFun _ := invertibleMul a b
+  invFun _ := invertibleOfMulInvertible _ b
+  left_inv _ := Subsingleton.elim _ _
+  right_inv _ := Subsingleton.elim _ _
+#align invertible.mul_right Invertible.mulRight
+
+end Monoid
+
 section MonoidWithZero
 
 variable [MonoidWithZero α]
@@ -413,7 +473,7 @@ def invertibleDiv (a b : α) [Invertible a] [Invertible b] : Invertible (a / b) 
   ⟨b / a, by simp [← mul_div_assoc], by simp [← mul_div_assoc]⟩
 #align invertible_div invertibleDiv
 
--- Porting note: removed `simp` attibute as `simp` can prove it
+-- Porting note: removed `simp` attribute as `simp` can prove it
 theorem invOf_div (a b : α) [Invertible a] [Invertible b] [Invertible (a / b)] :
     ⅟ (a / b) = b / a :=
   invOf_eq_right_inv (by simp [← mul_div_assoc])
@@ -435,13 +495,13 @@ def Invertible.map {R : Type _} {S : Type _} {F : Type _} [MulOneClass R] [MulOn
   mul_invOf_self := by rw [← map_mul, mul_invOf_self, map_one]
 #align invertible.map Invertible.map
 
-/-- Note that the `invertible (f r)` argument can be satisfied by using `letI := invertible.map f r`
+/-- Note that the `Invertible (f r)` argument can be satisfied by using `letI := Invertible.map f r`
 before applying this lemma. -/
 theorem map_invOf {R : Type _} {S : Type _} {F : Type _} [MulOneClass R] [Monoid S]
     [MonoidHomClass F R S] (f : F) (r : R) [Invertible r] [ifr : Invertible (f r)] :
     f (⅟ r) = ⅟ (f r) :=
   have h : ifr = Invertible.map f r := Subsingleton.elim _ _
-  by subst h ; rfl
+  by subst h; rfl
 #align map_inv_of map_invOf
 
 /-- If a function `f : R → S` has a left-inverse that is a monoid hom,
