@@ -27,7 +27,7 @@ See the comments of #10679 for a possible implementation.
 -/
 
 
-variable {M : Type _}
+variable {M : Type*}
 
 namespace Submonoid
 
@@ -151,9 +151,6 @@ noncomputable def fromCommLeftInv : S.leftInv →* S where
 #align add_submonoid.from_comm_left_neg AddSubmonoid.fromCommLeftNeg
 
 variable (hS : S ≤ IsUnit.submonoid M)
-
--- Porting note: commented out next line
- -- include hS
 
 /-- The submonoid of pointwise inverse of `S` is `MulEquiv` to `S`. -/
 @[to_additive (attr := simps apply) "The additive submonoid of pointwise additive inverse of `S` is
