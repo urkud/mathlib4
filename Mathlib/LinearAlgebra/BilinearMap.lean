@@ -3,7 +3,7 @@ Copyright (c) 2018 Kenny Lau. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Kenny Lau, Mario Carneiro
 -/
-import Mathlib.LinearAlgebra.Basic
+import Mathlib.Algebra.Module.Submodule.Ker
 
 #align_import linear_algebra.bilinear_map from "leanprover-community/mathlib"@"87c54600fe3cdc7d32ff5b50873ac724d86aef8d"
 
@@ -36,39 +36,22 @@ section Semiring
 
 -- the `ₗ` subscript variables are for special cases about linear (as opposed to semilinear) maps
 variable {R : Type*} [Semiring R] {S : Type*} [Semiring S]
-
 variable {R₂ : Type*} [Semiring R₂] {S₂ : Type*} [Semiring S₂]
-
 variable {M : Type*} {N : Type*} {P : Type*}
-
 variable {M₂ : Type*} {N₂ : Type*} {P₂ : Type*}
-
 variable {Nₗ : Type*} {Pₗ : Type*}
-
 variable {M' : Type*} {N' : Type*} {P' : Type*}
-
 variable [AddCommMonoid M] [AddCommMonoid N] [AddCommMonoid P]
-
 variable [AddCommMonoid M₂] [AddCommMonoid N₂] [AddCommMonoid P₂]
-
 variable [AddCommMonoid Nₗ] [AddCommMonoid Pₗ]
-
 variable [AddCommGroup M'] [AddCommGroup N'] [AddCommGroup P']
-
 variable [Module R M] [Module S N] [Module R₂ P] [Module S₂ P]
-
 variable [Module R M₂] [Module S N₂] [Module R P₂] [Module S₂ P₂]
-
 variable [Module R Pₗ] [Module S Pₗ]
-
 variable [Module R M'] [Module S N'] [Module R₂ P'] [Module S₂ P']
-
 variable [SMulCommClass S₂ R₂ P] [SMulCommClass S R Pₗ] [SMulCommClass S₂ R₂ P']
-
 variable [SMulCommClass S₂ R P₂]
-
 variable {ρ₁₂ : R →+* R₂} {σ₁₂ : S →+* S₂}
-
 variable (ρ₁₂ σ₁₂)
 
 /-- Create a bilinear map from a function that is semilinear in each component.
@@ -76,8 +59,7 @@ See `mk₂'` and `mk₂` for the linear case. -/
 def mk₂'ₛₗ (f : M → N → P) (H1 : ∀ m₁ m₂ n, f (m₁ + m₂) n = f m₁ n + f m₂ n)
     (H2 : ∀ (c : R) (m n), f (c • m) n = ρ₁₂ c • f m n)
     (H3 : ∀ m n₁ n₂, f m (n₁ + n₂) = f m n₁ + f m n₂)
-    (H4 : ∀ (c : S) (m n), f m (c • n) = σ₁₂ c • f m n) : M →ₛₗ[ρ₁₂] N →ₛₗ[σ₁₂] P
-    where
+    (H4 : ∀ (c : S) (m n), f m (c • n) = σ₁₂ c • f m n) : M →ₛₗ[ρ₁₂] N →ₛₗ[σ₁₂] P where
   toFun m :=
     { toFun := f m
       map_add' := H3 m
@@ -150,8 +132,6 @@ theorem flip_flip (f : M →ₛₗ[ρ₁₂] N →ₛₗ[σ₁₂] P) : f.flip.f
   LinearMap.ext₂ fun _x _y => (f.flip.flip_apply _ _).trans (f.flip_apply _ _)
 #align linear_map.flip_flip LinearMap.flip_flip
 
-open BigOperators
-
 theorem flip_inj {f g : M →ₛₗ[ρ₁₂] N →ₛₗ[σ₁₂] P} (H : flip f = flip g) : f = g :=
   ext₂ fun m n => show flip f n m = flip g n m by rw [H]
 #align linear_map.flip_inj LinearMap.flip_inj
@@ -181,13 +161,12 @@ theorem map_smulₛₗ₂ (f : M →ₛₗ[ρ₁₂] N →ₛₗ[σ₁₂] P) (r
 #align linear_map.map_smulₛₗ₂ LinearMap.map_smulₛₗ₂
 
 theorem map_sum₂ {ι : Type*} (f : M →ₛₗ[ρ₁₂] N →ₛₗ[σ₁₂] P) (t : Finset ι) (x : ι → M) (y) :
-    f (∑ i in t, x i) y = ∑ i in t, f (x i) y :=
+    f (∑ i ∈ t, x i) y = ∑ i ∈ t, f (x i) y :=
   _root_.map_sum (flip f y) _ _
 #align linear_map.map_sum₂ LinearMap.map_sum₂
 
 /-- Restricting a bilinear map in the second entry -/
-def domRestrict₂ (f : M →ₛₗ[ρ₁₂] N →ₛₗ[σ₁₂] P) (q : Submodule S N) : M →ₛₗ[ρ₁₂] q →ₛₗ[σ₁₂] P
-    where
+def domRestrict₂ (f : M →ₛₗ[ρ₁₂] N →ₛₗ[σ₁₂] P) (q : Submodule S N) : M →ₛₗ[ρ₁₂] q →ₛₗ[σ₁₂] P where
   toFun m := (f m).domRestrict q
   map_add' m₁ m₂ := LinearMap.ext fun _ => by simp only [map_add, domRestrict_apply, add_apply]
   map_smul' c m :=
@@ -208,34 +187,54 @@ theorem domRestrict₁₂_apply (f : M →ₛₗ[ρ₁₂] N →ₛₗ[σ₁₂]
     (x : p) (y : q) : f.domRestrict₁₂ p q x y = f x y := rfl
 #align linear_map.dom_restrict₁₂_apply LinearMap.domRestrict₁₂_apply
 
+section restrictScalars
+
+variable (R' S' : Type*)
+variable [Semiring R'] [Semiring S'] [Module R' M] [Module S' N] [Module R' Pₗ] [Module S' Pₗ]
+variable [SMulCommClass S' R' Pₗ]
+variable [SMul S' S] [IsScalarTower S' S N] [IsScalarTower S' S Pₗ]
+variable [SMul R' R] [IsScalarTower R' R M] [IsScalarTower R' R Pₗ]
+
+/-- If `B : M → N → Pₗ` is `R`-`S` bilinear and `R'` and `S'` are compatible scalar multiplications,
+then the restriction of scalars is a `R'`-`S'` bilinear map. -/
+@[simps!]
+def restrictScalars₁₂ (B : M →ₗ[R] N →ₗ[S] Pₗ) : M →ₗ[R'] N →ₗ[S'] Pₗ :=
+  LinearMap.mk₂' R' S'
+    (B · ·)
+    B.map_add₂
+    (fun r' m _ ↦ by
+      dsimp only
+      rw [← smul_one_smul R r' m, map_smul₂, smul_one_smul])
+    (fun _ ↦ map_add _)
+    (fun _ x ↦ (B x).map_smul_of_tower _)
+
+theorem restrictScalars₁₂_injective : Function.Injective
+    (LinearMap.restrictScalars₁₂ R' S' : (M →ₗ[R] N →ₗ[S] Pₗ) → (M →ₗ[R'] N →ₗ[S'] Pₗ)) :=
+  fun _ _ h ↦ ext₂ (congr_fun₂ h : _)
+
+@[simp]
+theorem restrictScalars₁₂_inj {B B' : M →ₗ[R] N →ₗ[S] Pₗ} :
+    B.restrictScalars₁₂ R' S' = B'.restrictScalars₁₂ R' S' ↔ B = B' :=
+  (restrictScalars₁₂_injective R' S').eq_iff
+
+end restrictScalars
+
 end Semiring
 
 section CommSemiring
 
 variable {R : Type*} [CommSemiring R] {R₂ : Type*} [CommSemiring R₂]
-
 variable {R₃ : Type*} [CommSemiring R₃] {R₄ : Type*} [CommSemiring R₄]
-
 variable {M : Type*} {N : Type*} {P : Type*} {Q : Type*}
-
 variable {Mₗ : Type*} {Nₗ : Type*} {Pₗ : Type*} {Qₗ Qₗ' : Type*}
-
 variable [AddCommMonoid M] [AddCommMonoid N] [AddCommMonoid P] [AddCommMonoid Q]
-
 variable [AddCommMonoid Mₗ] [AddCommMonoid Nₗ] [AddCommMonoid Pₗ]
-
 variable [AddCommMonoid Qₗ] [AddCommMonoid Qₗ']
-
 variable [Module R M] [Module R₂ N] [Module R₃ P] [Module R₄ Q]
-
 variable [Module R Mₗ] [Module R Nₗ] [Module R Pₗ] [Module R Qₗ] [Module R Qₗ']
-
 variable {σ₁₂ : R →+* R₂} {σ₂₃ : R₂ →+* R₃} {σ₁₃ : R →+* R₃}
-
 variable {σ₄₂ : R₄ →+* R₂} {σ₄₃ : R₄ →+* R₃}
-
 variable [RingHomCompTriple σ₁₂ σ₂₃ σ₁₃] [RingHomCompTriple σ₄₂ σ₂₃ σ₄₃]
-
 variable (R)
 
 /-- Create a bilinear map from a function that is linear in each component.
@@ -257,8 +256,7 @@ variable {R}
 
 /-- Given a linear map from `M` to linear maps from `N` to `P`, i.e., a bilinear map `M → N → P`,
 change the order of variables and get a linear map from `N` to linear maps from `M` to `P`. -/
-def lflip : (M →ₛₗ[σ₁₃] N →ₛₗ[σ₂₃] P) →ₗ[R₃] N →ₛₗ[σ₂₃] M →ₛₗ[σ₁₃] P
-    where
+def lflip : (M →ₛₗ[σ₁₃] N →ₛₗ[σ₂₃] P) →ₗ[R₃] N →ₛₗ[σ₂₃] M →ₛₗ[σ₁₃] P where
   toFun := flip
   map_add' _ _ := rfl
   map_smul' _ _ := rfl
@@ -327,8 +325,14 @@ end
 
 /-- Composing a linear map `Q → N` and a bilinear map `M → N → P` to
 form a bilinear map `M → Q → P`. -/
-def compl₂ (g : Q →ₛₗ[σ₄₂] N) : M →ₛₗ[σ₁₃] Q →ₛₗ[σ₄₃] P :=
-  (lcompₛₗ _ _ g).comp f
+def compl₂ {R₅ : Type*} [CommSemiring R₅] [Module R₅ P] [SMulCommClass R₃ R₅ P] {σ₁₅ : R →+* R₅}
+    (h : M →ₛₗ[σ₁₅] N →ₛₗ[σ₂₃] P) (g : Q →ₛₗ[σ₄₂] N) : M →ₛₗ[σ₁₅] Q →ₛₗ[σ₄₃] P where
+  toFun a := (lcompₛₗ P σ₂₃ g) (h a)
+  map_add' _ _ := by
+    simp [map_add]
+  map_smul' _ _ := by
+    simp only [LinearMap.map_smulₛₗ, lcompₛₗ]
+    rfl
 #align linear_map.compl₂ LinearMap.compl₂
 
 @[simp]
@@ -338,13 +342,15 @@ theorem compl₂_apply (g : Q →ₛₗ[σ₄₂] N) (m : M) (q : Q) : f.compl�
 @[simp]
 theorem compl₂_id : f.compl₂ LinearMap.id = f := by
   ext
-  rw [compl₂_apply, id_coe, id.def]
+  rw [compl₂_apply, id_coe, _root_.id]
 #align linear_map.compl₂_id LinearMap.compl₂_id
 
 /-- Composing linear maps `Q → M` and `Q' → N` with a bilinear map `M → N → P` to
 form a bilinear map `Q → Q' → P`. -/
-def compl₁₂ (f : Mₗ →ₗ[R] Nₗ →ₗ[R] Pₗ) (g : Qₗ →ₗ[R] Mₗ) (g' : Qₗ' →ₗ[R] Nₗ) :
-    Qₗ →ₗ[R] Qₗ' →ₗ[R] Pₗ :=
+def compl₁₂ {R₁ : Type*} [CommSemiring R₁] [Module R₂ N] [Module R₂ Pₗ] [Module R₁ Pₗ]
+    [Module R₁ Mₗ] [SMulCommClass R₂ R₁ Pₗ] [Module R₁ Qₗ] [Module R₂ Qₗ']
+    (f : Mₗ →ₗ[R₁] N →ₗ[R₂] Pₗ) (g : Qₗ →ₗ[R₁] Mₗ) (g' : Qₗ' →ₗ[R₂] N) :
+    Qₗ →ₗ[R₁] Qₗ' →ₗ[R₂] Pₗ :=
   (f.comp g).compl₂ g'
 #align linear_map.compl₁₂ LinearMap.compl₁₂
 
@@ -356,7 +362,7 @@ theorem compl₁₂_apply (f : Mₗ →ₗ[R] Nₗ →ₗ[R] Pₗ) (g : Qₗ →
 @[simp]
 theorem compl₁₂_id_id (f : Mₗ →ₗ[R] Nₗ →ₗ[R] Pₗ) : f.compl₁₂ LinearMap.id LinearMap.id = f := by
   ext
-  simp_rw [compl₁₂_apply, id_coe, id.def]
+  simp_rw [compl₁₂_apply, id_coe, _root_.id]
 #align linear_map.compl₁₂_id_id LinearMap.compl₁₂_id_id
 
 theorem compl₁₂_inj {f₁ f₂ : Mₗ →ₗ[R] Nₗ →ₗ[R] Pₗ} {g : Qₗ →ₗ[R] Mₗ} {g' : Qₗ' →ₗ[R] Nₗ}
@@ -387,37 +393,37 @@ theorem compr₂_apply (f : M →ₗ[R] Nₗ →ₗ[R] Pₗ) (g : Pₗ →ₗ[R]
 
 variable (R M)
 
+/-- For convenience, a shorthand for the type of bilinear forms from `M` to `R`. -/
+protected abbrev BilinForm : Type _ := M →ₗ[R] M →ₗ[R] R
+
 /-- Scalar multiplication as a bilinear map `R → M → M`. -/
 def lsmul : R →ₗ[R] M →ₗ[R] M :=
   mk₂ R (· • ·) add_smul (fun _ _ _ => mul_smul _ _ _) smul_add fun r s m => by
     simp only [smul_smul, smul_eq_mul, mul_comm]
 #align linear_map.lsmul LinearMap.lsmul
 
-variable {R M}
+variable {R}
+
+lemma lsmul_eq_DistribMulAction_toLinearMap (r : R) :
+    lsmul R M r = DistribMulAction.toLinearMap R M r := rfl
+
+variable {M}
 
 @[simp]
 theorem lsmul_apply (r : R) (m : M) : lsmul R M r m = r • m := rfl
 #align linear_map.lsmul_apply LinearMap.lsmul_apply
-
-/-- The restriction of a bilinear form to a submodule. -/
-abbrev _root_.Submodule.restrictBilinear (p : Submodule R M) (f : M →ₗ[R] M →ₗ[R] R) :
-    p →ₗ[R] p →ₗ[R] R :=
-  f.compl₁₂ p.subtype p.subtype
 
 end CommSemiring
 
 section CommRing
 
 variable {R R₂ S S₂ M N P : Type*}
-
 variable {Mₗ Nₗ Pₗ : Type*}
-
 variable [CommRing R] [CommRing S] [CommRing R₂] [CommRing S₂]
 
 section AddCommGroup
 
 variable [AddCommGroup M] [AddCommGroup N] [AddCommGroup P]
-
 variable [Module R M] [Module S N] [Module R₂ P] [Module S₂ P]
 
 theorem lsmul_injective [NoZeroSMulDivisors R M] {x : R} (hx : x ≠ 0) :
