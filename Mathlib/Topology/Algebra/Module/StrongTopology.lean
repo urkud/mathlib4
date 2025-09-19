@@ -494,21 +494,24 @@ def postcomp [IsTopologicalAddGroup F] [IsTopologicalAddGroup G] [ContinuousCons
 variable (F G σ τ)
 
 /-- Composition of continuous semilinear maps as a continuous semibilinear map. -/
-def compSL [TopologicalAddGroup F] [TopologicalAddGroup G]
+@[simps apply]
+def compSL [IsTopologicalAddGroup F] [IsTopologicalAddGroup G]
     [ContinuousConstSMul 𝕜₂ F] [ContinuousConstSMul 𝕜₃ G] :
     (F →SL[τ] G) →L[𝕜₃] (E →SL[σ] F) →SL[τ] E →SL[ρ] G where
   toFun := postcomp E
   map_add' _ _ := rfl
   map_smul' _ _ := rfl
   cont := by
-    rw [LinearMap.toFun_eq_coe]
-    apply continuous_of_continuousAt_zero
-    rw [ContinuousAt, map_zero,
-      (ContinuousLinearMap.hasBasis_nhds_zero_of_basis
-        ContinuousLinearMap.hasBasis_nhds_zero).tendsto_right_iff]
+    rw [continuous_iff_continuousAt]
+    intro f
+    rw [ContinuousAt,
+      ((ContinuousLinearMap.hasBasis_nhds_zero_of_basis
+        ContinuousLinearMap.hasBasis_nhds_zero).nhds_of_zero _).tendsto_right_iff]
     rintro ⟨S, s, U⟩ ⟨hS, hs, hU⟩
+    rw [← map_add_left_nhds_zero, eventually_map]
     filter_upwards [eventually_nhds_zero_mapsTo (isVonNBounded_image2_apply hS hs) hU]
-      with g hg f hf x hx using hg <| mem_image2_of_mem hf hx
+      with g hg f hf x hx
+    simpa using hg <| mem_image2_of_mem hf hx
 
 end BoundedSets
 
