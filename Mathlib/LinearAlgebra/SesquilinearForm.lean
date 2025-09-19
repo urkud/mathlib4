@@ -3,8 +3,9 @@ Copyright (c) 2018 Andreas Swerdlow. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Andreas Swerdlow
 -/
-import Mathlib.LinearAlgebra.BilinearMap
 import Mathlib.LinearAlgebra.Basis.Basic
+import Mathlib.LinearAlgebra.BilinearMap
+import Mathlib.LinearAlgebra.LinearIndependent.Lemmas
 
 /-!
 # Sesquilinear maps
@@ -33,6 +34,7 @@ basic lemmas about construction and elementary calculations are found there.
 Sesquilinear form, Sesquilinear map,
 -/
 
+open Module
 
 variable {R R₁ R₂ R₃ M M₁ M₂ M₃ Mₗ₁ Mₗ₁' Mₗ₂ Mₗ₂' K K₁ K₂ V V₁ V₂ n : Type*}
 
@@ -65,6 +67,7 @@ theorem isOrtho_zero_right (B : M₁ →ₛₗ[I₁] M₂ →ₛₗ[I₂] M) (x)
 theorem isOrtho_flip {B : M₁ →ₛₗ[I₁] M₁ →ₛₗ[I₁'] M} {x y} : B.IsOrtho x y ↔ B.flip.IsOrtho y x := by
   simp_rw [isOrtho_def, flip_apply]
 
+open scoped Function in -- required for scoped `on` notation
 /-- A set of vectors `v` is orthogonal with respect to some bilinear map `B` if and only
 if for all `i ≠ j`, `B (v i) (v j) = 0`. For orthogonality between two elements, use
 `BilinForm.isOrtho` -/
@@ -78,11 +81,7 @@ theorem isOrthoᵢ_def {B : M₁ →ₛₗ[I₁] M₁ →ₛₗ[I₁'] M} {v : n
 theorem isOrthoᵢ_flip (B : M₁ →ₛₗ[I₁] M₁ →ₛₗ[I₁'] M) {v : n → M₁} :
     B.IsOrthoᵢ v ↔ B.flip.IsOrthoᵢ v := by
   simp_rw [isOrthoᵢ_def]
-  constructor <;> intro h i j hij
-  · rw [flip_apply]
-    exact h j i (Ne.symm hij)
-  simp_rw [flip_apply] at h
-  exact h j i (Ne.symm hij)
+  constructor <;> exact fun h i j hij ↦ h j i hij.symm
 
 end CommRing
 
@@ -99,7 +98,7 @@ theorem ortho_smul_left {B : V₁ →ₛₗ[I₁] V₂ →ₛₗ[I₂] V} {x y} 
   constructor <;> intro H
   · rw [map_smulₛₗ₂, H, smul_zero]
   · rw [map_smulₛₗ₂, smul_eq_zero] at H
-    cases' H with H H
+    rcases H with H | H
     · rw [map_eq_zero I₁] at H
       trivial
     · exact H
@@ -111,7 +110,7 @@ theorem ortho_smul_right {B : V₁ →ₛₗ[I₁] V₂ →ₛₗ[I₂] V} {x y}
   constructor <;> intro H
   · rw [map_smulₛₗ, H, smul_zero]
   · rw [map_smulₛₗ, smul_eq_zero] at H
-    cases' H with H H
+    rcases H with H | H
     · simp only [map_eq_zero] at H
       exfalso
       exact ha H
@@ -191,13 +190,13 @@ section Symmetric
 variable [CommSemiring R] [AddCommMonoid M] [Module R M] {I : R →+* R} {B : M →ₛₗ[I] M →ₗ[R] R}
 
 /-- The proposition that a sesquilinear form is symmetric -/
-def IsSymm (B : M →ₛₗ[I] M →ₗ[R] R) : Prop :=
-  ∀ x y, I (B x y) = B y x
+structure IsSymm (B : M →ₛₗ[I] M →ₗ[R] R) : Prop where
+  protected eq : ∀ x y, I (B x y) = B y x
+
+theorem isSymm_def {B : M →ₛₗ[I] M →ₗ[R] R} : B.IsSymm ↔ ∀ x y, I (B x y) = B y x :=
+  ⟨fun ⟨h⟩ ↦ h, fun h ↦ ⟨h⟩⟩
 
 namespace IsSymm
-
-protected theorem eq (H : B.IsSymm) (x y) : I (B x y) = B y x :=
-  H x y
 
 theorem isRefl (H : B.IsSymm) : B.IsRefl := fun x y H1 ↦ by
   rw [← H.eq]
@@ -206,23 +205,22 @@ theorem isRefl (H : B.IsSymm) : B.IsRefl := fun x y H1 ↦ by
 theorem ortho_comm (H : B.IsSymm) {x y} : IsOrtho B x y ↔ IsOrtho B y x :=
   H.isRefl.ortho_comm
 
-theorem domRestrict (H : B.IsSymm) (p : Submodule R M) : (B.domRestrict₁₂ p p).IsSymm :=
-  fun _ _ ↦ by
-  simp_rw [domRestrict₁₂_apply]
-  exact H _ _
+theorem domRestrict (H : B.IsSymm) (p : Submodule R M) : (B.domRestrict₁₂ p p).IsSymm where
+  eq _ _ := by
+    simp_rw [domRestrict₁₂_apply]
+    exact H.eq _ _
 
 end IsSymm
 
 @[simp]
-theorem isSymm_zero : (0 : M →ₛₗ[I] M →ₗ[R] R).IsSymm := fun _ _ => map_zero _
+theorem isSymm_zero : (0 : M →ₛₗ[I] M →ₗ[R] R).IsSymm := ⟨fun _ _ => map_zero _⟩
 
-theorem isSymm_iff_eq_flip {B : LinearMap.BilinForm R M} : B.IsSymm ↔ B = B.flip := by
-  constructor <;> intro h
-  · ext
-    rw [← h, flip_apply, RingHom.id_apply]
-  intro x y
-  conv_lhs => rw [h]
-  rfl
+theorem BilinMap.isSymm_iff_eq_flip {N : Type*} [AddCommMonoid N] [Module R N]
+    {B : LinearMap.BilinMap R M N} : (∀ x y, B x y = B y x) ↔ B = B.flip := by
+  simp [LinearMap.ext_iff₂]
+
+theorem isSymm_iff_eq_flip {B : LinearMap.BilinForm R M} : B.IsSymm ↔ B = B.flip :=
+  isSymm_def.trans BilinMap.isSymm_iff_eq_flip
 
 end Symmetric
 
@@ -266,10 +264,7 @@ variable [CommSemiring R] [AddCommGroup M] [Module R M] [CommSemiring R₁] [Add
 
 theorem neg (H : B.IsAlt) (x y : M₁) : -B x y = B y x := by
   have H1 : B (y + x) (y + x) = 0 := self_eq_zero H (y + x)
-  simp? [map_add, self_eq_zero H] at H1 says
-    simp only [map_add, add_apply, self_eq_zero H, zero_add, add_zero] at H1
-  rw [add_eq_zero_iff_neg_eq] at H1
-  exact H1
+  simpa [map_add, self_eq_zero H, add_eq_zero_iff_neg_eq] using H1
 
 theorem isRefl (H : B.IsAlt) : B.IsRefl := by
   intro x y h
@@ -355,7 +350,7 @@ theorem span_singleton_inf_orthogonal_eq_bot (B : V₁ →ₛₗ[J₁] V₁ →�
     (hx : ¬B.IsOrtho x x) : (K₁ ∙ x) ⊓ Submodule.orthogonalBilin (K₁ ∙ x) B = ⊥ := by
   rw [← Finset.coe_singleton]
   refine eq_bot_iff.2 fun y h ↦ ?_
-  rcases mem_span_finset.1 h.1 with ⟨μ, rfl⟩
+  obtain ⟨μ, -, rfl⟩ := Submodule.mem_span_finset.1 h.1
   replace h := h.2 x (by simp [Submodule.mem_span] : x ∈ Submodule.span K₁ ({x} : Finset V₁))
   rw [Finset.sum_singleton] at h ⊢
   suffices hμzero : μ x = 0 by rw [hμzero, zero_smul, Submodule.mem_bot]
@@ -810,7 +805,7 @@ theorem IsOrthoᵢ.separatingLeft_of_not_isOrtho_basis_self [NoZeroSMulDivisors 
     replace hij : B (v j) (v i) = 0 := hO hij
     rw [hij, RingHom.id_apply, smul_zero]
   · intro hi
-    replace hi : vi i = 0 := Finsupp.not_mem_support_iff.mp hi
+    replace hi : vi i = 0 := Finsupp.notMem_support_iff.mp hi
     rw [hi, RingHom.id_apply, zero_smul]
 
 /-- Given an orthogonal basis with respect to a bilinear map, the bilinear map is right-separating
@@ -846,7 +841,8 @@ lemma apply_smul_sub_smul_sub_eq [CommRing R] [AddCommGroup M] [Module R M]
     mul_comm (B x y) (B x x), mul_left_comm (B x y) (B x x)]
   abel
 
-variable [LinearOrderedCommRing R] [AddCommGroup M] [Module R M] (B : LinearMap.BilinForm R M)
+variable [CommRing R] [LinearOrder R] [IsStrictOrderedRing R]
+  [AddCommGroup M] [Module R M] (B : LinearMap.BilinForm R M)
 
 /-- The **Cauchy-Schwarz inequality** for positive semidefinite forms. -/
 lemma apply_mul_apply_le_of_forall_zero_le (hs : ∀ x, 0 ≤ B x x) (x y : M) :
@@ -854,10 +850,10 @@ lemma apply_mul_apply_le_of_forall_zero_le (hs : ∀ x, 0 ≤ B x x) (x y : M) :
   have aux (x y : M) : 0 ≤ (B x x) * ((B x x) * (B y y) - (B x y) * (B y x)) := by
     rw [← apply_smul_sub_smul_sub_eq B x y]
     exact hs (B x y • x - B x x • y)
-  rcases lt_or_le 0 (B x x) with hx | hx
+  rcases lt_or_ge 0 (B x x) with hx | hx
   · exact sub_nonneg.mp <| nonneg_of_mul_nonneg_right (aux x y) hx
   · replace hx : B x x = 0 := le_antisymm hx (hs x)
-    rcases lt_or_le 0 (B y y) with hy | hy
+    rcases lt_or_ge 0 (B y y) with hy | hy
     · rw [mul_comm (B x y), mul_comm (B x x)]
       exact sub_nonneg.mp <| nonneg_of_mul_nonneg_right (aux y x) hy
     · replace hy : B y y = 0 := le_antisymm hy (hs y)
@@ -870,7 +866,7 @@ lemma apply_mul_apply_le_of_forall_zero_le (hs : ∀ x, 0 ≤ B x x) (x y : M) :
 /-- The **Cauchy-Schwarz inequality** for positive semidefinite symmetric forms. -/
 lemma apply_sq_le_of_symm (hs : ∀ x, 0 ≤ B x x) (hB : B.IsSymm) (x y : M) :
     (B x y) ^ 2 ≤ (B x x) * (B y y) := by
-  rw [show (B x y) ^ 2 = (B x y) * (B y x) by rw [sq, ← hB, RingHom.id_apply]]
+  rw [show (B x y) ^ 2 = (B x y) * (B y x) by rw [sq, ← hB.eq, RingHom.id_apply]]
   exact apply_mul_apply_le_of_forall_zero_le B hs x y
 
 /-- The equality case of **Cauchy-Schwarz**. -/
@@ -922,9 +918,9 @@ lemma apply_mul_apply_lt_iff_linearIndependent [NoZeroSMulDivisors R M]
 /-- Strict **Cauchy-Schwarz** is equivalent to linear independence for positive definite symmetric
 forms. -/
 lemma apply_sq_lt_iff_linearIndependent_of_symm [NoZeroSMulDivisors R M]
-    (hp : ∀ x, x ≠ 0 → 0 < B x x) (hB: B.IsSymm) (x y : M) :
+    (hp : ∀ x, x ≠ 0 → 0 < B x x) (hB : B.IsSymm) (x y : M) :
     (B x y) ^ 2 < (B x x) * (B y y) ↔ LinearIndependent R ![x, y] := by
-  rw [show (B x y) ^ 2 = (B x y) * (B y x) by rw [sq, ← hB, RingHom.id_apply]]
+  rw [show (B x y) ^ 2 = (B x y) * (B y x) by rw [sq, ← hB.eq, RingHom.id_apply]]
   exact apply_mul_apply_lt_iff_linearIndependent B hp x y
 
 lemma apply_apply_same_eq_zero_iff (hs : ∀ x, 0 ≤ B x x) (hB : B.IsSymm) {x : M} :
