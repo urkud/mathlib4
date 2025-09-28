@@ -61,31 +61,31 @@ instance AffineTargetMorphismProperty.diagonal_respectsIso (P : AffineTargetMorp
     apply H
 
 theorem HasAffineProperty.diagonal_of_openCover (P) {Q} [HasAffineProperty P Q]
-    {X Y : Scheme.{u}} (f : X ⟶ Y) (𝒰 : Scheme.OpenCover.{u} Y) [∀ i, IsAffine (𝒰.obj i)]
-    (𝒰' : ∀ i, Scheme.OpenCover.{u} (pullback f (𝒰.map i))) [∀ i j, IsAffine ((𝒰' i).obj j)]
+    {X Y : Scheme.{u}} (f : X ⟶ Y) (𝒰 : Scheme.OpenCover.{u} Y) [∀ i, IsAffine (𝒰.X i)]
+    (𝒰' : ∀ i, Scheme.OpenCover.{u} (pullback f (𝒰.f i))) [∀ i j, IsAffine ((𝒰' i).X j)]
     (h𝒰' : ∀ i j k,
-      Q (pullback.mapDesc ((𝒰' i).map j) ((𝒰' i).map k) (𝒰.pullbackHom f i))) :
+      Q (pullback.mapDesc ((𝒰' i).f j) ((𝒰' i).f k) (𝒰.pullbackHom f i))) :
     P.diagonal f := by
   letI := isLocal_affineProperty P
   let 𝒱 := (Scheme.Pullback.openCoverOfBase 𝒰 f f).bind fun i =>
     Scheme.Pullback.openCoverOfLeftRight.{u} (𝒰' i) (𝒰' i) (pullback.snd _ _) (pullback.snd _ _)
-  have i1 : ∀ i, IsAffine (𝒱.obj i) := fun i => by dsimp [𝒱]; infer_instance
+  have i1 : ∀ i, IsAffine (𝒱.X i) := fun i => by dsimp [𝒱]; infer_instance
   apply of_openCover 𝒱
   rintro ⟨i, j, k⟩
   dsimp [𝒱]
   convert (Q.cancel_left_of_respectsIso
-    ((pullbackDiagonalMapIso _ _ ((𝒰' i).map j) ((𝒰' i).map k)).inv ≫
+    ((pullbackDiagonalMapIso _ _ ((𝒰' i).f j) ((𝒰' i).f k)).inv ≫
       pullback.map _ _ _ _ (𝟙 _) (𝟙 _) (𝟙 _) _ _) (pullback.snd _ _)).mp _ using 1
   · simp
   · ext1 <;> simp
   · simp only [Category.assoc, limit.lift_π, PullbackCone.mk_pt, PullbackCone.mk_π_app,
-      Functor.const_obj_obj, cospan_one, cospan_left, cospan_right, Category.comp_id]
+      Category.comp_id]
     convert h𝒰' i j k
     ext1 <;> simp [Scheme.Cover.pullbackHom]
 
 theorem HasAffineProperty.diagonal_of_openCover_diagonal
     (P) {Q} [HasAffineProperty P Q]
-    {X Y : Scheme.{u}} (f : X ⟶ Y) (𝒰 : Scheme.OpenCover.{u} Y) [∀ i, IsAffine (𝒰.obj i)]
+    {X Y : Scheme.{u}} (f : X ⟶ Y) (𝒰 : Scheme.OpenCover.{u} Y) [∀ i, IsAffine (𝒰.X i)]
     (h𝒰 : ∀ i, Q.diagonal (𝒰.pullbackHom f i)) :
     P.diagonal f :=
   diagonal_of_openCover P f 𝒰 (fun _ ↦ Scheme.affineCover _)
@@ -115,7 +115,7 @@ theorem HasAffineProperty.diagonal_iff
   rw [← Q.diagonal.cancel_left_of_respectsIso
     (pullback.fst (f := f) (g := 𝟙 Y)), pullback.condition, Category.comp_id] at hf
   let 𝒰 := X.affineCover.pushforwardIso (inv (pullback.fst (f := f) (g := 𝟙 Y)))
-  have (i) : IsAffine (𝒰.obj i) := by dsimp [𝒰]; infer_instance
+  have (i : _) : IsAffine (𝒰.X i) := by dsimp [𝒰]; infer_instance
   exact HasAffineProperty.diagonal_of_openCover P f (Scheme.coverOfIsIso (𝟙 _))
     (fun _ ↦ 𝒰) (fun _ _ _ ↦ hf _ _)
 
@@ -130,7 +130,7 @@ instance HasAffineProperty.diagonal_affineProperty_isLocal
   of_basicOpenCover {X Y} _ f s hs hs' := by
     refine (diagonal_iff (targetAffineLocally Q)).mpr ?_
     let 𝒰 := Y.openCoverOfISupEqTop _ (((isAffineOpen_top Y).basicOpen_union_eq_self_iff _).mpr hs)
-    have (i) : IsAffine (𝒰.obj i) := (isAffineOpen_top Y).basicOpen i.1
+    have (i : _) : IsAffine (𝒰.X i) := (isAffineOpen_top Y).basicOpen i.1
     refine diagonal_of_openCover_diagonal (targetAffineLocally Q) f 𝒰 ?_
     intro i
     exact (Q.diagonal.arrow_mk_iso_iff
@@ -158,12 +158,12 @@ instance (P : MorphismProperty Scheme)
   let g {X Y : Scheme} (f : X ⟶ Y) (U : X.Opens) :=
     pullback.map (U.ι ≫ f) (U.ι ≫ f) f f U.ι U.ι (𝟙 Y) (by simp) (by simp)
   refine IsLocalAtSource.mk' (fun {X Y} f U hf ↦ ?_) (fun {X Y} f {ι} U hU hf ↦ ?_)
-  · show P _
+  · change P _
     apply P.of_postcomp (W' := @IsOpenImmersion) (pullback.diagonal (U.ι ≫ f)) (g f U) inferInstance
     rw [← pullback.comp_diagonal]
     apply IsLocalAtSource.comp
     exact hf
-  · show P _
+  · change P _
     refine IsLocalAtSource.of_iSup_eq_top U hU fun i ↦ ?_
     rw [pullback.comp_diagonal]
     exact RespectsRight.postcomp (P := P) (Q := @IsOpenImmersion) (g _ _) inferInstance _ (hf i)
@@ -174,13 +174,13 @@ section Universally
 
 theorem universally_isLocalAtTarget (P : MorphismProperty Scheme)
     (hP₂ : ∀ {X Y : Scheme.{u}} (f : X ⟶ Y) {ι : Type u} (U : ι → Y.Opens)
-      (_ : iSup U = ⊤), (∀ i, P (f ∣_ U i)) → P f) : IsLocalAtTarget P.universally := by
+      (_ : IsOpenCover U), (∀ i, P (f ∣_ U i)) → P f) : IsLocalAtTarget P.universally := by
   apply IsLocalAtTarget.mk'
   · exact fun {X Y} f U => P.universally.of_isPullback
       (isPullback_morphismRestrict f U).flip
-  · intros X Y f ι U hU H X' Y' i₁ i₂ f' h
+  · intro X Y f ι U hU H X' Y' i₁ i₂ f' h
     apply hP₂ _ (fun i ↦ i₂ ⁻¹ᵁ U i)
-    · rw [← top_le_iff] at hU ⊢
+    · simp only [IsOpenCover, ← top_le_iff] at hU ⊢
       rintro x -
       simpa using @hU (i₂.base x) trivial
     · rintro i
@@ -191,6 +191,23 @@ theorem universally_isLocalAtTarget (P : MorphismProperty Scheme)
           exact (isPullback_morphismRestrict f' (i₂ ⁻¹ᵁ U i)).paste_vert h
         · rw [← cancel_mono (Scheme.Opens.ι _)]
           simp [morphismRestrict_ι_assoc, h.1.1]
+
+lemma universally_isLocalAtSource (P : MorphismProperty Scheme)
+    [IsLocalAtSource P] : IsLocalAtSource P.universally := by
+  refine ⟨inferInstance, ?_⟩
+  intro X Y f 𝒰
+  refine ⟨fun hf i ↦ ?_, fun hf ↦ ?_⟩
+  · apply MorphismProperty.universally_mk'
+    intro T g _
+    rw [← P.cancel_left_of_respectsIso (pullbackLeftPullbackSndIso g f _).hom,
+      pullbackLeftPullbackSndIso_hom_fst]
+    exact IsLocalAtSource.comp (hf _ _ _ (IsPullback.of_hasPullback ..)) _
+  · apply MorphismProperty.universally_mk'
+    intro T g _
+    rw [IsLocalAtSource.iff_of_openCover (P := P) (𝒰.pullbackCover <| pullback.snd g f)]
+    intro i
+    rw [𝒰.pullbackCover_f, ← pullbackLeftPullbackSndIso_hom_fst, P.cancel_left_of_respectsIso]
+    exact hf i _ _ _ (IsPullback.of_hasPullback ..)
 
 end Universally
 
@@ -235,12 +252,11 @@ lemma topologically_respectsIso
 
 /-- To check that a topologically defined morphism property is local at the target,
 we may check the corresponding properties on topological spaces. -/
-lemma topologically_isLocalAtTarget
-    [(topologically P).RespectsIso]
+lemma topologically_isLocalAtTarget [(topologically P).RespectsIso]
     (hP₂ : ∀ {α β : Type u} [TopologicalSpace α] [TopologicalSpace β] (f : α → β) (s : Set β)
       (_ : Continuous f) (_ : IsOpen s), P f → P (s.restrictPreimage f))
     (hP₃ : ∀ {α β : Type u} [TopologicalSpace α] [TopologicalSpace β] (f : α → β) {ι : Type u}
-      (U : ι → TopologicalSpace.Opens β) (_ : iSup U = ⊤) (_ : Continuous f),
+      (U : ι → Opens β) (_ : IsOpenCover U) (_ : Continuous f),
       (∀ i, P ((U i).carrier.restrictPreimage f)) → P f) :
     IsLocalAtTarget (topologically P) := by
   apply IsLocalAtTarget.mk'
@@ -254,18 +270,42 @@ lemma topologically_isLocalAtTarget
 
 /-- A variant of `topologically_isLocalAtTarget`
 that takes one iff statement instead of two implications. -/
-lemma topologically_isLocalAtTarget'
-    [(topologically P).RespectsIso]
+lemma topologically_isLocalAtTarget' [(topologically P).RespectsIso]
     (hP : ∀ {α β : Type u} [TopologicalSpace α] [TopologicalSpace β] (f : α → β) {ι : Type u}
-      (U : ι → TopologicalSpace.Opens β) (_ : iSup U = ⊤) (_ : Continuous f),
+      (U : ι → Opens β) (_ : IsOpenCover U) (_ : Continuous f),
       P f ↔ (∀ i, P ((U i).carrier.restrictPreimage f))) :
     IsLocalAtTarget (topologically P) := by
   refine topologically_isLocalAtTarget P ?_ (fun f _ U hU hU' ↦ (hP f U hU hU').mpr)
   introv hf hs H
-  have := (hP f (![⊤, Opens.mk s hs] ∘ Equiv.ulift) ?_ hf).mp H ⟨1⟩
-  · simpa using this
-  · rw [← top_le_iff]
-    exact le_iSup (![⊤, Opens.mk s hs] ∘ Equiv.ulift) ⟨0⟩
+  refine (hP f (![⊤, Opens.mk s hs] ∘ Equiv.ulift) ?_ hf).mp H ⟨1⟩
+  rw [IsOpenCover, ← top_le_iff]
+  exact le_iSup (![⊤, Opens.mk s hs] ∘ Equiv.ulift) ⟨0⟩
+
+lemma topologically_isLocalAtSource [(topologically P).RespectsIso]
+    (hP₁ : ∀ {X Y : Type u} [TopologicalSpace X] [TopologicalSpace Y] (f : X → Y)
+      (_ : Continuous f) (U : Opens X), P f → P (f ∘ ((↑) : U → X)))
+    (hP₂ : ∀ {X Y : Type u} [TopologicalSpace X] [TopologicalSpace Y] (f : X → Y)
+      (_ : Continuous f) {ι : Type u} (U : ι → Opens X),
+      IsOpenCover U → (∀ i, P (f ∘ ((↑) : U i → X))) → P f) :
+    IsLocalAtSource (topologically P) := by
+  apply IsLocalAtSource.mk'
+  · introv hf
+    exact hP₁ f.base f.continuous _ hf
+  · introv hU hf
+    exact hP₂ f.base f.continuous _ hU hf
+
+/-- A variant of `topologically_isLocalAtSource`
+that takes one iff statement instead of two implications. -/
+lemma topologically_isLocalAtSource' [(topologically P).RespectsIso]
+    (hP : ∀ {X Y : Type u} [TopologicalSpace X] [TopologicalSpace Y] (f : X → Y) {ι : Type u}
+      (U : ι → Opens X) (_ : IsOpenCover U) (_ : Continuous f),
+      P f ↔ (∀ i, P (f ∘ ((↑) : U i → X)))) :
+    IsLocalAtSource (topologically P) := by
+  refine topologically_isLocalAtSource P ?_ (fun f hf _ U hU hf' ↦ (hP f U hU hf).mpr hf')
+  introv hf hs
+  refine (hP f (![⊤, U] ∘ Equiv.ulift) ?_ hf).mp hs ⟨1⟩
+  rw [IsOpenCover, ← top_le_iff]
+  exact le_iSup (![⊤, U] ∘ Equiv.ulift) ⟨0⟩
 
 end Topologically
 

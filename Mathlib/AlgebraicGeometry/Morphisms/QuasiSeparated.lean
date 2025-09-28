@@ -24,7 +24,7 @@ We also show that this property is local at the target,
 and is stable under compositions and base-changes.
 
 ## Main result
-- `AlgebraicGeometry.is_localization_basicOpen_of_qcqs` (**Qcqs lemma**):
+- `AlgebraicGeometry.isLocalization_basicOpen_of_qcqs` (**Qcqs lemma**):
   If `U` is qcqs, then `Γ(X, D(f)) ≃ Γ(X, U)_f` for every `f : Γ(X, U)`.
 
 -/
@@ -86,7 +86,7 @@ theorem quasiCompact_affineProperty_iff_quasiSeparatedSpace {X Y : Scheme} [IsAf
     haveI : IsAffine _ := V.2
     let g : pullback U.1.ι V.1.ι ⟶ X := pullback.fst _ _ ≫ U.1.ι
     have : IsOpenImmersion g := inferInstance
-    have e := Homeomorph.ofIsEmbedding _ this.base_open.isEmbedding
+    have e := this.base_open.isEmbedding.toHomeomorph
     rw [IsOpenImmersion.range_pullback_to_base_of_left] at e
     erw [Subtype.range_coe, Subtype.range_coe] at e
     rw [isCompact_iff_compactSpace]
@@ -94,7 +94,7 @@ theorem quasiCompact_affineProperty_iff_quasiSeparatedSpace {X Y : Scheme} [IsAf
   · introv H h₁ h₂
     let g : pullback f₁ f₂ ⟶ X := pullback.fst _ _ ≫ f₁
     have : IsOpenImmersion g := inferInstance
-    have e := Homeomorph.ofIsEmbedding _ this.base_open.isEmbedding
+    have e := this.base_open.isEmbedding.toHomeomorph
     rw [IsOpenImmersion.range_pullback_to_base_of_left] at e
     simp_rw [isCompact_iff_compactSpace] at H
     exact
@@ -179,14 +179,14 @@ instance [CompactSpace X] [QuasiSeparatedSpace Y] (f g : X ⟶ Y) :
 theorem QuasiSeparated.of_comp {X Y Z : Scheme} (f : X ⟶ Y) (g : Y ⟶ Z) [QuasiSeparated (f ≫ g)] :
     QuasiSeparated f := by
   let 𝒰 := (Z.affineCover.pullbackCover g).bind fun x => Scheme.affineCover _
-  have (i) : IsAffine (𝒰.obj i) := by dsimp [𝒰]; infer_instance
+  have (i : _) : IsAffine (𝒰.X i) := by dsimp [𝒰]; infer_instance
   apply HasAffineProperty.of_openCover
     ((Z.affineCover.pullbackCover g).bind fun x => Scheme.affineCover _)
   rintro ⟨i, j⟩; dsimp at i j
   refine @quasiSeparatedSpace_of_quasiSeparated _ _ ?_
-    (HasAffineProperty.of_isPullback (.of_hasPullback _ (Z.affineCover.map i)) ‹_›) ?_
+    (HasAffineProperty.of_isPullback (.of_hasPullback _ (Z.affineCover.f i)) ‹_›) ?_
   · exact pullback.map _ _ _ _ (𝟙 _) _ _ (by simp) (Category.comp_id _) ≫
-      (pullbackRightPullbackFstIso g (Z.affineCover.map i) f).hom
+      (pullbackRightPullbackFstIso g (Z.affineCover.f i) f).hom
   · exact inferInstance
 
 theorem exists_eq_pow_mul_of_isAffineOpen (X : Scheme) (U : X.Opens) (hU : IsAffineOpen U)
@@ -228,18 +228,18 @@ theorem exists_eq_pow_mul_of_is_compact_of_quasi_separated_space_aux (X : Scheme
         (((f |_ U₁) ^ n₂ * y₁) |_ S.1)
         (((f |_ U₂) ^ n₁ * y₂) |_ S.1)).mp <| by
     apply exists_eq_pow_mul_of_is_compact_of_quasi_separated_space_aux_aux (e₁ := e₁) (e₂ := e₂)
-    · show X.basicOpen _ ≤ _
+    · change X.basicOpen _ ≤ _
       simp only [TopCat.Presheaf.restrictOpenCommRingCat_apply, Scheme.basicOpen_res]
       exact inf_le_inf h₁ le_rfl
-    · show X.basicOpen _ ≤ _
+    · change X.basicOpen _ ≤ _
       simp only [TopCat.Presheaf.restrictOpenCommRingCat_apply, Scheme.basicOpen_res]
       exact inf_le_inf h₂ le_rfl
   use n
-  intros m hm
+  intro m hm
   rw [← tsub_add_cancel_of_le hm]
   simp only [TopCat.Presheaf.restrictOpenCommRingCat_apply,
     pow_add, map_pow, map_mul, mul_assoc, ← Functor.map_comp, ← op_comp, homOfLE_comp,
-    Subtype.coe_mk, ← CommRingCat.comp_apply] at e ⊢
+    ← CommRingCat.comp_apply] at e ⊢
   rw [e]
 
 theorem exists_eq_pow_mul_of_isCompact_of_isQuasiSeparated (X : Scheme.{u}) (U : X.Opens)
@@ -277,13 +277,11 @@ theorem exists_eq_pow_mul_of_isCompact_of_isQuasiSeparated (X : Scheme.{u}) (U :
     haveI := hs'.to_subtype
     cases nonempty_fintype s
     replace hs : S ⊓ U.1 = iSup fun i : s => (i : X.Opens) := by ext1; simpa using hs
-    have hs₁ : ∀ i : s, i.1.1 ≤ S := by
-      intro i; change (i : X.Opens) ≤ S
+    have hs₁ (i : s) : i.1.1 ≤ S := by
       refine le_trans ?_ (inf_le_left (b := U.1))
       rw [hs]
       exact le_iSup (fun (i : s) => (i : X.Opens)) i
-    have hs₂ : ∀ i : s, i.1.1 ≤ U.1 := by
-      intro i; change (i : X.Opens) ≤ U
+    have hs₂ (i : s) : i.1.1 ≤ U.1 := by
       refine le_trans ?_ (inf_le_right (a := S))
       rw [hs]
       exact le_iSup (fun (i : s) => (i : X.Opens)) i
@@ -305,7 +303,7 @@ theorem exists_eq_pow_mul_of_isCompact_of_isQuasiSeparated (X : Scheme.{u}) (U :
       · exact le_of_eq hs
       · intro i
         -- This unfolds `X.sheaf`
-        show (X.presheaf.map _) _ = (X.presheaf.map _) _
+        change (X.presheaf.map _) _ = (X.presheaf.map _) _
         simp only [← CommRingCat.comp_apply, ← Functor.map_comp, ← op_comp]
         apply hn
         exact Finset.le_sup (Finset.mem_univ _)
@@ -316,23 +314,23 @@ theorem exists_eq_pow_mul_of_isCompact_of_isQuasiSeparated (X : Scheme.{u}) (U :
     refine (X.sheaf.objSupIsoProdEqLocus_inv_eq_iff _ _ _ (X.basicOpen_res _
       (homOfLE le_sup_left).op) (X.basicOpen_res _ (homOfLE le_sup_right).op)).mpr ⟨?_, ?_⟩
     · -- This unfolds `X.sheaf`
-      show (X.presheaf.map _) _ = (X.presheaf.map _) _
+      change (X.presheaf.map _) _ = (X.presheaf.map _) _
       rw [add_assoc, add_comm n₁]
       simp only [pow_add, map_pow, map_mul, hy₁, ← CommRingCat.comp_apply, ← mul_assoc,
         ← Functor.map_comp, ← op_comp, homOfLE_comp]
     · -- This unfolds `X.sheaf`
-      show (X.presheaf.map _) _ = (X.presheaf.map _) _
+      change (X.presheaf.map _) _ = (X.presheaf.map _) _
       simp only [pow_add, map_pow, map_mul, hy₂, ← CommRingCat.comp_apply, ← mul_assoc,
         ← Functor.map_comp, ← op_comp, homOfLE_comp]
 
 /-- If `U` is qcqs, then `Γ(X, D(f)) ≃ Γ(X, U)_f` for every `f : Γ(X, U)`.
 This is known as the **Qcqs lemma** in [R. Vakil, *The rising sea*][RisingSea]. -/
-theorem is_localization_basicOpen_of_qcqs {X : Scheme} {U : X.Opens} (hU : IsCompact U.1)
+theorem isLocalization_basicOpen_of_qcqs {X : Scheme} {U : X.Opens} (hU : IsCompact U.1)
     (hU' : IsQuasiSeparated U.1) (f : Γ(X, U)) :
     IsLocalization.Away f (Γ(X, X.basicOpen f)) := by
   constructor
   · rintro ⟨_, n, rfl⟩
-    simp only [map_pow, Subtype.coe_mk, RingHom.algebraMap_toAlgebra]
+    simp only [map_pow, RingHom.algebraMap_toAlgebra]
     exact IsUnit.pow _ (RingedSpace.isUnit_res_basicOpen _ f)
   · intro z
     obtain ⟨n, y, e⟩ := exists_eq_pow_mul_of_isCompact_of_isQuasiSeparated X U hU hU' f z
@@ -347,11 +345,14 @@ theorem is_localization_basicOpen_of_qcqs {X : Scheme} {U : X.Opens} (hU : IsCom
     refine ⟨⟨_, n, rfl⟩, ?_⟩
     simpa [mul_comm z] using e
 
+@[deprecated (since := "2025-03-01")]
+alias is_localization_basicOpen_of_qcqs := isLocalization_basicOpen_of_qcqs
+
 lemma exists_of_res_eq_of_qcqs {X : Scheme.{u}} {U : TopologicalSpace.Opens X}
     (hU : IsCompact U.carrier) (hU' : IsQuasiSeparated U.carrier)
     {f g s : Γ(X, U)} (hfg : f |_ X.basicOpen s = g |_ X.basicOpen s) :
     ∃ n, s ^ n * f = s ^ n * g := by
-  obtain ⟨n, hc⟩ := (is_localization_basicOpen_of_qcqs hU hU' s).exists_of_eq s hfg
+  obtain ⟨n, hc⟩ := (isLocalization_basicOpen_of_qcqs hU hU' s).exists_of_eq s hfg
   use n
 
 lemma exists_of_res_eq_of_qcqs_of_top {X : Scheme.{u}} [CompactSpace X] [QuasiSeparatedSpace X]
@@ -383,7 +384,7 @@ theorem isIso_ΓSpec_adjunction_unit_app_basicOpen {X : Scheme} [CompactSpace X]
   rw [ConcreteCategory.isIso_iff_bijective]
   apply (config := { allowSynthFailures := true }) IsLocalization.bijective
   · exact StructureSheaf.IsLocalization.to_basicOpen _ _
-  · refine is_localization_basicOpen_of_qcqs ?_ ?_ _
+  · refine isLocalization_basicOpen_of_qcqs ?_ ?_ _
     · exact isCompact_univ
     · exact isQuasiSeparated_univ
   · simp [RingHom.algebraMap_toAlgebra, ← CommRingCat.hom_comp, RingHom.algebraMap_toAlgebra,

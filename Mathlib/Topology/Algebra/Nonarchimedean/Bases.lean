@@ -37,13 +37,13 @@ structure RingSubgroupsBasis {A ι : Type*} [Ring A] (B : ι → AddSubgroup A) 
   /-- Condition for `B` to be a filter basis on `A`. -/
   inter : ∀ i j, ∃ k, B k ≤ B i ⊓ B j
   /-- For each set `B` in the submodule basis on `A`, there is another basis element `B'` such
-   that the set-theoretic product `B' * B'` is in `B`. -/
+  that the set-theoretic product `B' * B'` is in `B`. -/
   mul : ∀ i, ∃ j, (B j : Set A) * B j ⊆ B i
   /-- For any element `x : A` and any set `B` in the submodule basis on `A`,
-    there is another basis element `B'` such that `B' * x` is in `B`. -/
+  there is another basis element `B'` such that `B' * x` is in `B`. -/
   leftMul : ∀ x : A, ∀ i, ∃ j, (B j : Set A) ⊆ (x * ·) ⁻¹' B i
   /-- For any element `x : A` and any set `B` in the submodule basis on `A`,
-    there is another basis element `B'` such that `x * B'` is in `B`. -/
+  there is another basis element `B'` such that `x * B'` is in `B`. -/
   rightMul : ∀ x : A, ∀ i, ∃ j, (B j : Set A) ⊆ (· * x) ⁻¹' B i
 
 namespace RingSubgroupsBasis
@@ -169,7 +169,6 @@ theorem hasBasis_nhds (a : A) :
 /-- Given a subgroups basis, the basis elements as open additive subgroups in the associated
 topology. -/
 def openAddSubgroup (i : ι) : @OpenAddSubgroup A _ hB.topology :=
-  -- Porting note: failed to synthesize instance `TopologicalSpace A`
   let _ := hB.topology
   { B i with
     isOpen' := by
@@ -199,10 +198,10 @@ structure SubmodulesRingBasis (B : ι → Submodule R A) : Prop where
   /-- Condition for `B` to be a filter basis on `A`. -/
   inter : ∀ i j, ∃ k, B k ≤ B i ⊓ B j
   /-- For any element `a : A` and any set `B` in the submodule basis on `A`,
-    there is another basis element `B'` such that `a • B'` is in `B`. -/
+  there is another basis element `B'` such that `a • B'` is in `B`. -/
   leftMul : ∀ (a : A) (i), ∃ j, a • B j ≤ B i
   /-- For each set `B` in the submodule basis on `A`, there is another basis element `B'` such
-    that the set-theoretic product `B' * B'` is in `B`. -/
+  that the set-theoretic product `B' * B'` is in `B`. -/
   mul : ∀ i, ∃ j, (B j : Set A) * B j ⊆ B i
 
 namespace SubmodulesRingBasis
@@ -233,7 +232,7 @@ structure SubmodulesBasis [TopologicalSpace R] (B : ι → Submodule R M) : Prop
   /-- Condition for `B` to be a filter basis on `M`. -/
   inter : ∀ i j, ∃ k, B k ≤ B i ⊓ B j
   /-- For any element `m : M` and any set `B` in the basis, `a • m` lies in `B` for all
-    `a` sufficiently close to `0`. -/
+  `a` sufficiently close to `0`. -/
   smul : ∀ (m : M) (i : ι), ∀ᶠ a in 𝓝 (0 : R), a • m ∈ B i
 
 namespace SubmodulesBasis
@@ -304,7 +303,7 @@ def topology : TopologicalSpace M :=
 /-- Given a submodules basis, the basis elements as open additive subgroups in the associated
 topology. -/
 def openAddSubgroup (i : ι) : @OpenAddSubgroup M _ hB.topology :=
-  let _ := hB.topology -- Porting note: failed to synthesize instance `TopologicalSpace A`
+  let _ := hB.topology
   { (B i).toAddSubgroup with
     isOpen' := by
       letI := hB.topology
@@ -328,8 +327,8 @@ theorem nonarchimedean (hB : SubmodulesBasis B) : @NonarchimedeanAddGroup M _ hB
 
 library_note "nonarchimedean non instances"/--
 The non archimedean subgroup basis lemmas cannot be instances because some instances
-(such as `MeasureTheory.AEEqFun.instAddMonoid` or `TopologicalAddGroup.toContinuousAdd`)
-cause the search for `@TopologicalAddGroup β ?m1 ?m2`, i.e. a search for a topological group where
+(such as `MeasureTheory.AEEqFun.instAddMonoid` or `IsTopologicalAddGroup.toContinuousAdd`)
+cause the search for `@IsTopologicalAddGroup β ?m1 ?m2`, i.e. a search for a topological group where
 the topology/group structure are unknown. -/
 
 
@@ -364,12 +363,12 @@ structure RingFilterBasis.SubmodulesBasis (BR : RingFilterBasis R) (B : ι → S
   /-- Condition for `B` to be a filter basis on `M`. -/
   inter : ∀ i j, ∃ k, B k ≤ B i ⊓ B j
   /-- For any element `m : M` and any set `B i` in the submodule basis on `M`,
-    there is a `U` in the ring filter basis on `R` such that `U * m` is in `B i`. -/
+  there is a `U` in the ring filter basis on `R` such that `U * m` is in `B i`. -/
   smul : ∀ (m : M) (i : ι), ∃ U ∈ BR, U ⊆ (· • m) ⁻¹' B i
 
 theorem RingFilterBasis.submodulesBasisIsBasis (BR : RingFilterBasis R) {B : ι → Submodule R M}
     (hB : BR.SubmodulesBasis B) : @_root_.SubmodulesBasis ι R _ M _ _ BR.topology B :=
-  let _ := BR.topology -- Porting note: failed to synthesize instance `TopologicalSpace R`
+  let _ := BR.topology
   { inter := hB.inter
     smul := by
       letI := BR.topology

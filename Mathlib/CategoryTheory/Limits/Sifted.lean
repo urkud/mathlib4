@@ -33,13 +33,17 @@ variable (C : Type u) [Category.{v} C]
 /-- A category `C` `IsSiftedOrEmpty` if the diagonal functor `C ⥤ C × C` is final. -/
 abbrev IsSiftedOrEmpty : Prop := Final (diag C)
 
-/-- A category `C` `IsSfited` if
+/-- A category `C` `IsSifted` if
 1. the diagonal functor `C ⥤ C × C` is final.
 2. there exists some object. -/
-class IsSifted extends IsSiftedOrEmpty C : Prop where
+class IsSifted : Prop extends IsSiftedOrEmpty C where
   [nonempty : Nonempty C]
 
-attribute [instance] IsSifted.nonempty
+/- This instance is scoped since
+- it applies unconditionally (which can be a performance drain),
+- infers a *very* generic typeclass,
+- and does so from a *very* specialised class. -/
+attribute [scoped instance] IsSifted.nonempty
 
 namespace IsSifted
 
@@ -73,8 +77,7 @@ instance [IsSifted C] : IsConnected C :=
         constructor
         · constructor
           · exact Zag.of_hom X.hom.fst
-          · simp
-            exact Zag.of_inv X.hom.snd
+          · simpa using Zag.of_inv X.hom.snd
         · rfl)
 
 /-- A category with binary coproducts is sifted or empty. -/
@@ -87,9 +90,9 @@ instance [HasBinaryCoproducts C] : IsSiftedOrEmpty C := by
     rintro ⟨_, c, f⟩ ⟨_, c', g⟩
     dsimp only [const_obj_obj, diag_obj, prod_Hom] at f g
     use [.mk ((coprod.inl : c₁ ⟶ c₁ ⨿ c₂), (coprod.inr : c₂ ⟶ c₁ ⨿ c₂)), .mk (g.fst, g.snd)]
-    simp only [colimit.cocone_x, diag_obj, Prod.mk.eta, List.chain_cons, List.Chain.nil, and_true,
-      ne_eq, reduceCtorEq, not_false_eq_true, List.getLast_cons, List.cons_ne_self,
-      List.getLast_singleton]
+    simp only [colimit.cocone_x, diag_obj, Prod.mk.eta, List.isChain_cons_cons,
+      List.isChain_singleton, and_true, ne_eq, reduceCtorEq, not_false_eq_true,
+      List.getLast_cons, List.cons_ne_self, List.getLast_singleton]
     exact ⟨⟨Zag.of_inv <| StructuredArrow.homMk <| coprod.desc f.fst f.snd,
       Zag.of_hom <| StructuredArrow.homMk <| coprod.desc g.fst g.snd⟩, rfl⟩
 

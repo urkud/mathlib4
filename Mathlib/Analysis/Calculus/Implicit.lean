@@ -21,7 +21,7 @@ Then we define `HasStrictFDerivAt.implicitFunctionDataOfComplemented`: implicit 
 `f (g z y) = z`, where `f : E → F` is a function strictly differentiable at `a` such that its
 derivative `f'` is surjective and has a `complemented` kernel.
 
-Finally, if the codomain of `f` is a finite dimensional space, then we can automatically prove
+Finally, if the codomain of `f` is a finite-dimensional space, then we can automatically prove
 that the kernel of `f'` is complemented, hence the only assumptions are `HasStrictFDerivAt`
 and `f'.range = ⊤`. This version is named `HasStrictFDerivAt.implicitFunction`.
 
@@ -98,10 +98,15 @@ structure ImplicitFunctionData (𝕜 : Type*) [NontriviallyNormedField 𝕜] (E 
     [NormedAddCommGroup E] [NormedSpace 𝕜 E] [CompleteSpace E] (F : Type*) [NormedAddCommGroup F]
     [NormedSpace 𝕜 F] [CompleteSpace F] (G : Type*) [NormedAddCommGroup G] [NormedSpace 𝕜 G]
     [CompleteSpace G] where
+  /-- Left function -/
   leftFun : E → F
+  /-- Derivative of the left function -/
   leftDeriv : E →L[𝕜] F
+  /-- Right function -/
   rightFun : E → G
+  /-- Derivative of the right function -/
   rightDeriv : E →L[𝕜] G
+  /-- The point at which `leftFun` and `rightFun` are strictly differentiable -/
   pt : E
   left_has_deriv : HasStrictFDerivAt leftFun leftDeriv pt
   right_has_deriv : HasStrictFDerivAt rightFun rightDeriv pt
@@ -130,7 +135,7 @@ protected theorem hasStrictFDerivAt :
           φ.isCompl_ker :
         E →L[𝕜] F × G)
       φ.pt :=
-  φ.left_has_deriv.prod φ.right_has_deriv
+  φ.left_has_deriv.prodMk φ.right_has_deriv
 
 /-- Implicit function theorem. If `f : E → F` and `g : E → G` are two maps strictly differentiable
 at `a`, their derivatives `f'`, `g'` are surjective, and the kernels of these derivatives are
@@ -186,9 +191,9 @@ theorem implicitFunction_hasStrictFDerivAt (g'inv : G →L[𝕜] E)
     HasStrictFDerivAt (φ.implicitFunction (φ.leftFun φ.pt)) g'inv (φ.rightFun φ.pt) := by
   have := φ.hasStrictFDerivAt.to_localInverse
   simp only [prodFun] at this
-  convert this.comp (φ.rightFun φ.pt) ((hasStrictFDerivAt_const _ _).prod (hasStrictFDerivAt_id _))
-  -- Porting note: added parentheses to help `simp`
-  simp only [ContinuousLinearMap.ext_iff, (ContinuousLinearMap.comp_apply)] at hg'inv hg'invf ⊢
+  convert this.comp (φ.rightFun φ.pt)
+    ((hasStrictFDerivAt_const _ _).prodMk (hasStrictFDerivAt_id _))
+  simp only [ContinuousLinearMap.ext_iff, ContinuousLinearMap.comp_apply] at hg'inv hg'invf ⊢
   simp [ContinuousLinearEquiv.eq_symm_apply, *]
 
 end ImplicitFunctionData
@@ -319,24 +324,22 @@ theorem to_implicitFunctionOfComplemented (hf : HasStrictFDerivAt f f' a) (hf' :
     (ker f').subtypeL _ _
   swap
   · ext
-    -- Porting note: added parentheses to help `simp`
     simp only [Classical.choose_spec hker, implicitFunctionDataOfComplemented,
       ContinuousLinearMap.comp_apply, Submodule.coe_subtypeL', Submodule.coe_subtype,
       ContinuousLinearMap.id_apply]
   swap
   · ext
-    -- Porting note: added parentheses to help `simp`
-    simp only [(ContinuousLinearMap.comp_apply), Submodule.coe_subtypeL', Submodule.coe_subtype,
-      LinearMap.map_coe_ker, (ContinuousLinearMap.zero_apply)]
+    simp only [ContinuousLinearMap.comp_apply, Submodule.coe_subtypeL', Submodule.coe_subtype,
+      LinearMap.map_coe_ker, ContinuousLinearMap.zero_apply]
   simp only [implicitFunctionDataOfComplemented, map_sub, sub_self]
 
 end Complemented
 
 /-!
-### Finite dimensional case
+### Finite-dimensional case
 
 In this section we prove the following version of the implicit function theorem. Consider a map
-`f : E → F` from a Banach normed space to a finite dimensional space.
+`f : E → F` from a Banach normed space to a finite-dimensional space.
 Take a point `a : E` such that `f` is strictly differentiable at `a` and its derivative `f'`
 is surjective. Then there exists a function `φ : F → ker f' → E` such that for `(y, z)`
 close to `(f a, 0)` we have `f (φ y z) = y` and the derivative of `φ (f a)` at zero is the
@@ -355,7 +358,7 @@ variable {𝕜 : Type*} [NontriviallyNormedField 𝕜] [CompleteSpace 𝕜] {E :
   [NormedAddCommGroup E] [NormedSpace 𝕜 E] [CompleteSpace E] {F : Type*} [NormedAddCommGroup F]
   [NormedSpace 𝕜 F] [FiniteDimensional 𝕜 F] (f : E → F) (f' : E →L[𝕜] F) {a : E}
 
-/-- Given a map `f : E → F` to a finite dimensional space with a surjective derivative `f'`,
+/-- Given a map `f : E → F` to a finite-dimensional space with a surjective derivative `f'`,
 returns a partial homeomorphism between `E` and `F × ker f'`. -/
 def implicitToPartialHomeomorph (hf : HasStrictFDerivAt f f' a) (hf' : range f' = ⊤) :
     PartialHomeomorph E (F × ker f') :=
@@ -377,7 +380,6 @@ theorem implicitToPartialHomeomorph_fst (hf : HasStrictFDerivAt f f' a) (hf' : r
 @[simp]
 theorem implicitToPartialHomeomorph_apply_ker (hf : HasStrictFDerivAt f f' a) (hf' : range f' = ⊤)
     (y : ker f') : hf.implicitToPartialHomeomorph f f' hf' (y + a) = (f (y + a), y) :=
-  -- Porting note: had to add `haveI` (here and below)
   haveI := FiniteDimensional.complete 𝕜 F
   implicitToPartialHomeomorphOfComplemented_apply_ker ..
 
@@ -404,7 +406,7 @@ theorem tendsto_implicitFunction (hf : HasStrictFDerivAt f f' a) (hf' : range f'
   refine ((hf.implicitToPartialHomeomorph f f' hf').tendsto_symm
     (hf.mem_implicitToPartialHomeomorph_source hf')).comp ?_
   rw [implicitToPartialHomeomorph_self]
-  exact h₁.prod_mk_nhds h₂
+  exact h₁.prodMk_nhds h₂
 
 alias _root_.Filter.Tendsto.implicitFunction := tendsto_implicitFunction
 
