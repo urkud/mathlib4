@@ -83,6 +83,8 @@ theorem _root_.IsTop.atTop_eq [Preorder α] {a : α} (ha : IsTop a) : atTop = �
 theorem _root_.IsBot.atBot_eq [Preorder α] {a : α} (ha : IsBot a) : atBot = 𝓟 (Iic a) :=
   ha.toDual.atTop_eq
 
+set_option linter.deprecated false in
+@[deprecated "Use `⨅ s ∈ S, 𝓟 s` instead of `Filter.generate S`." (since := "2025-09-28")]
 theorem atTop_eq_generate_Ici [Preorder α] : atTop = generate (range (Ici (α := α))) := by
   simp only [generate_eq_biInf, atTop, iInf_range]
 

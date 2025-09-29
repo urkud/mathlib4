@@ -59,12 +59,16 @@ theorem le_cofinite_or_eq_pure (f : Ultrafilter α) : (f : Filter α) ≤ cofini
     let ⟨a, _, hf⟩ := eq_pure_of_finite_mem hfin hs
     ⟨a, hf⟩
 
+#check generate_neBot_iff
+
 theorem exists_ultrafilter_of_finite_inter_nonempty (S : Set (Set α))
     (cond : ∀ T : Finset (Set α), (↑T : Set (Set α)) ⊆ S → (⋂₀ (↑T : Set (Set α))).Nonempty) :
     ∃ F : Ultrafilter α, S ⊆ F.sets :=
-  haveI : NeBot (generate S) :=
-    generate_neBot_iff.2 fun _ hts ht =>
-      ht.coe_toFinset ▸ cond ht.toFinset (ht.coe_toFinset.symm ▸ hts)
+  have : NeBot (⨅ s ∈ S, 𝓟 s) := by
+  
+    apply (hasBasis_iInf_principal_finite _).neBot_iff.mpr ?_
+    -- generate_neBot_iff.2 fun _ hts ht =>
+    --   ht.coe_toFinset ▸ cond ht.toFinset (ht.coe_toFinset.symm ▸ hts)
   ⟨of (generate S), fun _ ht => (of_le <| generate S) <| GenerateSets.basic ht⟩
 
 end Ultrafilter

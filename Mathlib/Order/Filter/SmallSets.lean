@@ -34,17 +34,19 @@ variable {l l' la : Filter α} {lb : Filter β}
 def smallSets (l : Filter α) : Filter (Set α) :=
   l.lift' powerset
 
+theorem smallSets_eq_biInf (f : Filter α) : f.smallSets = ⨅ b ∈ f, 𝓟 (𝒫 b) := rfl
+
+set_option linter.deprecated false in
+@[deprecated smallSets_eq_biInf (since := "2025-09-28")]
 theorem smallSets_eq_generate {f : Filter α} : f.smallSets = generate (powerset '' f.sets) := by
-  simp_rw [generate_eq_biInf, smallSets, iInf_image, Filter.lift', Filter.lift, Function.comp_apply,
-    Filter.mem_sets]
+  simp_rw [generate_eq_biInf, iInf_image, smallSets_eq_biInf, Filter.mem_sets]
 
 -- TODO: get more properties from the adjunction?
 -- TODO: is there a general way to get a lower adjoint for the lift of an upper adjoint?
 theorem bind_smallSets_gc :
     GaloisConnection (fun L : Filter (Set α) ↦ L.bind principal) smallSets := by
   intro L l
-  simp_rw [smallSets_eq_generate, le_generate_iff, image_subset_iff]
-  rfl
+  simp_rw [smallSets, le_lift',le_def, mem_bind', mem_principal, powerset]
 
 protected theorem HasBasis.smallSets {p : ι → Prop} {s : ι → Set α} (h : HasBasis l p s) :
     HasBasis l.smallSets p fun i => 𝒫 s i :=

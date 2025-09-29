@@ -806,11 +806,24 @@ theorem inf_principal_eq_bot_iff_comap {F : Filter α} {s : Set α} :
     F ⊓ 𝓟 s = ⊥ ↔ comap ((↑) : s → α) F = ⊥ := by
   rw [principal_eq_map_coe_top s, ← Filter.push_pull', inf_top_eq, map_eq_bot_iff]
 
+lemma map_biInf_principal_le_biInf_preimage_mem_principal (U : Set (Set β)) (f : β → α) :
+    map f (⨅ s ∈ U, 𝓟 s) ≤ ⨅ (s : Set α) (_ : f ⁻¹' s ∈ U), 𝓟 s := by
+  simp only [le_iInf_iff, le_principal_iff, mem_map]
+  exact fun s hs ↦ mem_iInf_of_mem _ <| mem_iInf_of_mem hs <| mem_principal_self _
+
+set_option linter.deprecated false in
+@[deprecated map_biInf_principal_le_biInf_preimage_mem_principal (since := "2025-09-28")]
 lemma map_generate_le_generate_preimage_preimage (U : Set (Set β)) (f : β → α) :
     map f (generate U) ≤ generate ((f ⁻¹' ·) ⁻¹' U) := by
   rw [le_generate_iff]
   exact fun u hu ↦ mem_generate_of_mem hu
 
+lemma biInf_image_preimage_principal_eq_comap (U : Set (Set α)) (f : β → α) :
+    ⨅ s ∈ (f ⁻¹' ·) '' U, 𝓟 s = comap f (⨅ s ∈ U, 𝓟 s) := by
+  simp only [comap_iInf, iInf_image, comap_principal]
+
+set_option linter.deprecated false in
+@[deprecated biInf_image_preimage_principal_eq_comap (since := "2025-09-28")]
 lemma generate_image_preimage_le_comap (U : Set (Set α)) (f : β → α) :
     generate ((f ⁻¹' ·) '' U) ≤ comap f (generate U) := by
   rw [← map_le_iff_le_comap, le_generate_iff]
