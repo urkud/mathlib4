@@ -1,7 +1,7 @@
 /-
-Copyright (c) 2020 Scott Morrison. All rights reserved.
+Copyright (c) 2020 Kim Morrison. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Markus Himmel, Scott Morrison
+Authors: Markus Himmel, Kim Morrison
 -/
 import Mathlib.Algebra.Group.Ext
 import Mathlib.CategoryTheory.Simple
@@ -9,15 +9,13 @@ import Mathlib.CategoryTheory.Linear.Basic
 import Mathlib.CategoryTheory.Endomorphism
 import Mathlib.FieldTheory.IsAlgClosed.Spectrum
 
-#align_import category_theory.preadditive.schur from "leanprover-community/mathlib"@"58a272265b5e05f258161260dd2c5d247213cbd3"
-
 /-!
 # Schur's lemma
 We first prove the part of Schur's Lemma that holds in any preadditive category with kernels,
 that any nonzero morphism between simple objects
 is an isomorphism.
 
-Second, we prove Schur's lemma for `𝕜`-linear categories with finite dimensional hom spaces,
+Second, we prove Schur's lemma for `𝕜`-linear categories with finite-dimensional hom spaces,
 over an algebraically closed field `𝕜`:
 the hom space `X ⟶ Y` between simple objects `X` and `Y` is at most one dimensional,
 and is 1-dimensional iff `X` and `Y` are isomorphic.
@@ -35,7 +33,6 @@ variable [Preadditive C]
 theorem mono_of_nonzero_from_simple [HasKernels C] {X Y : C} [Simple X] {f : X ⟶ Y} (w : f ≠ 0) :
     Mono f :=
   Preadditive.mono_of_kernel_zero (kernel_zero_of_nonzero_from_simple w)
-#align category_theory.mono_of_nonzero_from_simple CategoryTheory.mono_of_nonzero_from_simple
 
 /-- The part of **Schur's lemma** that holds in any preadditive category with kernels:
 that a nonzero morphism between simple objects is an isomorphism.
@@ -44,7 +41,6 @@ theorem isIso_of_hom_simple
     [HasKernels C] {X Y : C} [Simple X] [Simple Y] {f : X ⟶ Y} (w : f ≠ 0) : IsIso f :=
   haveI := mono_of_nonzero_from_simple w
   isIso_of_mono_of_nonzero w
-#align category_theory.is_iso_of_hom_simple CategoryTheory.isIso_of_hom_simple
 
 /-- As a corollary of Schur's lemma for preadditive categories,
 any morphism between simple objects is (exclusively) either an isomorphism or zero.
@@ -56,7 +52,6 @@ theorem isIso_iff_nonzero [HasKernels C] {X Y : C} [Simple X] [Simple Y] (f : X 
     apply id_nonzero X
     simp only [← IsIso.hom_inv_id f, h, zero_comp],
    fun w => isIso_of_hom_simple w⟩
-#align category_theory.is_iso_iff_nonzero CategoryTheory.isIso_iff_nonzero
 
 open scoped Classical in
 /-- In any preadditive category with kernels,
@@ -71,9 +66,11 @@ noncomputable instance [HasKernels C] {X : C} [Simple X] : DivisionRing (End X) 
     haveI := isIso_of_hom_simple hf
     exact IsIso.inv_hom_id f
   nnqsmul := _
+  nnqsmul_def := fun _ _ => rfl
   qsmul := _
+  qsmul_def := fun _ _ => rfl
 
-open FiniteDimensional
+open Module
 
 section
 
@@ -90,19 +87,12 @@ theorem finrank_hom_simple_simple_eq_zero_of_not_iso [HasKernels C] [Linear 𝕜
       simp only [Classical.not_not, Ne] at p
       exact p.mp fun _ => h (asIso f)
   finrank_zero_of_subsingleton
-#align category_theory.finrank_hom_simple_simple_eq_zero_of_not_iso CategoryTheory.finrank_hom_simple_simple_eq_zero_of_not_iso
 
 end
 
 variable (𝕜 : Type*) [Field 𝕜]
 variable [IsAlgClosed 𝕜] [Linear 𝕜 C]
 
--- Porting note: the defeq issue in lean3 described below is no longer a problem in Lean4.
--- In the proof below we have some difficulty using `I : FiniteDimensional 𝕜 (X ⟶ X)`
--- where we need a `FiniteDimensional 𝕜 (End X)`.
--- These are definitionally equal, but without eta reduction Lean can't see this.
--- To get around this, we use `convert I`,
--- then check the various instances agree field-by-field,
 -- We prove this with the explicit `isIso_iff_nonzero` assumption,
 -- rather than just `[Simple X]`, as this form is useful for
 -- Müger's formulation of semisimplicity.
@@ -123,7 +113,6 @@ theorem finrank_endomorphism_eq_one {X : C} (isIso_iff_nonzero : ∀ f : X ⟶ X
   rw [spectrum.mem_iff, IsUnit.sub_iff, isUnit_iff_isIso, isIso_iff_nonzero, Ne,
     Classical.not_not, sub_eq_zero, Algebra.algebraMap_eq_smul_one] at nu
   exact nu.symm
-#align category_theory.finrank_endomorphism_eq_one CategoryTheory.finrank_endomorphism_eq_one
 
 variable [HasKernels C]
 
@@ -132,13 +121,11 @@ variable [HasKernels C]
 theorem finrank_endomorphism_simple_eq_one (X : C) [Simple X] [FiniteDimensional 𝕜 (X ⟶ X)] :
     finrank 𝕜 (X ⟶ X) = 1 :=
   finrank_endomorphism_eq_one 𝕜 isIso_iff_nonzero
-#align category_theory.finrank_endomorphism_simple_eq_one CategoryTheory.finrank_endomorphism_simple_eq_one
 
 theorem endomorphism_simple_eq_smul_id {X : C} [Simple X] [FiniteDimensional 𝕜 (X ⟶ X)]
     (f : X ⟶ X) : ∃ c : 𝕜, c • 𝟙 X = f :=
   (finrank_eq_one_iff_of_nonzero' (𝟙 X) (id_nonzero X)).mp (finrank_endomorphism_simple_eq_one 𝕜 X)
     f
-#align category_theory.endomorphism_simple_eq_smul_id CategoryTheory.endomorphism_simple_eq_smul_id
 
 /-- Endomorphisms of a simple object form a field if they are finite dimensional.
 This can't be an instance as `𝕜` would be undetermined.
@@ -151,7 +138,6 @@ noncomputable def fieldEndOfFiniteDimensional (X : C) [Simple X] [I : FiniteDime
         obtain ⟨c, rfl⟩ := endomorphism_simple_eq_smul_id 𝕜 f
         obtain ⟨d, rfl⟩ := endomorphism_simple_eq_smul_id 𝕜 g
         simp [← mul_smul, mul_comm c d] }
-#align category_theory.field_End_of_finite_dimensional CategoryTheory.fieldEndOfFiniteDimensional
 
 -- There is a symmetric argument that uses `[FiniteDimensional 𝕜 (Y ⟶ Y)]` instead,
 -- but we don't bother proving that here.
@@ -172,7 +158,6 @@ theorem finrank_hom_simple_simple_le_one (X Y : C) [FiniteDimensional 𝕜 (X �
     intro g
     obtain ⟨c, w⟩ := endomorphism_simple_eq_smul_id 𝕜 (g ≫ inv f)
     exact ⟨c, by simpa using w =≫ f⟩
-#align category_theory.finrank_hom_simple_simple_le_one CategoryTheory.finrank_hom_simple_simple_le_one
 
 theorem finrank_hom_simple_simple_eq_one_iff (X Y : C) [FiniteDimensional 𝕜 (X ⟶ X)]
     [FiniteDimensional 𝕜 (X ⟶ Y)] [Simple X] [Simple Y] :
@@ -187,27 +172,20 @@ theorem finrank_hom_simple_simple_eq_one_iff (X Y : C) [FiniteDimensional 𝕜 (
     have le_one := finrank_hom_simple_simple_le_one 𝕜 X Y
     have zero_lt : 0 < finrank 𝕜 (X ⟶ Y) :=
       finrank_pos_iff_exists_ne_zero.mpr ⟨f.hom, (isIso_iff_nonzero f.hom).mp inferInstance⟩
-    omega
-#align category_theory.finrank_hom_simple_simple_eq_one_iff CategoryTheory.finrank_hom_simple_simple_eq_one_iff
+    cutsat
 
 theorem finrank_hom_simple_simple_eq_zero_iff (X Y : C) [FiniteDimensional 𝕜 (X ⟶ X)]
     [FiniteDimensional 𝕜 (X ⟶ Y)] [Simple X] [Simple Y] :
     finrank 𝕜 (X ⟶ Y) = 0 ↔ IsEmpty (X ≅ Y) := by
   rw [← not_nonempty_iff, ← not_congr (finrank_hom_simple_simple_eq_one_iff 𝕜 X Y)]
-  refine ⟨fun h => by rw [h]; simp, fun h => ?_⟩
   have := finrank_hom_simple_simple_le_one 𝕜 X Y
-  interval_cases finrank 𝕜 (X ⟶ Y)
-  · rfl
-  · exact False.elim (h rfl)
-#align category_theory.finrank_hom_simple_simple_eq_zero_iff CategoryTheory.finrank_hom_simple_simple_eq_zero_iff
+  cutsat
 
-open scoped Classical
-
+open scoped Classical in
 theorem finrank_hom_simple_simple (X Y : C) [∀ X Y : C, FiniteDimensional 𝕜 (X ⟶ Y)] [Simple X]
     [Simple Y] : finrank 𝕜 (X ⟶ Y) = if Nonempty (X ≅ Y) then 1 else 0 := by
   split_ifs with h
   · exact (finrank_hom_simple_simple_eq_one_iff 𝕜 X Y).2 h
   · exact (finrank_hom_simple_simple_eq_zero_iff 𝕜 X Y).2 (not_nonempty_iff.mp h)
-#align category_theory.finrank_hom_simple_simple CategoryTheory.finrank_hom_simple_simple
 
 end CategoryTheory

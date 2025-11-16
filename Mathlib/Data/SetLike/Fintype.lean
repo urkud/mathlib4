@@ -1,12 +1,10 @@
 /-
-Copyright (c) 2021 . All rights reserved.
+Copyright (c) 2021 Chris Hughes. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Chris Hughes
 -/
 import Mathlib.Data.SetLike.Basic
 import Mathlib.Data.Fintype.Powerset
-
-#align_import data.set_like.fintype from "leanprover-community/mathlib"@"1126441d6bccf98c81214a0780c73d499f6721fe"
 
 /-!
 # Set-like fintype

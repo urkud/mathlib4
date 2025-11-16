@@ -50,10 +50,10 @@ instance (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ) :
     rw [← (Algebra.lmul _ _).commutes, Algebra.lmul_isUnit_iff, isUnit_iff_ne_zero, eq_intCast,
       Int.cast_ne_zero]
     exact nonZeroDivisors.coe_ne_zero x
-  surj' x := by
+  surj x := by
     obtain ⟨⟨a, _, d, hd, rfl⟩, h⟩ := IsLocalization.surj (Algebra.algebraMapSubmonoid (𝓞 K) ℤ⁰) x
     refine ⟨⟨⟨Ideal.absNorm I.1.num * (algebraMap _ K a), I.1.num_le ?_⟩, d * Ideal.absNorm I.1.num,
-      ?_⟩ , ?_⟩
+      ?_⟩, ?_⟩
     · simp_rw [FractionalIdeal.val_eq_coe, FractionalIdeal.coe_coeIdeal]
       refine (IsLocalization.mem_coeSubmodule _ _).mpr ⟨Ideal.absNorm I.1.num * a, ?_, ?_⟩
       · exact Ideal.mul_mem_right _ _ I.1.num.absNorm_mem
@@ -61,7 +61,7 @@ instance (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ) :
     · refine Submonoid.mul_mem _ hd (mem_nonZeroDivisors_of_ne_zero ?_)
       rw [Nat.cast_ne_zero, ne_eq, Ideal.absNorm_eq_zero_iff]
       exact FractionalIdeal.num_eq_zero_iff.not.mpr <| Units.ne_zero I
-    · simp_rw [LinearMap.coe_restrictScalars, Submodule.coeSubtype] at h ⊢
+    · simp_rw [LinearMap.coe_restrictScalars, Submodule.coe_subtype] at h ⊢
       rw [← h]
       simp only [Submonoid.mk_smul, zsmul_eq_mul, Int.cast_mul, Int.cast_natCast, algebraMap_int_eq,
         eq_intCast, map_intCast]
@@ -89,7 +89,7 @@ theorem mem_span_basisOfFractionalIdeal {I : (FractionalIdeal (𝓞 K)⁰ K)ˣ} 
   rw [basisOfFractionalIdeal, (fractionalIdealBasis K I.1).ofIsLocalizedModule_span ℚ ℤ⁰ _]
   simp
 
-open FiniteDimensional in
+open Module in
 theorem fractionalIdeal_rank (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ) :
     finrank ℤ I = finrank ℤ (𝓞 K) := by
   rw [finrank_eq_card_chooseBasisIndex, RingOfIntegers.rank,
@@ -103,7 +103,7 @@ open Module
 
 /-- The absolute value of the determinant of the base change from `integralBasis` to
 `basisOfFractionalIdeal I` is equal to the norm of `I`. -/
-theorem det_basisOfFractionalIdeal_eq_absNorm  (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ)
+theorem det_basisOfFractionalIdeal_eq_absNorm (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ)
     (e : (Free.ChooseBasisIndex ℤ (𝓞 K)) ≃ (Free.ChooseBasisIndex ℤ I)) :
     |(integralBasis K).det ((basisOfFractionalIdeal K I).reindex e.symm)| =
       FractionalIdeal.absNorm I.1 := by
@@ -114,3 +114,5 @@ theorem det_basisOfFractionalIdeal_eq_absNorm  (I : (FractionalIdeal (𝓞 K)⁰
   simpa using basisOfFractionalIdeal_apply K I _
 
 end Norm
+
+end NumberField

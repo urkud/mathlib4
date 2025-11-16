@@ -25,11 +25,11 @@ for every `m` in `Π i, Eᵢ` is bounded above by the projective seminorm.
 ## Main results
 
 * `PiTensorProduct.norm_eval_le_projectiveSeminorm`: If `f` is a continuous multilinear map on
-`E = Π i, Eᵢ` and `x` is in `⨂[𝕜] i, Eᵢ`, then `‖f.lift x‖ ≤ projectiveSeminorm x * ‖f‖`.
+  `E = Π i, Eᵢ` and `x` is in `⨂[𝕜] i, Eᵢ`, then `‖f.lift x‖ ≤ projectiveSeminorm x * ‖f‖`.
 
 ## TODO
 * If the base field is `ℝ` or `ℂ` (or more generally if the injection of `Eᵢ` into its bidual is
-an isometry for every `i`), then we have `projectiveSeminorm ⨂ₜ[𝕜] i, mᵢ = Π i, ‖mᵢ‖`.
+  an isometry for every `i`), then we have `projectiveSeminorm ⨂ₜ[𝕜] i, mᵢ = Π i, ‖mᵢ‖`.
 
 * The functoriality.
 
@@ -39,8 +39,7 @@ universe uι u𝕜 uE uF
 
 variable {ι : Type uι} [Fintype ι]
 variable {𝕜 : Type u𝕜} [NontriviallyNormedField 𝕜]
-variable {E : ι → Type uE} [∀ i, SeminormedAddCommGroup (E i)] [∀ i, NormedSpace 𝕜 (E i)]
-variable {F : Type uF} [SeminormedAddCommGroup F] [NormedSpace 𝕜 F]
+variable {E : ι → Type uE} [∀ i, SeminormedAddCommGroup (E i)]
 
 open scoped TensorProduct
 
@@ -50,14 +49,14 @@ namespace PiTensorProduct
 properties of `projectiveSeminorm`.
 -/
 def projectiveSeminormAux : FreeAddMonoid (𝕜 × Π i, E i) → ℝ :=
-  List.sum ∘ (List.map (fun p ↦ ‖p.1‖ * ∏ i, ‖p.2 i‖))
+  fun p => (p.toList.map (fun p ↦ ‖p.1‖ * ∏ i, ‖p.2 i‖)).sum
 
 theorem projectiveSeminormAux_nonneg (p : FreeAddMonoid (𝕜 × Π i, E i)) :
     0 ≤ projectiveSeminormAux p := by
-  simp only [projectiveSeminormAux, Function.comp_apply]
+  simp only [projectiveSeminormAux]
   refine List.sum_nonneg ?_
   intro a
-  simp only [Multiset.map_coe, Multiset.mem_coe, List.mem_map, Prod.exists, forall_exists_index,
+  simp only [List.mem_map, Prod.exists, forall_exists_index,
     and_imp]
   intro x m _ h
   rw [← h]
@@ -65,21 +64,14 @@ theorem projectiveSeminormAux_nonneg (p : FreeAddMonoid (𝕜 × Π i, E i)) :
 
 theorem projectiveSeminormAux_add_le (p q : FreeAddMonoid (𝕜 × Π i, E i)) :
     projectiveSeminormAux (p + q) ≤ projectiveSeminormAux p + projectiveSeminormAux q := by
-  simp only [projectiveSeminormAux, Function.comp_apply, Multiset.map_coe, Multiset.sum_coe]
-  erw [List.map_append]
-  rw [List.sum_append]
-  rfl
+  simp [projectiveSeminormAux]
 
 theorem projectiveSeminormAux_smul (p : FreeAddMonoid (𝕜 × Π i, E i)) (a : 𝕜) :
-    projectiveSeminormAux (List.map (fun (y : 𝕜 × Π i, E i) ↦ (a * y.1, y.2)) p) =
+    projectiveSeminormAux (p.map (fun (y : 𝕜 × Π i, E i) ↦ (a * y.1, y.2))) =
     ‖a‖ * projectiveSeminormAux p := by
-  simp only [projectiveSeminormAux, Function.comp_apply, Multiset.map_coe, List.map_map,
-    Multiset.sum_coe]
-  rw [← smul_eq_mul, List.smul_sum, ← List.comp_map]
-  congr 2
-  ext x
-  simp only [Function.comp_apply, norm_mul, smul_eq_mul]
-  rw [mul_assoc]
+  simp [projectiveSeminormAux, Function.comp_def, mul_assoc, List.sum_map_mul_left]
+
+variable [∀ i, NormedSpace 𝕜 (E i)]
 
 theorem bddBelow_projectiveSemiNormAux (x : ⨂[𝕜] i, E i) :
     BddBelow (Set.range (fun (p : lifts x) ↦ projectiveSeminormAux p.1)) := by
@@ -97,14 +89,7 @@ noncomputable def projectiveSeminorm : Seminorm 𝕜 (⨂[𝕜] i, E i) := by
   refine Seminorm.ofSMulLE (fun x ↦ iInf (fun (p : lifts x) ↦ projectiveSeminormAux p.1)) ?_ ?_ ?_
   · refine le_antisymm ?_ ?_
     · refine ciInf_le_of_le (bddBelow_projectiveSemiNormAux (0 : ⨂[𝕜] i, E i)) ⟨0, lifts_zero⟩ ?_
-      simp only [projectiveSeminormAux, Function.comp_apply]
-      rw [List.sum_eq_zero]
-      intro _
-      simp only [List.mem_map, Prod.exists, forall_exists_index, and_imp]
-      intro _ _ hxm
-      rw [← FreeAddMonoid.ofList_nil] at hxm
-      exfalso
-      exact List.not_mem_nil _ hxm
+      rfl
     · letI : Nonempty (lifts 0) := ⟨0, lifts_zero (R := 𝕜) (s := E)⟩
       exact le_ciInf (fun p ↦ projectiveSeminormAux_nonneg p.1)
   · intro x y
@@ -118,7 +103,7 @@ noncomputable def projectiveSeminorm : Seminorm 𝕜 (⨂[𝕜] i, E i) := by
     intro p
     rw [← projectiveSeminormAux_smul]
     exact ciInf_le_of_le (bddBelow_projectiveSemiNormAux _)
-      ⟨(List.map (fun y ↦ (a * y.1, y.2)) p.1), lifts_smul p.2 a⟩ (le_refl _)
+      ⟨(p.1.map (fun y ↦ (a * y.1, y.2))), lifts_smul p.2 a⟩ (le_refl _)
 
 theorem projectiveSeminorm_apply (x : ⨂[𝕜] i, E i) :
     projectiveSeminorm x = iInf (fun (p : lifts x) ↦ projectiveSeminormAux p.1) := rfl
@@ -126,23 +111,22 @@ theorem projectiveSeminorm_apply (x : ⨂[𝕜] i, E i) :
 theorem projectiveSeminorm_tprod_le (m : Π i, E i) :
     projectiveSeminorm (⨂ₜ[𝕜] i, m i) ≤ ∏ i, ‖m i‖ := by
   rw [projectiveSeminorm_apply]
-  convert ciInf_le (bddBelow_projectiveSemiNormAux _) ⟨[((1 : 𝕜), m)] ,?_⟩
-  · simp only [projectiveSeminormAux, Function.comp_apply, List.map_cons, norm_one, one_mul,
-    List.map_nil, List.sum_cons, List.sum_nil, add_zero]
-  · rw [mem_lifts_iff, List.map_singleton, List.sum_singleton, one_smul]
+  convert ciInf_le (bddBelow_projectiveSemiNormAux _) ⟨FreeAddMonoid.of ((1 : 𝕜), m), ?_⟩
+  · simp [projectiveSeminormAux]
+  · rw [mem_lifts_iff, FreeAddMonoid.toList_of,List.map_singleton, List.sum_singleton, one_smul]
 
 theorem norm_eval_le_projectiveSeminorm (x : ⨂[𝕜] i, E i) (G : Type*) [SeminormedAddCommGroup G]
     [NormedSpace 𝕜 G] (f : ContinuousMultilinearMap 𝕜 E G) :
     ‖lift f.toMultilinearMap x‖ ≤ projectiveSeminorm x * ‖f‖ := by
   letI := nonempty_subtype.mpr (nonempty_lifts x)
-  rw [projectiveSeminorm_apply, Real.iInf_mul_of_nonneg (norm_nonneg _), projectiveSeminormAux]
+  rw [projectiveSeminorm_apply, Real.iInf_mul_of_nonneg (norm_nonneg _)]
+  unfold projectiveSeminormAux
   refine le_ciInf ?_
   intro ⟨p, hp⟩
   rw [mem_lifts_iff] at hp
   conv_lhs => rw [← hp, ← List.sum_map_hom, ← Multiset.sum_coe]
   refine le_trans (norm_multiset_sum_le _) ?_
-  simp only [tprodCoeff_eq_smul_tprod, Multiset.map_coe, List.map_map, Multiset.sum_coe,
-    Function.comp_apply]
+  simp only [Multiset.map_coe, List.map_map, Multiset.sum_coe]
   rw [mul_comm, ← smul_eq_mul, List.smul_sum]
   refine List.Forall₂.sum_le_sum ?_
   simp only [smul_eq_mul, List.map_map, List.forall₂_map_right_iff, Function.comp_apply,

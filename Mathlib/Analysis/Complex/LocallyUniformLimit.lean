@@ -5,9 +5,7 @@ Authors: Vincent Beffara
 -/
 import Mathlib.Analysis.Complex.RemovableSingularity
 import Mathlib.Analysis.Calculus.UniformLimitsDeriv
-import Mathlib.Analysis.NormedSpace.FunctionSeries
-
-#align_import analysis.complex.locally_uniform_limit from "leanprover-community/mathlib"@"fe44cd36149e675eb5dec87acc7e8f1d6568e081"
+import Mathlib.Analysis.Normed.Group.FunctionSeries
 
 /-!
 # Locally uniform limits of holomorphic functions
@@ -28,7 +26,7 @@ open Set Metric MeasureTheory Filter Complex intervalIntegral
 
 open scoped Real Topology
 
-variable {E ι : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E] [CompleteSpace E] {U K : Set ℂ}
+variable {E ι : Type*} [NormedAddCommGroup E] [NormedSpace ℂ E] {U K : Set ℂ}
   {z : ℂ} {M r δ : ℝ} {φ : Filter ι} {F : ι → ℂ → E} {f g : ℂ → E}
 
 namespace Complex
@@ -40,12 +38,10 @@ the derivative. It is useful in the proof that locally uniform limits of holomor
 holomorphic, because it depends continuously on `f` for the uniform topology. -/
 noncomputable def cderiv (r : ℝ) (f : ℂ → E) (z : ℂ) : E :=
   (2 * π * I : ℂ)⁻¹ • ∮ w in C(z, r), ((w - z) ^ 2)⁻¹ • f w
-#align complex.cderiv Complex.cderiv
 
-theorem cderiv_eq_deriv (hU : IsOpen U) (hf : DifferentiableOn ℂ f U) (hr : 0 < r)
+theorem cderiv_eq_deriv [CompleteSpace E] (hU : IsOpen U) (hf : DifferentiableOn ℂ f U) (hr : 0 < r)
     (hzr : closedBall z r ⊆ U) : cderiv r f z = deriv f z :=
   two_pi_I_inv_smul_circleIntegral_sub_sq_inv_smul_of_differentiable hU hzr hf (mem_ball_self hr)
-#align complex.cderiv_eq_deriv Complex.cderiv_eq_deriv
 
 theorem norm_cderiv_le (hr : 0 < r) (hf : ∀ w ∈ sphere z r, ‖f w‖ ≤ M) :
     ‖cderiv r f z‖ ≤ M / r := by
@@ -54,15 +50,13 @@ theorem norm_cderiv_le (hr : 0 < r) (hf : ∀ w ∈ sphere z r, ‖f w‖ ≤ M)
     exact (norm_nonneg _).trans (hf w hw)
   have h1 : ∀ w ∈ sphere z r, ‖((w - z) ^ 2)⁻¹ • f w‖ ≤ M / r ^ 2 := by
     intro w hw
-    simp only [mem_sphere_iff_norm, norm_eq_abs] at hw
-    simp only [norm_smul, inv_mul_eq_div, hw, norm_eq_abs, map_inv₀, Complex.abs_pow]
-    exact div_le_div hM (hf w hw) (sq_pos_of_pos hr) le_rfl
+    simp only [mem_sphere_iff_norm] at hw
+    simp only [norm_smul, inv_mul_eq_div, hw, norm_inv, norm_pow]
+    exact div_le_div₀ hM (hf w hw) (sq_pos_of_pos hr) le_rfl
   have h2 := circleIntegral.norm_integral_le_of_norm_le_const hr.le h1
   simp only [cderiv, norm_smul]
   refine (mul_le_mul le_rfl h2 (norm_nonneg _) (norm_nonneg _)).trans (le_of_eq ?_)
-  field_simp [_root_.abs_of_nonneg Real.pi_pos.le]
-  ring
-#align complex.norm_cderiv_le Complex.norm_cderiv_le
+  simp [field, abs_of_nonneg Real.pi_pos.le]
 
 theorem cderiv_sub (hr : 0 < r) (hf : ContinuousOn f (sphere z r))
     (hg : ContinuousOn g (sphere z r)) : cderiv r (f - g) z = cderiv r f z - cderiv r g z := by
@@ -74,7 +68,6 @@ theorem cderiv_sub (hr : 0 < r) (hf : ContinuousOn f (sphere z r))
   simpa only [Pi.sub_apply, smul_sub] using
     circleIntegral.integral_sub ((h1.smul hf).circleIntegrable hr.le)
       ((h1.smul hg).circleIntegrable hr.le)
-#align complex.cderiv_sub Complex.cderiv_sub
 
 theorem norm_cderiv_lt (hr : 0 < r) (hfM : ∀ w ∈ sphere z r, ‖f w‖ < M)
     (hf : ContinuousOn f (sphere z r)) : ‖cderiv r f z‖ < M / r := by
@@ -83,14 +76,12 @@ theorem norm_cderiv_lt (hr : 0 < r) (hfM : ∀ w ∈ sphere z r, ‖f w‖ < M)
     have e2 : ContinuousOn (fun w => ‖f w‖) (sphere z r) := continuous_norm.comp_continuousOn hf
     obtain ⟨x, hx, hx'⟩ := (isCompact_sphere z r).exists_isMaxOn e1 e2
     exact ⟨‖f x‖, hfM x hx, hx'⟩
-  exact (norm_cderiv_le hr hL2).trans_lt ((div_lt_div_right hr).mpr hL1)
-#align complex.norm_cderiv_lt Complex.norm_cderiv_lt
+  exact (norm_cderiv_le hr hL2).trans_lt ((div_lt_div_iff_of_pos_right hr).mpr hL1)
 
 theorem norm_cderiv_sub_lt (hr : 0 < r) (hfg : ∀ w ∈ sphere z r, ‖f w - g w‖ < M)
     (hf : ContinuousOn f (sphere z r)) (hg : ContinuousOn g (sphere z r)) :
     ‖cderiv r f z - cderiv r g z‖ < M / r :=
   cderiv_sub hr hf hg ▸ norm_cderiv_lt hr hfg (hf.sub hg)
-#align complex.norm_cderiv_sub_lt Complex.norm_cderiv_sub_lt
 
 theorem _root_.TendstoUniformlyOn.cderiv (hF : TendstoUniformlyOn F f φ (cthickening δ K))
     (hδ : 0 < δ) (hFn : ∀ᶠ n in φ, ContinuousOn (F n) (cthickening δ K)) :
@@ -108,9 +99,10 @@ theorem _root_.TendstoUniformlyOn.cderiv (hF : TendstoUniformlyOn F f φ (cthick
   have hf : ContinuousOn f (sphere z δ) :=
     e1.mono (sphere_subset_closedBall.trans (closedBall_subset_cthickening hz δ))
   simpa only [mul_div_cancel_right₀ _ hδ.ne.symm] using norm_cderiv_sub_lt hδ e2 hf (h'.mono e3)
-#align tendsto_uniformly_on.cderiv TendstoUniformlyOn.cderiv
 
 end Cderiv
+
+variable [CompleteSpace E]
 
 section Weierstrass
 
@@ -126,14 +118,12 @@ theorem tendstoUniformlyOn_deriv_of_cthickening_subset (hf : TendstoLocallyUnifo
   apply (h3.cderiv hδ h1).congr
   filter_upwards [hF] with n h z hz
   exact cderiv_eq_deriv hU h hδ ((closedBall_subset_cthickening hz δ).trans hKU)
-#align complex.tendsto_uniformly_on_deriv_of_cthickening_subset Complex.tendstoUniformlyOn_deriv_of_cthickening_subset
 
 theorem exists_cthickening_tendstoUniformlyOn (hf : TendstoLocallyUniformlyOn F f φ U)
     (hF : ∀ᶠ n in φ, DifferentiableOn ℂ (F n) U) (hK : IsCompact K) (hU : IsOpen U) (hKU : K ⊆ U) :
     ∃ δ > 0, cthickening δ K ⊆ U ∧ TendstoUniformlyOn (deriv ∘ F) (cderiv δ f) φ K := by
   obtain ⟨δ, hδ, hKδ⟩ := hK.exists_cthickening_subset_open hU hKU
   exact ⟨δ, hδ, hKδ, tendstoUniformlyOn_deriv_of_cthickening_subset hf hF hδ hK hU hKδ⟩
-#align complex.exists_cthickening_tendsto_uniformly_on Complex.exists_cthickening_tendstoUniformlyOn
 
 /-- A locally uniform limit of holomorphic functions on an open domain of the complex plane is
 holomorphic (the derivatives converge locally uniformly to that of the limit, which is proved
@@ -155,7 +145,6 @@ theorem _root_.TendstoLocallyUniformlyOn.differentiableOn [φ.NeBot]
   have h7 : DifferentiableOn ℂ f (interior K) := fun x hx =>
     (h6 x hx).differentiableAt.differentiableWithinAt
   exact (h7.differentiableAt (interior_mem_nhds.mpr hKx)).differentiableWithinAt
-#align tendsto_locally_uniformly_on.differentiable_on TendstoLocallyUniformlyOn.differentiableOn
 
 theorem _root_.TendstoLocallyUniformlyOn.deriv (hf : TendstoLocallyUniformlyOn F f φ U)
     (hF : ∀ᶠ n in φ, DifferentiableOn ℂ (F n) U) (hU : IsOpen U) :
@@ -167,7 +156,6 @@ theorem _root_.TendstoLocallyUniformlyOn.deriv (hf : TendstoLocallyUniformlyOn F
   obtain ⟨δ, hδ, hK4, h⟩ := exists_cthickening_tendstoUniformlyOn hf hF hK hU hKU
   refine h.congr_right fun z hz => cderiv_eq_deriv hU (hf.differentiableOn hF hU) hδ ?_
   exact (closedBall_subset_cthickening hz δ).trans hK4
-#align tendsto_locally_uniformly_on.deriv TendstoLocallyUniformlyOn.deriv
 
 end Weierstrass
 
@@ -181,9 +169,8 @@ theorem differentiableOn_tsum_of_summable_norm {u : ι → ℝ} (hu : Summable u
     DifferentiableOn ℂ (fun w : ℂ => ∑' i : ι, F i w) U := by
   classical
   have hc := (tendstoUniformlyOn_tsum hu hF_le).tendstoLocallyUniformlyOn
-  refine hc.differentiableOn (eventually_of_forall fun s => ?_) hU
-  exact DifferentiableOn.sum fun i _ => hf i
-#align complex.differentiable_on_tsum_of_summable_norm Complex.differentiableOn_tsum_of_summable_norm
+  refine hc.differentiableOn (Eventually.of_forall fun s => ?_) hU
+  exact DifferentiableOn.fun_sum fun i _ => hf i
 
 /-- If the terms in the sum `∑' (i : ι), F i` are uniformly bounded on `U` by a
 summable function, then the sum of `deriv F i` at a point in `U` is the derivative of the
@@ -194,12 +181,24 @@ theorem hasSum_deriv_of_summable_norm {u : ι → ℝ} (hu : Summable u)
     HasSum (fun i : ι => deriv (F i) z) (deriv (fun w : ℂ => ∑' i : ι, F i w) z) := by
   rw [HasSum]
   have hc := (tendstoUniformlyOn_tsum hu hF_le).tendstoLocallyUniformlyOn
-  convert (hc.deriv (eventually_of_forall fun s =>
-    DifferentiableOn.sum fun i _ => hf i) hU).tendsto_at hz using 1
+  convert (hc.deriv (Eventually.of_forall fun s =>
+    DifferentiableOn.fun_sum fun i _ => hf i) hU).tendsto_at hz using 1
   ext1 s
-  exact (deriv_sum fun i _ => (hf i).differentiableAt (hU.mem_nhds hz)).symm
-#align complex.has_sum_deriv_of_summable_norm Complex.hasSum_deriv_of_summable_norm
+  exact (deriv_fun_sum fun i _ => (hf i).differentiableAt (hU.mem_nhds hz)).symm
 
 end Tsums
+
+section LogDeriv
+
+/-- The logarithmic derivative of a sequence of functions converging locally uniformly to a
+function is the logarithmic derivative of the limit function. -/
+theorem logDeriv_tendsto {ι : Type*} {p : Filter ι} {f : ι → ℂ → ℂ} {g : ℂ → ℂ}
+    {s : Set ℂ} (hs : IsOpen s) (x : s) (hF : TendstoLocallyUniformlyOn f g p s)
+    (hf : ∀ᶠ n : ι in p, DifferentiableOn ℂ (f n) s) (hg : g x ≠ 0) :
+    Tendsto (fun n : ι => logDeriv (f n) x) p (𝓝 ((logDeriv g) x)) := by
+  simp_rw [logDeriv]
+  apply Tendsto.div ((hF.deriv hf hs).tendsto_at x.2) (hF.tendsto_at x.2) hg
+
+end LogDeriv
 
 end Complex
