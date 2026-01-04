@@ -45,11 +45,6 @@ theorem Metric.complete_of_convergent_controlled_sequences (B : ℕ → Real) (h
   UniformSpace.complete_of_convergent_controlled_sequences
     (fun n => { p : α × α | dist p.1 p.2 < B n }) (fun n => dist_mem_uniformity <| hB n) H
 
-/-- A pseudo-metric space is complete iff every Cauchy sequence converges. -/
-theorem Metric.complete_of_cauchySeq_tendsto :
-    (∀ u : ℕ → α, CauchySeq u → ∃ a, Tendsto u atTop (𝓝 a)) → CompleteSpace α :=
-  EMetric.complete_of_cauchySeq_tendsto
-
 section CauchySeq
 
 variable [Nonempty β] [SemilatticeSup β]

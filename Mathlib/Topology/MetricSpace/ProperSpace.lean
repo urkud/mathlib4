@@ -65,7 +65,7 @@ instance (priority := 100) secondCountable_of_proper [ProperSpace α] :
     SecondCountableTopology α := by
   -- We already have `sigmaCompactSpace_of_locallyCompact_secondCountable`, so we don't
   -- add an instance for `SigmaCompactSpace`.
-  suffices SigmaCompactSpace α from EMetric.secondCountable_of_sigmaCompact α
+  suffices SigmaCompactSpace α from Metric.secondCountable_of_sigmaCompact α
   rcases em (Nonempty α) with (⟨⟨x⟩⟩ | hn)
   · exact ⟨⟨fun n => closedBall x n, fun n => isCompact_closedBall _ _, iUnion_closedBall_nat _⟩⟩
   · exact ⟨⟨fun _ => ∅, fun _ => isCompact_empty, iUnion_eq_univ_iff.2 fun x => (hn ⟨x⟩).elim⟩⟩

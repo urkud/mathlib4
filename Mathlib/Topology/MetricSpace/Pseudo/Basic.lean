@@ -178,12 +178,12 @@ end Metric
 open Metric
 
 theorem Metric.inseparable_iff_nndist {x y : α} : Inseparable x y ↔ nndist x y = 0 := by
-  rw [EMetric.inseparable_iff, edist_nndist, ENNReal.coe_eq_zero]
+  rw [inseparable_iff_edist, edist_nndist, ENNReal.coe_eq_zero]
 
 alias ⟨Inseparable.nndist_eq_zero, _⟩ := Metric.inseparable_iff_nndist
 
 theorem Metric.inseparable_iff {x y : α} : Inseparable x y ↔ dist x y = 0 := by
-  rw [Metric.inseparable_iff_nndist, dist_nndist, NNReal.coe_eq_zero]
+  rw [inseparable_iff_nndist, dist_nndist, NNReal.coe_eq_zero]
 
 alias ⟨Inseparable.dist_eq_zero, _⟩ := Metric.inseparable_iff
 
@@ -236,7 +236,7 @@ is `ε`-dense. -/
 theorem secondCountable_of_almost_dense_set
     (H : ∀ ε > (0 : ℝ), ∃ s : Set α, s.Countable ∧ ∀ x, ∃ y ∈ s, dist x y ≤ ε) :
     SecondCountableTopology α := by
-  refine EMetric.secondCountable_of_almost_dense_set fun ε ε0 => ?_
+  refine Metric.secondCountable_of_almost_dense_set_closedEBall fun ε ε0 => ?_
   rcases ENNReal.lt_iff_exists_nnreal_btwn.1 ε0 with ⟨ε', ε'0, ε'ε⟩
   choose s hsc y hys hyx using H ε' (mod_cast ε'0)
   refine ⟨s, hsc, iUnion₂_eq_univ_iff.2 fun x => ⟨y x, hys _, le_trans ?_ ε'ε.le⟩⟩
