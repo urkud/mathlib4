@@ -6,7 +6,6 @@ Authors: Mario Carneiro, Kevin Kappelmann
 module
 
 public import Mathlib.Algebra.Order.Floor.Ring
-import Mathlib.Algebra.Order.Interval.Set.Group
 
 /-!
 # Rounding
@@ -41,7 +40,11 @@ section LinearOrderedRing
 
 variable [Ring α] [LinearOrder α] [IsStrictOrderedRing α] [FloorRing α]
 
-/-- `round` rounds a number to the nearest integer. `round (1 / 2) = 1` -/
+/--
+`round x` rounds `x` to the nearest integer, breaking ties towards positive infinity.
+
+`round (0.5 : ℚ) = 1`.
+-/
 def round (x : α) : ℤ :=
   if 2 * fract x < 1 then ⌊x⌋ else ⌈x⌉
 
@@ -162,7 +165,7 @@ theorem round_le (x : α) (z : ℤ) : |x - round x| ≤ |x - z| := by
     rw [add_sub_assoc, add_comm, neg_add, neg_sub, le_add_neg_iff_add_le, sub_add_cancel,
       le_sub_comm]
     norm_cast
-    exact floor_le_sub_one_iff.mpr hx
+    rwa [le_sub_one_iff, floor_lt]
 
 end LinearOrderedRing
 

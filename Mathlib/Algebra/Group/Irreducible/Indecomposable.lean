@@ -10,7 +10,6 @@ public import Mathlib.Algebra.Group.Subgroup.Lattice
 public import Mathlib.Algebra.Group.Subgroup.Pointwise
 public import Mathlib.Algebra.Group.Submonoid.Basic
 public import Mathlib.Algebra.Order.Group.Defs
-public import Mathlib.Algebra.Order.Group.Basic
 public import Mathlib.Algebra.Order.Monoid.Defs
 public import Mathlib.Order.Preorder.Finite
 
@@ -174,6 +173,7 @@ lemma pairwise_baseOf_div_notMem [InvolutiveInv ι] [CommGroup S] [IsOrderedMono
     (baseOf v f).Pairwise fun i j ↦ v i / v j ∉ range v :=
   pairwise_div_notMem_range' v hv_inv f hf (baseOf v f) (.refl _)
 
+set_option linter.style.whitespace false in -- manual alignment is not recognised
 @[to_additive]
 lemma mem_or_inv_mem_closure_baseOf [Finite ι] [InvolutiveInv ι] [CommGroup S] [IsOrderedMonoid S]
     (v : ι → G) (hv_inv : ∀ i, v i⁻¹ = (v i)⁻¹)
@@ -188,3 +188,22 @@ lemma mem_or_inv_mem_closure_baseOf [Finite ι] [InvolutiveInv ι] [CommGroup S]
     exact Submonoid.subset_closure ⟨i, by simpa⟩
 
 end IsMulIndecomposable
+
+@[to_additive]
+lemma Submonoid.apply_ne_one_of_mem_or_inv_mem_closure
+    [InvolutiveInv ι] [CommGroup S] [IsOrderedMonoid S]
+    (v : ι → G) (hv_one : ∀ i, v i ≠ 1) (hv_inv : ∀ i, v i⁻¹ = (v i)⁻¹)
+    (f : G →* S)
+    (s : Set ι)
+    (hsp : ∀ i, v i ∈ Submonoid.closure (v '' s) ∨
+               (v i)⁻¹ ∈ Submonoid.closure (v '' s))
+    (hf : ∀ i ∈ s, 1 < f (v i)) (i : ι) :
+    f (v i) ≠ 1 := by
+  wlog hi : v i ∈ Submonoid.closure (v '' s)
+  · rcases hsp i with hi' | hi'; · contradiction
+    simpa [hv_inv, hi'] using this v hv_one hv_inv f s hsp hf i⁻¹
+  suffices v i ≠ 1 → 1 < f (v i) from (this (hv_one i)).ne'
+  refine Submonoid.closure_induction (by aesop) (by simp) (fun x y _ _ hx hy _ ↦ ?_) hi
+  rcases eq_or_ne x 1 with rfl | hx'; · grind
+  rcases eq_or_ne y 1 with rfl | hy'; · grind
+  simpa using lt_mul_of_lt_of_one_lt (hx hx') (hy hy')
