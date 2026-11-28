@@ -540,7 +540,7 @@ protected def mono (h : μ.FiniteSpanningSetsIn C) (hC : C ⊆ D) : μ.FiniteSpa
 protected theorem sigmaFinite (h : μ.FiniteSpanningSetsIn C) : SigmaFinite μ :=
   ⟨⟨h.mono <| subset_univ C⟩⟩
 
-/-- If `μ` has finite spanning sets in `C`, the preimages of these sets under `f` are measurable,
+/-- If `μ` has finite spanning sets in `C`, the preimages of these sets under `f` are null measurable,
 and `(f ⁻¹' ·)` maps `C` to `S`, then `μ.comap f` has finite spanning sets in `S`. -/
 protected def comap (h : μ.FiniteSpanningSetsIn C) {S : Set (Set β)} {f : β → α}
     (hf : MapsTo (f ⁻¹' ·) C S) (hmeas : ∀ n, NullMeasurableSet (f ⁻¹' h.set n) (μ.comap f)) :
